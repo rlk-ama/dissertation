@@ -1,0 +1,47 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[fleqn]{amsmath}
+
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\makeatletter
+\newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
+\newsavebox{\mybox}\newsavebox{\mysim}
+\newcommand{\distras}[1]{%
+  \savebox{\mybox}{\hbox{\kern3pt$\scriptstyle#1$\kern3pt}}%
+  \savebox{\mysim}{\hbox{$\sim$}}%
+  \mathbin{\overset{#1}{\kern\z@\resizebox{\wd\mybox}{\ht\mysim}{$\sim$}}}%
+}
+\makeatother
+
+\title{Monte Carlo Methods for Bayesian Inference on the Population Dynamics of Sheep Blowflies}
+\author{Raphael Lopez Kaufman}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+{\Large \textbf{Supervisors}: Arnaud Doucet, Lawrence M. Murray}
+
+\section*{Description}
+The aim of this project is to develop a Bayesian approach to simulate the population dynamics of sheep blowfly \textit{Lucilia cuprina} in order to reproduce Nicholson's observations[1]. Gurney and al[2], Wood[3] and Matteo Fasiolo and al[4] proposed several models which, combined, yield a hidden markov model to describe the adult population $N_t$ of blowflies. An artificial measurement process $Y_t$ is introduced such that $\log{Y_t} = \mathcal{N}(\log{N_t}, \sigma_o^2)$ where $\sigma_o^2$ is predetermined. This state space model is non-linear and its likelihood $p(y_{1:T}|\theta)$, where $\theta$ denotes the set of parameters used to describe $N_t$, is highly multimodal and does not have a closed form.
+\\ \\
+In their paper, Fasiolo and al implemented a very simple particle marginal Metropolis Hastings sampler to obtain an estimator of $p(\theta, n_{1:T}|y_{1:T})$, using the simplest particle filter to estimate $p(n_{1:T}|y_{1:T}, \theta)$. Based on their estimates of the parameters of the model, they simulated the population dynamics and found that their results were significantly different from Nicholson's observations. Furthermore, they noted that the performance of the simulation depended on $\sigma_o$ and on the starting values chosen for the parameters.
+\\ \\
+The objective is thus to use somewhat more elaborate and tailored particle Markov chain Monte Carlo methods to design better and more consistent simulations. For example, state space models could be replaced by disturbance state space models, as described by Murray and al[5]. Moreover, inference will be carried out taking advantage of LibBi, a new software package for state-space modelling and Bayesian inference on modern computer hardware developped by Murray[6].
+
+\section*{References}
+
+[1] Nicholson, A. J. (1957). The self-adjustment of populations to change. In \textit{Cold      Spring Harbor Symposia on Quantitative Biology} \textbf{22} 153–173. Cold Spring Harbor Laboratory Press. \\ \\{}
+[2] Gurney, W., Blythe, S. and Nisbet, R. (1980). Nicholson’s blowflies revisited. \textit{Nature} \textbf{287} 17–21.\\ \\{}
+[3]{\large Wood, S. N. (2010).} Statistical inference for noisy nonlinear ecological dynamic systems. \textit{Nature} \textbf{466} 1102–1104.\\ \\{}
+[4] Fasiolo, M., Pya, N. and Wood, 2. (2014). Statistical inference for highly non-linear dynamical models in ecology and epidemiology. Submitted to \textit{Statistical Science}. \\ \\{}
+[5] Murray, L. E., Jones, E. M. and Parslow, J.(2014). On Disturbance State-Space Models and the Particle Marginal Metropolis-Hastings Sampler. \textit{SIAM/ASA J. Uncertainty Quantification}  \textbf{1(1)} 494–521. \\ \\{}
+[6] Murray, L. (2013). Bayesian State-Space Modelling on High-Performance Hardware Using LibBi. \textit{Technical report, CSIRO}. Arxiv:1306.3277
+\end{document}
