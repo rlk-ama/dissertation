@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.special import psi, gamma
+from scipy.optimize import broyden1, fsolve
+from scipy.special import psi, gamma, polygamma
 from filter import bootstrap_filter, observ_gen
 
 r = np.exp(2.5)
@@ -46,7 +47,7 @@ def proposal(n, y, param):
     r = param['r']
     sigma = param['sigma']
     mu = param['mean']
-    alpha, beta = param_gamma(n, r, mu, sigma)
+    alpha, beta = param_gamma2(n, r, mu, sigma)
     out = np.random.gamma(shape=y+alpha, scale=beta/(phi*beta+1))
     return out
 
@@ -58,7 +59,7 @@ def proposal_density(n, n_prev, y, param):
     sigma = param['sigma']
     mu = param['mean']
     r = param['r']
-    alpha, beta = param_gamma(n_prev, r, mu, sigma)
+    alpha, beta = param_gamma2(n_prev, r, mu, sigma)
     out = ((phi*beta+1)/beta)**(alpha+y)/gamma(alpha+y)*n**(alpha+y-1)*np.exp(-((phi*beta+1)/beta)*n)
     return  out
 
@@ -71,6 +72,16 @@ def param_gamma(n_prev, r, mu, sigma):
     coeff = r*n_prev*np.exp(-n_prev)
     alpha = 1/sigma**2
     beta = 1/alpha*np.exp(mu+np.log(coeff)+sigma**2/2)
+    return alpha, beta
+
+def param_gamma2(n_prev, r, mu, sigma):
+
+    def p(k):
+        return -k**3 + ((sigma**2-1)/(3*sigma**2))*k**2 + k/sigma**2 - ((15+2*sigma**2)/(30*sigma**2))
+
+    coeff = r*n_prev*np.exp(-n_prev)
+    alpha = fsolve(p, 0.01)[0]
+    beta = 1/alpha*np.exp(mu+np.log(coeff)+ 1/(2*alpha))
     return alpha, beta
 
 
@@ -96,10 +107,12 @@ if __name__== "__main__":
     fig1 = plt.figure()
     plt.plot([i for i in range(30)], mean_esti)
     plt.plot([i for i in range(31)], state)
+    plt.show()
     plt.savefig('diagno_gamma.pdf')
     plt.close()
     fig2 = plt.figure()
     plt.plot([i for i in range(30)], ESS)
+    plt.show()
     plt.savefig('ESS_gamma.pdf')
     plt.close()
     fig3 = plt.figure()

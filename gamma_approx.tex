@@ -106,6 +106,22 @@ In our case we will thus approximate the distribution of $N_t$ by
 q(n_t|\alpha(n_{t-1}), \theta(n_{t-1})) = Gamma(\ \cdot \ ; \alpha(n_{t-1}), \theta(n_{t-1}) )
 \end{equation*}
 where $ \alpha(n_{t-1})= \frac{1}{\sigma^2}$ and $\theta(n_{t-1})=\sigma^2e^{\log(rn_{t-1}e^{n_{t-1}})+\frac{\sigma^2}{2}}$, since $\mu = 0$.\\
+Figure~\ref{fig:approx} shows the quality of the approximation which seems decent, although the tail of the log-normal seems heavier than the one of the gamma. This can be a problem when it comes to importance sampling.
+
+\begin{figure}[htb]
+	\centering
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/approx03.pdf}
+	\end{minipage}
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/approxcoeff5sigma03.pdf}
+	\end{minipage}
+	\caption{\textbf{(left)}QQ plot comparing a $\log\mathcal{N}(0, 0.3^2)$ and its gamma approximation. \textbf{(right)} QQ plot comparing a $\log\mathcal{N}(\log(5), 0.3^2)$ and its gamma approximation.}
+	\label{fig:approx}
+\end{figure}
+
 Therefore our proposal for the bootstrap filter will be the following:
 \begin{equation*}
 \begin{split}
@@ -122,11 +138,11 @@ Simulation carried out with $\log(r)=2.5$, $\phi=10$ and $\sigma=0.3$. We also s
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/bootstrap-filter/diagno_prior.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/diagno_prior.pdf}
 	\end{minipage}
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/bootstrap-filter/ESS_prior.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/ESS_prior.pdf}
 	\end{minipage}
 	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the prior proposal \textbf{(green)} simulated states \textbf{(blue)}. \textbf{(right)} The corresponding ESS. }
 	\label{fig:prior}
@@ -144,6 +160,68 @@ Simulation carried out with $\log(r)=2.5$, $\phi=10$ and $\sigma=0.3$. We also s
 	\end{minipage}
 	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the gamma proposal \textbf{(green)} simulated states \textbf{(blue)}. \textbf{(right)} The corresponding ESS. }
 	\label{fig:gamma}
+\end{figure}
+
+ \clearpage
+If on the contrary we minimized:
+\begin{equation*}
+	D_{KL}(P||Q)(\alpha, \theta) = \int_{0}^{\infty}{q(z|\alpha, \theta)\log(\frac{q(z|\alpha, \theta)}{p(z|\mu, \sigma^2)})\mathrm{d}z}
+\end{equation*}
+where $p$ is the probability density function of a $\log\mathcal{N}(\mu, \sigma^2)$ and $q$ of a Gamma with shape $\alpha$ and scale $\theta$
+We have:
+\begin{equation*}
+\begin{split}
+	D_{KL}(P||Q)(\alpha, \theta) & = C - \frac{1}{\theta}\mathrm{E_q}[Z] + \alpha\mathrm{E_p}[\log(Z)] -\alpha\log(\theta) - \log(\Gamma(\alpha)) + \frac{1}{2\sigma^2}\mathrm{E_p}[(\log(Z)-\mu)^2] \\
+	& = C - \alpha + \alpha\psi^{(0)}(\alpha) - \log(\Gamma(\alpha)) + \frac{1}{2\sigma^2}(\psi^{(1)}(\alpha)+(\psi^{(0)}(\alpha)+\log(\theta)-\mu)^2)
+\end{split}
+\end{equation*}
+since $\mathrm{E_q}[Z]=\alpha\theta$, $\mathrm{E_p}[\log(Z)]=\psi^{(0)}+\log(\theta)$ and $\mathrm{Var_q}(\log(Z)) = \psi^{(1)}(\alpha)$\\
+Therefore:
+\begin{equation*}
+	\frac{\partial }{\partial \alpha}(D_{KL}(P||Q)) = -1 + \frac{1}{2\sigma^2}\psi^{(2)}(\alpha) + \psi^{(1)}(\alpha)(\alpha+\frac{1}{\sigma^2}(\psi^{(0)}(\alpha)+\log(\theta)-\mu))
+\end{equation*}
+\begin{equation*}
+	\frac{\partial }{\partial \theta}(D_{KL}(P||Q)) = \frac{1}{\theta\sigma^2}(\psi^{(0)}(\alpha)+\log(\theta)-\mu)
+\end{equation*}
+We finally have that, setting the partial derivatives to zero:
+\begin{equation*}
+	1=\frac{1}{\sigma^2}\psi^{(2)}(\alpha)+\alpha\psi^{(1)}(\alpha)
+\end{equation*}
+\begin{equation*}
+	\theta=e^{\mu-\psi^{(0)}(\alpha)}
+\end{equation*}
+If we take $\psi^{(0)}(\alpha) \approx \log(\alpha)-\frac{1}{2\alpha}$, $\psi^{(1)}(\alpha)\approx\frac{1}{\alpha}-\frac{1}{2\alpha^2}+\frac{1}{6\alpha^3}$ and $\psi^{(2)}(\alpha)\approx-\frac{1}{\alpha^2}$ we have $-\alpha^3 +\alpha^2(\frac{\sigma^2-1}{3\sigma^2})+\frac{\alpha}{\sigma^2}-(\frac{15+2\sigma^2}{30\sigma^2}) =0$ and $\theta=\frac{1}{\alpha} e^{\mu+\frac{1}{2\alpha}}$. $\alpha$ must be found numerically.
+
+Figure~\ref{fig:approx2} shows the quality of the approximation which is not satisfactory.
+
+\begin{figure}[htb]
+	\centering
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/approx203.pdf}
+	\end{minipage}
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/approx2coeff5sigma03.pdf}
+	\end{minipage}
+	\caption{\textbf{(left)}QQ plot comparing a $\log\mathcal{N}(0, 0.3^2)$ and its gamma approximation. \textbf{(right)} QQ plot comparing a $\log\mathcal{N}(\log(5), 0.3^2)$ and its gamma approximation.}
+	\label{fig:approx2}
+\end{figure}
+ \clearpage
+Figure~\ref{fig:gamma2} shows the result of the simulation with the gamma proposal based on our new approximation.
+
+\begin{figure}[htb]
+	\centering
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/diagno_gamma2.pdf}
+	\end{minipage}
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/ESS_gamma2.pdf}
+	\end{minipage}
+	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the prior proposal \textbf{(green)} simulated states \textbf{(blue)}. \textbf{(right)} The corresponding ESS. }
+	\label{fig:gamma2}
 \end{figure}
 
 \end{document}
