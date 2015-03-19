@@ -52,17 +52,17 @@ Y_t = X_t + W_t
 where $V_t, W_t \distas{iid} \mathcal{N} (0,1)$ and $\phi=0.95$.\\
 We compared the values of $\mathrm{E}[X_t|y_{0:t}]$ given by our implementation and the ones given by a Kalman filter (package KalmanFilter of library pykalman) for 100 time steps and 100 particles. We also calculated the ESS as shown in Figure~\ref{fig:bootstrap}.
 
-\begin{figure}[!htb]
+\begin{figure}[htb]
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/bootstrap-filter/verif_filter.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/verif_filter.pdf}
 	\end{minipage}
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/bootstrap-filter/ESS_filter.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/ESS_filter.pdf}
 	\end{minipage}
-	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the Python implementation of the bootstrap filter \textbf{(blue)} and a Kalman filter \textbf{(green)}. \textbf{(right)} The ESS for the Python implentation of the bootstrap filter. }
+	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the Python implementation of the bootstrap filter \textbf{(blue)} and a Kalman filter \textbf{(green)}. \textbf{(right)} The ESS for the Python implementation of the bootstrap filter. }
 	\label{fig:bootstrap}
 \end{figure}
 
@@ -91,7 +91,7 @@ Therefore:
 \begin{equation*}
 \frac{\partial }{\partial \theta}(D_{KL}(P||Q)) = \frac{\alpha}{\theta} - \frac{1}{\theta^2}\mathrm{E_p}[Z]
 \end{equation*}
-where $psi^{(0)}$ is the digamma function.
+where $\psi^{(0)}$ is the digamma function.
 \clearpage
 Since $\mathrm{E_p}[\log(Z)]=\mu$ and $\mathrm{E_p}[Z] = e^{\mu+\frac{\sigma^2}{2}}$, we finally have that, setting the partial derivatives to zero:
 \begin{equation*}
@@ -103,7 +103,7 @@ Since $\mathrm{E_p}[\log(Z)]=\mu$ and $\mathrm{E_p}[Z] = e^{\mu+\frac{\sigma^2}{
 If we take $\psi^{(0)}(\alpha) \approx \log(\alpha)-\frac{1}{2\alpha}$ we finally have $\alpha =\frac{1}{\sigma^2}$ and $\theta=\frac{1}{\alpha}e^{\mu+\frac{\sigma^2}{2}}$.
 In our case we will thus approximate the distribution of $N_t$ by
 \begin{equation*}
-q(n_t|\alpha(n_{t-1}), \theta(n_{t-1})) = Gamma(\ \cdot \ ; \alpha(n{t-1}), \theta(n_{t-1}) )
+q(n_t|\alpha(n_{t-1}), \theta(n_{t-1})) = Gamma(\ \cdot \ ; \alpha(n_{t-1}), \theta(n_{t-1}) )
 \end{equation*}
 where $ \alpha(n_{t-1})= \frac{1}{\sigma^2}$ and $\theta(n_{t-1})=\sigma^2e^{\log(rn_{t-1}e^{n_{t-1}})+\frac{\sigma^2}{2}}$, since $\mu = 0$.\\
 Therefore our proposal for the bootstrap filter will be the following:
@@ -116,6 +116,34 @@ q_{t|t-1}(n_t|n_{t-1}, y_t) & \propto  p(y_t|n_t)q(n_t|n_{t-1}) \\
 ie:
 \begin{equation*}
 q_{t|t-1}(n_t|n_{t-1}, y_t) = Gamma(\ \cdot \ ; y_t+\alpha(n_{t-1}), \frac{\theta(n_{t-1})}{\theta(n_{t-1})\phi + 1})\end{equation*}
-We carried out the simulation with $\log(r)=3.8$, $\phi=10$ and $\sigma=0.3$ as in Wood's paper. We also set $N_0 \sim Gamma(3,1)$ in order to have $N_0$ around 3-4.
+Simulation carried out with $\log(r)=2.5$, $\phi=10$ and $\sigma=0.3$. We also set $N_0 \sim Gamma(3,1)$ in order to have $N_0$ around 3-4. A value of 3.8 as in Wood's paper for $\log(r)$ gave underflow and overflows in the Python code. Figure~\ref{fig:prior} shows results with prior proposal and Figure~\ref{fig:gamma} with gamma proposal.
+
+\begin{figure}[htb]
+	\centering
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/bootstrap-filter/diagno_prior.pdf}
+	\end{minipage}
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/bootstrap-filter/ESS_prior.pdf}
+	\end{minipage}
+	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the prior proposal \textbf{(green)} simulated states \textbf{(blue)}. \textbf{(right)} The corresponding ESS. }
+	\label{fig:prior}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/diagno_gamma.pdf}
+	\end{minipage}
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/ESS_gamma.pdf}
+	\end{minipage}
+	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the gamma proposal \textbf{(green)} simulated states \textbf{(blue)}. \textbf{(right)} The corresponding ESS. }
+	\label{fig:gamma}
+\end{figure}
 
 \end{document}

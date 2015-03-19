@@ -3,10 +3,9 @@ import matplotlib.pyplot as plt
 from scipy.special import psi, gamma
 from filter import bootstrap_filter, observ_gen
 
-r = np.exp(2)
-phi = 1
+r = np.exp(2.5)
+phi = 10
 sigma = np.sqrt(0.3)
-
 
 def kernel(n, param):
     r = param['r']
@@ -15,6 +14,21 @@ def kernel(n, param):
     return r*n*np.exp(-n)*out
 
 def kernel_density(n, n_prev, param):
+    r = param['r']
+    sigma = param['sigma']
+    mu = param['mean']
+    coeff = r*n_prev*np.exp(-n_prev)
+    mean = mu + np.log(coeff)
+    out = 1/(n*sigma*np.sqrt(2*np.pi))*np.exp(1/(2*sigma**2)*(np.log(n)-mean)**2)
+    return out
+
+def kernel_prior(n, obs, param):
+    r = param['r']
+    sigma = param['sigma']
+    out = np.random.lognormal(mean=param['mean'], sigma=sigma)
+    return r*n*np.exp(-n)*out
+
+def kernel_density_prior(n, n_prev, obs, param):
     r = param['r']
     sigma = param['sigma']
     mu = param['mean']
@@ -33,7 +47,7 @@ def proposal(n, y, param):
     sigma = param['sigma']
     mu = param['mean']
     alpha, beta = param_gamma(n, r, mu, sigma)
-    out = np.random.gamma(shape=y+alpha, scale=beta*(phi*beta+1))
+    out = np.random.gamma(shape=y+alpha, scale=beta/(phi*beta+1))
     return out
 
 def initial(param):
@@ -45,7 +59,7 @@ def proposal_density(n, n_prev, y, param):
     mu = param['mean']
     r = param['r']
     alpha, beta = param_gamma(n_prev, r, mu, sigma)
-    out = (phi+1/beta)**(alpha+y)/gamma(alpha+y)*n**(alpha+y-1)*np.exp(-(phi+1/beta)*n)
+    out = ((phi*beta+1)/beta)**(alpha+y)/gamma(alpha+y)*n**(alpha+y-1)*np.exp(-((phi*beta+1)/beta)*n)
     return  out
 
 def conditional_density(n, y, param):
@@ -59,30 +73,51 @@ def param_gamma(n_prev, r, mu, sigma):
     beta = 1/alpha*np.exp(mu+np.log(coeff)+sigma**2/2)
     return alpha, beta
 
-params = {
-    'initial': {'shape': 3, 'scale': 1},
-    'kernel': {'r': r, 'sigma': sigma, 'mean': 0.0},
-    'proposal': {'r': r, 'sigma': sigma, 'mean': 0.0},
-    'conditional': {'phi': phi}
-    }
 
-observ = observ_gen(100, params, conditional=conditional, initial=initial, kernel=kernel)
+if __name__== "__main__":
+    params = {
+        'initial': {'shape': 3, 'scale': 1},
+        'kernel': {'r': r, 'sigma': sigma, 'mean': 0.0},
+        'proposal': {'r': r, 'sigma': sigma, 'mean': 0.0},
+        'conditional': {'phi': phi}
+        }
 
-observ2 = []
-x = 7
-for i in range(100):
-    observ2.append(x)
-    x = kernel(x, params['kernel'])
+    observ, state = observ_gen(30, params, conditional=conditional, initial=initial, kernel=kernel)
 
-estim, likeli, ESS = bootstrap_filter(param=params, start=0, end=100, N=1000, kernel_density=kernel_density, conditional_density=conditional_density,
-                       proposal=proposal, proposal_density=proposal_density, initial=initial,
-                       observations=observ)
+    estim, likeli, ESS = bootstrap_filter(param=params, start=0, end=30, N=1000, kernel_density=kernel_density, conditional_density=conditional_density,
+                           proposal=proposal, proposal_density=proposal_density, initial=initial,
+                           observations=observ)
 
-mean_esti = [np.mean(est) for est in estim]
-plt.plot([i for i in range(100)], mean_esti)
-plt.plot([i for i in range(100)], observ2)
-plt.savefig('diagno_gamma.pdf')
-plt.plot([i for i in range(100)], ESS)
-plt.savefig('ESS_gamma.pdf')
-plt.plot([i for i in range(101)], [np.log(lik) for lik in likeli])
-plt.savefig('loglik.pdf')
+    estim2, likeli2, ESS2 = bootstrap_filter(param=params, start=0, end=30, N=1000, kernel_density=kernel_density, conditional_density=conditional_density,
+                           proposal=kernel_prior, proposal_density=kernel_density_prior, initial=initial,
+                           observations=observ)
+
+    mean_esti = [np.mean(est) for est in estim]
+    fig1 = plt.figure()
+    plt.plot([i for i in range(30)], mean_esti)
+    plt.plot([i for i in range(31)], state)
+    plt.savefig('diagno_gamma.pdf')
+    plt.close()
+    fig2 = plt.figure()
+    plt.plot([i for i in range(30)], ESS)
+    plt.savefig('ESS_gamma.pdf')
+    plt.close()
+    fig3 = plt.figure()
+    plt.plot([i for i in range(31)], likeli)
+    plt.savefig('loglik_gamma.pdf')
+    plt.close()
+
+    mean_esti = [np.mean(est) for est in estim2]
+    fig1 = plt.figure()
+    plt.plot([i for i in range(30)], mean_esti)
+    plt.plot([i for i in range(31)], state)
+    plt.savefig('diagno_prior.pdf')
+    plt.close()
+    fig2 = plt.figure()
+    plt.plot([i for i in range(30)], ESS2)
+    plt.savefig('ESS_prior.pdf')
+    plt.close()
+    fig3 = plt.figure()
+    plt.plot([i for i in range(31)], likeli2)
+    plt.savefig('loglik_prior.pdf')
+    plt.close()

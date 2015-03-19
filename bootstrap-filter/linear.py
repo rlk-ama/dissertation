@@ -46,7 +46,7 @@ def initial(param):
 
 
 if __name__ == '__main__':
-    observ = observ_gen(100, params, conditional, initial=initial, kernel=kernel)
+    observ, state = observ_gen(100, params, conditional, initial=initial, kernel=kernel)
 
     estim, likeli, ESS = bootstrap_filter(param=params, start=0, end=100, N=100, kernel_density=kernel_density, conditional_density=conditional_density,
                            proposal=proposal_prior, proposal_density=proposal_density_prior, initial=initial,
@@ -59,8 +59,16 @@ if __name__ == '__main__':
 
 
     mean_esti = [np.mean(est) for est in estim]
+    fig1 = plt.figure()
     plt.plot([i for i in range(100)], mean_esti)
     plt.plot([i for i in range(101)], filtered_state_means)
     plt.savefig('verif_filter.pdf')
+    plt.close()
+    fig2 = plt.figure()
     plt.plot([i for i in range(100)], ESS)
     plt.savefig('ESS_filter.pdf')
+    plt.close()
+    fig3 = plt.figure()
+    plt.plot([i for i in range(101)], likeli)
+    plt.savefig('likeli_filter.pdf')
+    plt.close()
