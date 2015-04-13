@@ -10,12 +10,11 @@ def bootstrap_filter(param, start, end, N, kernel_density, conditional_density, 
     weights = numpy.empty(shape=N, dtype='float64')
     likelihoods = []
     ESS = []
+    likelihood = 0
 
     for i in range(N):
         particles.append(initial(param['initial'])) #draw from initial distribution
         weights[i] = 1.0/N
-    likelihood = -numpy.log(N) + numpy.log(sum(weights))
-    likelihoods.append(likelihood)
 
     for i in range(start+1, end+1):
         numpy.divide(weights, sum(weights), out=weights)

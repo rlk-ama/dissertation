@@ -162,6 +162,23 @@ Simulation carried out with $\log(r)=2.5$, $\phi=10$ and $\sigma=0.3$. We also s
 	\label{fig:gamma}
 \end{figure}
 
+If we plot the state and the ESS on the same graph in order to check if there are typical scenarii where the ESS is small, we obtain Figure~{fig:superimposed}. On the left there seem to be no pattern with small ESS when the state is large, whereas on the right it seems that the ESS is small when the state is small and vice versa.
+
+\begin{figure}[htb]
+	\centering
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/comparison_ESS_state.pdf}
+	\end{minipage}
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/comparison_ESS_state2.pdf}
+	\end{minipage}
+	\caption{Superimposition of \textbf{(blue)} the state and \textbf{(red)} the ESS obtained using the gamma proposal.}
+	\label{fig:superimposed}
+\end{figure}
+
+
  \clearpage
 If on the contrary we minimized:
 \begin{equation*}
