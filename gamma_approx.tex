@@ -105,7 +105,7 @@ In our case we will thus approximate the distribution of $N_t$ by
 \begin{equation*}
 q(n_t|\alpha(n_{t-1}), \theta(n_{t-1})) = Gamma(\ \cdot \ ; \alpha(n_{t-1}), \theta(n_{t-1}) )
 \end{equation*}
-where $ \alpha(n_{t-1})= \frac{1}{\sigma^2}$ and $\theta(n_{t-1})=\sigma^2e^{\log(rn_{t-1}e^{n_{t-1}})+\frac{\sigma^2}{2}}$, since $\mu = 0$.\\
+where $ \alpha(n_{t-1})= \frac{1}{\sigma^2}$ and $\theta(n_{t-1})=\sigma^2e^{\log(rn_{t-1}e^{-n_{t-1}})+\frac{\sigma^2}{2}}$, since $\mu = 0$.\\
 Figure~\ref{fig:approx} shows the quality of the approximation which seems decent, although the tail of the log-normal seems heavier than the one of the gamma. This can be a problem when it comes to importance sampling.
 
 \begin{figure}[htb]
@@ -126,7 +126,7 @@ Therefore our proposal for the bootstrap filter will be the following:
 \begin{equation*}
 \begin{split}
 q_{t|t-1}(n_t|n_{t-1}, y_t) & \propto  p(y_t|n_t)q(n_t|n_{t-1}) \\
-& \propto e^{-\phi n_t}(\phi N_t)^{y_t}n_t^{\alpha(n_{t-1})-1}e^{-\frac{n_t}{\theta(n_{t-1})}}
+& \propto e^{-\phi n_t}(\phi n_t)^{y_t}n_t^{\alpha(n_{t-1})-1}e^{-\frac{n_t}{\theta(n_{t-1})}}
 \end{split}
 \end{equation*}
 ie:
