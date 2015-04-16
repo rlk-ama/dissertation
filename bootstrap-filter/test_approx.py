@@ -80,3 +80,9 @@ compare('simple', 0, 30, 500, 1, 3)
 
 compare('complex', 0, 30, 500, 3, 1)
 compare('simple', 0, 30, 500, 3, 1)
+
+compare('complex', 0, 30, 500, 4, 3)
+compare('simple', 0, 30, 500, 4, 3)
+
+compare('complex', 0, 30, 500, 3, 10)
+compare('simple', 0, 30, 500, 3, 10)
