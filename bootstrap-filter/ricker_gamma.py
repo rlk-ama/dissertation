@@ -19,17 +19,17 @@ class RickerMap(object):
     def kernel_density(self, n, n_prev):
         coeff = self.r*n_prev*np.exp(-n_prev)
         mean = self.mu + np.log(coeff)
-        out = 1/(n*self.sigma*np.sqrt(2*np.pi))*np.exp(1/(2*self.sigma**2)*(np.log(n)-mean)**2)
+        out = 1/(n*self.sigma*np.sqrt(2*np.pi))*np.exp(-1/(2*self.sigma**2)*(np.log(n)-mean)**2)
         return out
 
-    def kernel_prior(self, n, obs):
+    def prior_proposal(self, n, obs):
         out = np.random.lognormal(mean=self.mu, sigma=self.sigma)
         return self.r*n*np.exp(-n)*out
 
-    def kernel_density_prior(self, n, n_prev, obs):
+    def prior_proposal_density(self, n, n_prev, obs):
         coeff = self.r*n_prev*np.exp(-n_prev)
         mean = self.mu + np.log(coeff)
-        out = 1/(n*self.sigma*np.sqrt(2*np.pi))*np.exp(1/(2*self.sigma**2)*(np.log(n)-mean)**2)
+        out = 1/(n*self.sigma*np.sqrt(2*np.pi))*np.exp(-1/(2*self.sigma**2)*(np.log(n)-mean)**2)
         return out
 
     def conditional(self, n):
@@ -68,10 +68,7 @@ class RickerMap(object):
 
     def param_gamma2(self, n_prev):
 
-        def p(k):
-            return -k**3 + ((self.sigma**2-1)/(3*self.sigma**2))*k**2 + k/self.sigma**2 - ((15+2*self.sigma**2)/(30*self.sigma**2))
-
         coeff = self.r*n_prev*np.exp(-n_prev)
-        alpha = fsolve(p, 0.01)[0]
+        alpha = (6-self.sigma**2)/(3*self.sigma**2)
         beta = 1/alpha*np.exp(self.mu+np.log(coeff)+ 1/(2*alpha))
         return alpha, beta
