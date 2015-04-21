@@ -9,16 +9,6 @@ n_prev = 5
 y = 7
 phi = 10
 
-# lognorm = np.random.lognormal(mean=mean, sigma=sigma, size=size)
-# lognorm = sorted(np.multiply(lognorm, r*n_prev*np.exp(-n_prev)))
-# alpha, beta = param_gamma(n_prev, r, mean, sigma)
-# gamma = sorted(np.random.gamma(shape=alpha, scale=beta, size=size))
-#
-# fig1 = plt.figure()
-# plt.plot(lognorm, gamma)
-# plt.show()
-# plt.close()
-
 
 def optimal_improper(n, n_prev, r, phi, sigma, y):
     logout = -phi*n + (y-1)*np.log(n) - 1/(2*sigma**2)*(np.log(n/(r*n_prev)) + n_prev)**2
@@ -78,11 +68,11 @@ compare('simple', 0, 30, 500, 3, 3)
 compare('complex', 0, 30, 500, 1, 3)
 compare('simple', 0, 30, 500, 1, 3)
 
+compare('complex', 0, 30, 500, 4, 1)
+compare('simple', 0, 30, 500, 4, 1)
+
 compare('complex', 0, 30, 500, 3, 1)
 compare('simple', 0, 30, 500, 3, 1)
 
-compare('complex', 0, 30, 500, 4, 3)
-compare('simple', 0, 30, 500, 4, 3)
-
-compare('complex', 0, 30, 500, 3, 10)
-compare('simple', 0, 30, 500, 3, 10)
+compare('complex', 0, 30, 500, 3, 9)
+compare('simple', 0, 30, 500, 3, 9)

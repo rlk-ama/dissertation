@@ -57,11 +57,11 @@ It can be seen that the right tail of the gamma approximation is thinner than th
 
 Figure~\ref{fig:complex} shows the result of the comparison when we use the approximation which minimizes $	D_{KL}(P||Q)(\alpha, \theta) = \int_{0}^{\infty}{q(z|\alpha, \theta)\log(\frac{q(z|\alpha, \theta)}{p(z|\mu, \sigma^2)})\mathrm{d}z}$
 where $p$ and $q$ are the same as above (Approximation 2). We took $\ln(r) = 3.0$, $\sigma^2 = 0.3$ and $\phi = 10$ and set $n_{t-1} = 5$ and $y_t = 7$ when calculating $p_{t|t-1}(n_t|n_{t-1}, y_t)$. The optimal density is blue whereas the density of the gamma approximation is green. \\
-Now, it can be seen that right tail of the gamma approximation is thicker than the one of the optimal proposal. The mode of the approximation is also significantly smaller than the optimal one. Here the relative error increases sharply as the approximation becomes orders of magnitudes greater than the optimal proposal in the tail. Once again the relative error shows a spike near 0 for the same reason as above.
+Now, it can be seen that right tail of the gamma approximation is even lighter than before. The mode of the approximation is also significantly bigger than the optimal one. Thus the relative error converges more rapidly towards -1 (difference already in the $10^{-5}$ whereas in the previous example it was in the $10^{-2}$) as the approximation becomes orders of magnitudes greater than the optimal proposal in the tail. The relative error does not show a spike near 0 as now the approximation is smaller than the optimal proposal near 0.
 
-Figure~\ref{fig:movingsimple} compares the optimal proposal density and the gamma approximation Approximation 1 density for different values of $\ln(r)$ and $\sigma^2$. When $\ln(r)$ becomes smaller ($\sigma^2$ constant) the overall match between the two densities worsens (the approximation goes more quickly towards 0), but the relative error has a smaller spike near 0 because there the approximation is closer to the optimal proposal. When $\sigma$ becomes smaller ( $\ln(r)$ constant) the overall match between the two densities seems better, but the relative error near zero becomes even spikier. When  $\ln(r)$ or $\sigma$ increases the overall match gets better, the shape of the relative error stays the same although increasing $\sigma$ reduces the amplitude of this spike.
+Figure~\ref{fig:movingsimple} compares the optimal proposal density and the gamma approximation Approximation 1 density for different values of $\ln(r)$ and $\sigma^2$. When $\ln(r)$ increases ($\sigma^2$ constant) the approximation becomes less spiky and goes from right skewed to left skewed. The relative error presents the same pattern as described above but as $\ln(r)$ increases the spike near zero increases and the tail becomes thicker (convergence towards -1 is slower). When $\sigma$ increases ($\ln(r)$ constant) the approximation become more left skewed and the relative error presents the same pattern as described above but the spike near 0 becomes less sharp and the convergence towards 0 is slower.
 
-Figure~\ref{fig:movingcomplex} compares the optimal proposal density and the gamma approximation Approximation 2 density for different values of $\ln(r)$ and $\sigma^2$. Both when $\ln(r)$ and $\sigma$ decrease (one at a time) the overall match worsens. In the first case the approximation becomes more right left skewed, and in the second case more left skewed. When  $\ln(r)$ or $\sigma$ increases the conclusions are the same as above.
+Figure~\ref{fig:movingcomplex} compares the optimal proposal density and the gamma approximation Approximation 2 density for different values of $\ln(r)$ and $\sigma^2$. The conclusions are the same as above.
 
 
 
@@ -145,18 +145,6 @@ Figure~\ref{fig:movingcomplex} compares the optimal proposal density and the gam
 	\end{minipage}
 	\begin{minipage}{.3\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_beginning_simple_3_1.pdf}
-	\end{minipage}
-	\begin{minipage}{.3\textwidth}
-		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_tail_simple_3_1.pdf}
-	\end{minipage}
-	\begin{minipage}{.3\textwidth}
-		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/global_simple_4_3.pdf}
-	\end{minipage}
-	\begin{minipage}{.3\textwidth}
-		\centering
 		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_beginning_simple_4_3.pdf}
 	\end{minipage}
 	\begin{minipage}{.3\textwidth}
@@ -165,17 +153,29 @@ Figure~\ref{fig:movingcomplex} compares the optimal proposal density and the gam
 	\end{minipage}
 	\begin{minipage}{.3\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/global_simple_3_10.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/global_simple_3_1.pdf}
 	\end{minipage}
 	\begin{minipage}{.3\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_beginning_simple_3_10.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_beginning_simple_3_1.pdf}
 	\end{minipage}
 	\begin{minipage}{.3\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_tail_simple_3_10.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_tail_simple_3_1.pdf}
 	\end{minipage}
-	\caption{\textbf{(left)} Comparison between \textbf{(blue)} the optimal proposal density and \textbf{(green)} the gamma approximation density, \textbf{(middle)} relative error between values near 0 of the gamma approximation density and the optimal proposal density, \textbf{(right)} relative error between the right tails of the gamma approximation density and the optimal proposal density for \textbf{(first row)} $\ln(r)=1$ and $\sigma^2 = 0.3$, \textbf{(second row)} $\ln(r)=3$ and $\sigma^2 = 0.1$, \textbf{(third row)} $\ln(r)=4$ and $\sigma^2 = 0.3$, \textbf{(fourth row)} $\ln(r)=3$ and $\sigma^2 = 1$.}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/global_simple_3_9.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_beginning_simple_3_9.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_tail_simple_3_9.pdf}
+	\end{minipage}
+	\caption{\textbf{(left)} Comparison between \textbf{(blue)} the optimal proposal density and \textbf{(green)} the gamma approximation density, \textbf{(middle)} relative error between values near 0 of the gamma approximation density and the optimal proposal density, \textbf{(right)} relative error between the right tails of the gamma approximation density and the optimal proposal density for \textbf{(first row)} $\ln(r)=1$ and $\sigma^2 = 0.3$, \textbf{(second row)} $\ln(r)=4$ and $\sigma^2 = 0.3$, \textbf{(third row)} $\ln(r)=3$ and $\sigma^2 = 0.1$, \textbf{(fourth row)} $\ln(r)=3$ and $\sigma^2 = 0.9$.}
 	\label{fig:movingsimple}
 \end{figure}
 
@@ -195,18 +195,6 @@ Figure~\ref{fig:movingcomplex} compares the optimal proposal density and the gam
 	\end{minipage}
 	\begin{minipage}{.3\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/global_complex_3_1.pdf}
-	\end{minipage}
-	\begin{minipage}{.3\textwidth}
-		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_beginning_complex_3_1.pdf}
-	\end{minipage}
-	\begin{minipage}{.3\textwidth}
-		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_tail_complex_3_1.pdf}
-	\end{minipage}
-	\begin{minipage}{.3\textwidth}
-		\centering
 		\includegraphics[width=0.97\linewidth]{bootstrap-filter/global_complex_4_3.pdf}
 	\end{minipage}
 	\begin{minipage}{.3\textwidth}
@@ -219,17 +207,29 @@ Figure~\ref{fig:movingcomplex} compares the optimal proposal density and the gam
 	\end{minipage}
 	\begin{minipage}{.3\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/global_complex_3_10.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/global_complex_3_1.pdf}
 	\end{minipage}
 	\begin{minipage}{.3\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_beginning_complex_3_10.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_beginning_complex_3_1.pdf}
 	\end{minipage}
 	\begin{minipage}{.3\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_tail_complex_3_10.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_tail_complex_3_1.pdf}
 	\end{minipage}
-	\caption{\textbf{(left)} Comparison between \textbf{(blue)} the optimal proposal density and \textbf{(green)} the gamma approximation density, \textbf{(middle)} relative error between values near 0 of the gamma approximation density and the optimal proposal density, \textbf{(right)} relative error between the right tails of the gamma approximation density and the optimal proposal density for \textbf{(first row)} $\ln(r)=1$ and $\sigma^2 = 0.3$, \textbf{(second row)} $\ln(r)=3$ and $\sigma^2 = 0.1$, \textbf{(third row)} $\ln(r)=4$ and $\sigma^2 = 0.3$, \textbf{(fourth row)} $\ln(r)=3$ and $\sigma^2 = 1$.}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/global_complex_3_9.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_beginning_complex_3_9.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/relative_tail_complex_3_9.pdf}
+	\end{minipage}
+	\caption{\textbf{(left)} Comparison between \textbf{(blue)} the optimal proposal density and \textbf{(green)} the gamma approximation density, \textbf{(middle)} relative error between values near 0 of the gamma approximation density and the optimal proposal density, \textbf{(right)} relative error between the right tails of the gamma approximation density and the optimal proposal density for \textbf{(first row)} $\ln(r)=1$ and $\sigma^2 = 0.3$, \textbf{(second row)} $\ln(r)=4$ and $\sigma^2 = 0.3$, \textbf{(third row)} $\ln(r)=3$ and $\sigma^2 = 0.1$, \textbf{(fourth row)} $\ln(r)=3$ and $\sigma^2 = 0.9$.}
 	\label{fig:movingcomplex}
 \end{figure}
 

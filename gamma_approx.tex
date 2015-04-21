@@ -82,7 +82,7 @@ D_{KL}(P||Q)(\alpha, \theta) = \int_{0}^{\infty}{p(z|\mu, \sigma^2)\log(\frac{p(
 where $p$ is the probability density function of a $\log\mathcal{N}(\mu, \sigma^2)$ and $q$ of a Gamma with shape $\alpha$ and scale $\theta$
 We have:
 \begin{equation*}
-D_{KL}(P||Q)(\alpha, \theta) = C + \alpha\log(\theta) + \log(\Gamma(\alpha)) - \alpha\mathrm{E_p}[\log(Z)] + \frac{1}{\theta}\mathrm{E_p}[Z]
+D_{KL}(P||Q)(\alpha, \theta) = C + (\alpha-1)\log(\theta) + \log(\Gamma(\alpha)) - \alpha\mathrm{E_p}[\log(Z)] + \frac{1}{\theta}\mathrm{E_p}[Z]
 \end{equation*}
 Therefore:
 \begin{equation*}
@@ -118,7 +118,7 @@ Figure~\ref{fig:approx} shows the quality of the approximation which seems decen
 		\centering
 		\includegraphics[width=0.97\linewidth]{bootstrap-filter/approxcoeff5sigma03.pdf}
 	\end{minipage}
-	\caption{\textbf{(left)}QQ plot comparing a $\log\mathcal{N}(0, 0.3^2)$ and its gamma approximation. \textbf{(right)} QQ plot comparing a $\log\mathcal{N}(\log(5), 0.3^2)$ and its gamma approximation.}
+	\caption{\textbf{(left)}QQ plot comparing a $\log\mathcal{N}(0, 0.3)$ and its gamma approximation. \textbf{(right)} QQ plot comparing a $\log\mathcal{N}(\log(5), 0.3)$ and its gamma approximation.}
 	\label{fig:approx}
 \end{figure}
 
@@ -162,22 +162,6 @@ Simulation carried out with $\log(r)=2.5$, $\phi=10$ and $\sigma=0.3$. We also s
 	\label{fig:gamma}
 \end{figure}
 
-If we plot the state and the ESS on the same graph in order to check if there are typical scenarii where the ESS is small, we obtain Figure~{fig:superimposed}. On the left there seem to be no pattern with small ESS when the state is large, whereas on the right it seems that the ESS is small when the state is small and vice versa.
-
-\begin{figure}[htb]
-	\centering
-	\begin{minipage}{.45\textwidth}
-		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/comparison_ESS_state.pdf}
-	\end{minipage}
-	\begin{minipage}{.45\textwidth}
-		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/comparison_ESS_state2.pdf}
-	\end{minipage}
-	\caption{Superimposition of \textbf{(blue)} the state and \textbf{(red)} the ESS obtained using the gamma proposal.}
-	\label{fig:superimposed}
-\end{figure}
-
 
  \clearpage
 If on the contrary we minimized:
@@ -188,11 +172,11 @@ where $p$ is the probability density function of a $\log\mathcal{N}(\mu, \sigma^
 We have:
 \begin{equation*}
 \begin{split}
-	D_{KL}(P||Q)(\alpha, \theta) & = C - \frac{1}{\theta}\mathrm{E_q}[Z] + \alpha\mathrm{E_p}[\log(Z)] -\alpha\log(\theta) - \log(\Gamma(\alpha)) + \frac{1}{2\sigma^2}\mathrm{E_p}[(\log(Z)-\mu)^2] \\
+	D_{KL}(P||Q)(\alpha, \theta) & = C - \frac{1}{\theta}\mathrm{E_q}[Z] + \alpha\mathrm{E_q}[\log(Z)] -\alpha\log(\theta) - \log(\Gamma(\alpha)) + \frac{1}{2\sigma^2}\mathrm{E_q}[(\log(Z)-\mu)^2] \\
 	& = C - \alpha + \alpha\psi^{(0)}(\alpha) - \log(\Gamma(\alpha)) + \frac{1}{2\sigma^2}(\psi^{(1)}(\alpha)+(\psi^{(0)}(\alpha)+\log(\theta)-\mu)^2)
 \end{split}
 \end{equation*}
-since $\mathrm{E_q}[Z]=\alpha\theta$, $\mathrm{E_p}[\log(Z)]=\psi^{(0)}+\log(\theta)$ and $\mathrm{Var_q}(\log(Z)) = \psi^{(1)}(\alpha)$\\
+since $\mathrm{E_q}[Z]=\alpha\theta$, $\mathrm{E_q}[\log(Z)]=\psi^{(0)}+\log(\theta)$ and $\mathrm{Var_q}(\log(Z)) = \psi^{(1)}(\alpha)$\\
 Therefore:
 \begin{equation*}
 	\frac{\partial }{\partial \alpha}(D_{KL}(P||Q)) = -1 + \frac{1}{2\sigma^2}\psi^{(2)}(\alpha) + \psi^{(1)}(\alpha)(\alpha+\frac{1}{\sigma^2}(\psi^{(0)}(\alpha)+\log(\theta)-\mu))
@@ -207,9 +191,9 @@ We finally have that, setting the partial derivatives to zero:
 \begin{equation*}
 	\theta=e^{\mu-\psi^{(0)}(\alpha)}
 \end{equation*}
-If we take $\psi^{(0)}(\alpha) \approx \log(\alpha)-\frac{1}{2\alpha}$, $\psi^{(1)}(\alpha)\approx\frac{1}{\alpha}-\frac{1}{2\alpha^2}+\frac{1}{6\alpha^3}$ and $\psi^{(2)}(\alpha)\approx-\frac{1}{\alpha^2}$ we have $-\alpha^3 +\alpha^2(\frac{\sigma^2-1}{3\sigma^2})+\frac{\alpha}{\sigma^2}-(\frac{15+2\sigma^2}{30\sigma^2}) =0$ and $\theta=\frac{1}{\alpha} e^{\mu+\frac{1}{2\alpha}}$. $\alpha$ must be found numerically.
+If we take $\psi^{(0)}(\alpha) \approx \log(\alpha)-\frac{1}{2\alpha}$, $\psi^{(1)}(\alpha)\approx\frac{1}{\alpha}+\frac{1}{2\alpha^2}+\frac{1}{6\alpha^3}$ and $\psi^{(2)}(\alpha)\approx-\frac{1}{\alpha^2}$ we have $\alpha = \frac{6-\sigma^2}{3\sigma^2}$ and $\theta=\frac{1}{\alpha} e^{\mu+\frac{1}{2\alpha}}$.
 
-Figure~\ref{fig:approx2} shows the quality of the approximation which is not satisfactory.
+Figure~\ref{fig:approx2} shows the quality of the approximation. The tails of the approx are even lighter than those of the previous gamma approximation.
 
 \begin{figure}[htb]
 	\centering
@@ -221,7 +205,7 @@ Figure~\ref{fig:approx2} shows the quality of the approximation which is not sat
 		\centering
 		\includegraphics[width=0.97\linewidth]{bootstrap-filter/approx2coeff5sigma03.pdf}
 	\end{minipage}
-	\caption{\textbf{(left)}QQ plot comparing a $\log\mathcal{N}(0, 0.3^2)$ and its gamma approximation. \textbf{(right)} QQ plot comparing a $\log\mathcal{N}(\log(5), 0.3^2)$ and its gamma approximation.}
+	\caption{\textbf{(left)}QQ plot comparing a $\log\mathcal{N}(0, 0.3)$ and its gamma approximation. \textbf{(right)} QQ plot comparing a $\log\mathcal{N}(\log(5), 0.3)$ and its gamma approximation.}
 	\label{fig:approx2}
 \end{figure}
  \clearpage
