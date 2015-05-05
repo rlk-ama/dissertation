@@ -57,11 +57,11 @@ class BootstrapFilter(object):
                     particles = [self.Map.proposal(ancestor, self.observations[i]) for ancestor in ancestors]
 
                 if self.prior:
-                    denom = [self.Map.prior_proposal_density(particles[ancestors.index(ancestor)], ancestor, self.observations[i]) for ancestor in ancestors] #q(x_t|x_t-1, y_t)
+                    denom = [self.Map.prior_proposal_density(particles[j], ancestors[j], self.observations[i]) for j in range(len(ancestors))] #q(x_t|x_t-1, y_t)
                 else:
-                    denom = [self.Map.proposal_density(particles[ancestors.index(ancestor)], ancestor, self.observations[i]) for ancestor in ancestors]
+                    denom = [self.Map.proposal_density(particles[j], ancestors[j], self.observations[i]) for j in range(len(ancestors))]
                 obs = [self.Map.conditional_density(particle, self.observations[i]) for particle in particles] #p(y_t[x_t)
-                transi = [self.Map.kernel_density(particles[ancestors.index(ancestor)], ancestor) for ancestor in ancestors] #p(x_t|x_t-1)
+                transi = [self.Map.kernel_density(particles[j], ancestors[j]) for j in range(len(ancestors))] #p(x_t|x_t-1)
 
                 weights = numpy.zeros(N)
                 numpy.multiply(obs, transi, out=weights)
