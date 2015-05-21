@@ -1,0 +1,53 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[fleqn]{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{natbib}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{array}
+\usepackage{bbold}
+\usepackage{amssymb}
+\usepackage[procnames]{listings}
+\usepackage{color}
+\usepackage{graphicx}
+
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\makeatletter
+\newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
+\newsavebox{\mybox}\newsavebox{\mysim}
+\newcommand{\distras}[1]{%
+	\savebox{\mybox}{\hbox{\kern3pt$\scriptstyle#1$\kern3pt}}%
+	\savebox{\mysim}{\hbox{$\sim$}}%
+	\mathbin{\overset{#1}{\kern\z@\resizebox{\wd\mybox}{\ht\mysim}{$\sim$}}}%
+}
+\makeatother
+
+\title{Gamma approximation of Log Normal distribution for Ricker Map Inference}
+\author{Raphael Lopez Kaufman}
+\date{}
+
+\begin{document}
+Non normalized importance weights are calculated as follow:
+\begin{equation*}
+	w_t^i = \frac{p(y_t|x_t^i)f(x_t^i|x_{t-1}^{A_{t}^i})}{q_{t|t-1}(x_t^i|x_{t-1}^{A_{t}^i}, y_t)}
+\end{equation*}
+where $A_{t}^i$ is the index of the particle's ancestor, $p$ the observation density, $f$ the transition density and $q$ the proposal density
+
+The ESS is calculated as follow:
+\begin{equation*}
+	ESS_t = \frac{1}{\sum_{i=1}^{N}{(W_t^i)^2}}
+\end{equation*}
+where $W_t^i$ are the normalized weights
+\end{document}

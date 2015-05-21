@@ -66,6 +66,27 @@ We compared the values of $\mathrm{E}[X_t|y_{0:t}]$ given by our implementation 
 	\label{fig:bootstrap}
 \end{figure}
 
+Moreover, we should check thatè
+\begin{equation*}
+	\frac{ESS_t}{N} \rightarrow K_t \ \text{when} \ N \rightarrow \infty
+\end{equation*}
+where $ESS_t$ is the effective sample size at step $t$, $N$ the number of particles and $K_t$ a constant. Figure~\ref{fig:conv} shows, for two different time steps, as $N$ goes from 10 to 1000 that the above quantity indeed converges towards a constant. The ESS was calculated for simulation performed on simulated Ricker Map data using the gamma proposal described in the next section.
+
+
+\begin{figure}[htb]
+	\centering
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/cvESS4.pdf}
+	\end{minipage}
+	\begin{minipage}{.45\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/cvESS5.pdf}
+	\end{minipage}
+	\caption{$\frac{ESS_t}{N}$ as $N$ goes from 10 to 1000}
+	\label{fig:conv}
+\end{figure}
+
 \section*{Gamma approximation to Log-Normal distribution}
 The Ricker Map is the following model:
 \begin{equation*}
@@ -92,7 +113,7 @@ Therefore:
 \frac{\partial }{\partial \theta}(D_{KL}(P||Q)) = \frac{\alpha}{\theta} - \frac{1}{\theta^2}\mathrm{E_p}[Z]
 \end{equation*}
 where $\psi^{(0)}$ is the digamma function.
-\clearpage
+
 Since $\mathrm{E_p}[\log(Z)]=\mu$ and $\mathrm{E_p}[Z] = e^{\mu+\frac{\sigma^2}{2}}$, we finally have that, setting the partial derivatives to zero:
 \begin{equation*}
 \alpha=e^{\psi^{(0)}(\alpha)+\frac{\sigma^2}{2}}
@@ -132,7 +153,7 @@ q_{t|t-1}(n_t|n_{t-1}, y_t) & \propto  p(y_t|n_t)q(n_t|n_{t-1}) \\
 ie:
 \begin{equation*}
 q_{t|t-1}(n_t|n_{t-1}, y_t) = Gamma(\ \cdot \ ; y_t+\alpha(n_{t-1}), \frac{\theta(n_{t-1})}{\theta(n_{t-1})\phi + 1})\end{equation*}
-Simulation carried out with $\log(r)=2.5$, $\phi=10$ and $\sigma=0.3$. We also set $N_0 \sim Gamma(3,1)$ in order to have $N_0$ around 3-4. A value of 3.8 as in Wood's paper for $\log(r)$ gave underflow and overflows in the Python code. Figure~\ref{fig:prior} shows results with prior proposal and Figure~\ref{fig:gamma} with gamma proposal.
+Simulation carried out with $\log(r)=3$, $\phi=10$ and $\sigma=0.3$. We also set $N_0 \sim Gamma(3,1)$ in order to have $N_0$ around 3-4. A value of 3.8 as in Wood's paper for $\log(r)$ gave underflow and overflows in the Python code. Figure~\ref{fig:prior} shows results with prior proposal and Figure~\ref{fig:gamma} with gamma proposal.
 
 \begin{figure}[htb]
 	\centering
@@ -152,11 +173,11 @@ Simulation carried out with $\log(r)=2.5$, $\phi=10$ and $\sigma=0.3$. We also s
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/diagno_gamma.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/diagno_optimal.pdf}
 	\end{minipage}
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/ESS_gamma.pdf}
+		\includegraphics[width=0.97\linewidth]{bootstrap-filter/ESS_optimal.pdf}
 	\end{minipage}
 	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the gamma proposal \textbf{(green)} simulated states \textbf{(blue)}. \textbf{(right)} The corresponding ESS. }
 	\label{fig:gamma}
