@@ -2,11 +2,12 @@ import numpy as np
 
 class PMMH(object):
 
-    def __init__(self, filter, map, iterations, proposal, prior, init, initial, start, end, Ns, observations=None):
+    def __init__(self, filter, map, iterations, proposals, prior, init, initial, start, end, Ns, observations=None,
+                 support=None):
         self.filter = filter
         self.map = map
         self.iterations = iterations
-        self.proposal = proposal
+        self.proposals = proposals
         self.prior = prior
         self.init = init
         self.start = start
@@ -14,6 +15,10 @@ class PMMH(object):
         self.Ns = Ns
         self.observations = observations
         self.initial = initial
+        if support:
+            self.support = support
+        else:
+            self.support = lambda x: True
 
 
     def initalize(self):
@@ -37,14 +42,18 @@ class PMMH(object):
         thetas = [theta]
         steps = []
         for iteration in range(self.iterations):
-            theta_star = [self.proposal.sample(param) for param in thetas[iteration]]
-            likeli_star = self.routine(theta_star)
-            numerator =  likeli_star + np.prod([self.proposal.density(t, t_star) for t, t_star in zip(theta, theta_star)]) + self.prior.density(theta_star)
-            denominator = likeli + np.prod([self.proposal.density(t_star, t) for t, t_star in zip(theta, theta_star)])+ self.prior.density(theta)
-            if self.accept_reject(numerator-denominator):
-                theta = theta_star
-                likeli = likeli_star
-                steps.append(1)
+            theta_star = [self.proposals[i].sample(thetas[iteration][i]) for i in range(len(thetas[iteration]))]
+            if self.support(theta_star):
+                likeli_star = self.routine(theta_star)
+                zipped = list(zip(theta, theta_star))
+                numerator =  likeli_star + np.prod([self.proposals[i].density(zipped[i][0], zipped[i][1]) for i in range(len(zipped))]) + self.prior.density(theta_star)
+                denominator = likeli + np.prod([self.proposals[i].density(zipped[i][1], zipped[i][0]) for i in range(len(zipped))])+ self.prior.density(theta)
+                if self.accept_reject(numerator-denominator):
+                    theta = theta_star
+                    likeli = likeli_star
+                    steps.append(1)
+                else:
+                    steps.append(0)
             else:
                 steps.append(0)
             thetas.append(theta)

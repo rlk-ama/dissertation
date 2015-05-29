@@ -1,6 +1,8 @@
 import abc
 import numpy as np
 
+from math import exp, log
+from numba import jit
 from scipy.special import gammaln
 
 from utils.utils import underflow
@@ -25,7 +27,7 @@ class Normal(Distribution):
     def density(self, x, args_loc=0, args_scale=1):
         loc = self.loc(args_loc)
         scale = self.scale(args_scale)
-        ldensity = -1/2*np.log(2*np.pi) -np.log(scale) - 1/(2*scale**2)*(np.log(x)-loc)**2
+        ldensity = -1/2*np.log(2*np.pi) -np.log(scale) - 1/(2*scale**2)*(x-loc)**2
         return np.exp(ldensity)
 
 class LogNormal(Distribution):

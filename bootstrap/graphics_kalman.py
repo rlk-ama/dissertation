@@ -5,33 +5,24 @@ import matplotlib.pyplot as plt
 from bootstrap.ricker_gamma import RickerMap
 from bootstrap.filter import BootstrapFilter
 from bootstrap.kalman import KalmanMap
-from distributions.distributions import Gamma
+from distributions.distributions import Normal
 
-shape = 3
-scale = 1
-r = 15
-phi = 5
-sigma = 0.5
-mu = 0
+mean = 0
+sigma = 1
+phi = 0.9
+sigma_state = np.sqrt(0.4)
+sigma_obs = np.sqrt(0.6)
 NOS = 40
 NBS = 1000
 Ns = [10*i for i in range(1, 50)]
 
-# def initial_ricker():
-#     out = np.random.gamma(shape=shape, scale=scale)
-#     return out
+initial_kalman = Normal(func_loc=lambda args: mean, func_scale=lambda args: sigma)
 
-initial_ricker = Gamma(func_shape=lambda args: shape, func_scale=lambda args: scale)
+Map_kalman = KalmanMap(phi, sigma_state, sigma_obs, length=NOS, initial=initial_kalman)#, observations=obs.observations)
 
-#obs = RickerMap(44, 10, 0.3, length=NOS, initial=initial_ricker, approx="simple")
+filter = BootstrapFilter(0, NOS, NBS, Map_kalman, proposal={'prior': True, 'optimal': True})
 
-Map_ricker = RickerMap(r, phi, sigma, length=NOS, initial=initial_ricker, approx="simple")#, observations=obs.observations)
-#Map_gamma = KalmanMap(0.9, np.sqrt(0.4), np.sqrt(0.6), initial_gamma)
-
-
-filter = BootstrapFilter(0, NOS, NBS, Map_ricker, proposal={'prior': False, 'optimal': True})
-
-proposal, estim, likeli, ESS = next(filter.filter())
+#proposal, estim, likeli, ESS = next(filter.filter())
 
 
 # idx = [ESS.index(elem) for elem in sorted(ESS)[:3]]
@@ -52,17 +43,17 @@ proposal, estim, likeli, ESS = next(filter.filter())
 #         # plt.plot(pts, np.exp(log_dens))
 #     plt.show()
 
-# estim_all = []
-# likeli_all = []
-# ESS_all = []
-# proposals_all = []
+estim_all = []
+likeli_all = []
+ESS_all = []
+proposals_all = []
+
+for proposal, estim, likeli, ESS in filter.filter():
+    proposals_all.append(proposal)
+    estim_all.append(estim)
+    likeli_all.append(likeli)
+    ESS_all.append(ESS)
 #
-# for proposal, estim, likeli, ESS in filter.filter():
-#     proposals_all.append(proposal)
-#     estim_all.append(estim)
-#     likeli_all.append(likeli)
-#     ESS_all.append(ESS)
-# #
 # #
 # ESS_norm = [[ess/Ns[i] for ess in ESS_all[i]] for i in range(len(ESS_all))]
 # ESS_t = []
@@ -91,10 +82,10 @@ proposal, estim, likeli, ESS = next(filter.filter())
 #     plt.ylim((0, NBS))
 #     plt.savefig("ESS_%s.pdf" % proposals_all[i])
 #     plt.close()
-mean_esti = [np.mean(est) for est in estim]
-plt.plot([i for i in range(NOS)], mean_esti)
-plt.plot([i for i in range(NOS+1)], Map_ricker.state)
-plt.show()
+# mean_esti = [np.mean(est) for est in estim]
+# plt.plot([i for i in range(NOS)], mean_esti)
+# plt.plot([i for i in range(NOS+1)], Map_kalman.state)
+# plt.show()
 #ax2 = ax1.twinx()
 #ax2.plot([i for i in range(NOS)], ESS, color="red")
 # plt.savefig('ESS_gamma.pdf')
@@ -109,22 +100,22 @@ plt.show()
 # plt.savefig('loglik_gamma.pdf')
 # plt.close()
 #plt.show()
-#mean_esti = [np.mean(est) for est in estim_all[0]]
-#mean_esti_prior = [np.mean(est) for est in estim_all[1]]
-#fig2 = plt.figure()
-#plt.plot([i for i in range(NOS)], mean_esti)
-#plt.plot([i for i in range(NOS)], mean_esti_prior)
-#plt.plot([i for i in range(NOS+1)], filter.state)
-#plt.show()
+mean_esti = [np.mean(est) for est in estim_all[0]]
+mean_esti_prior = [np.mean(est) for est in estim_all[1]]
+fig2 = plt.figure()
+plt.plot([i for i in range(NOS)], mean_esti)
+plt.plot([i for i in range(NOS)], mean_esti_prior)
+#plt.plot([i for i in range(NOS+1)], Map_kalman.state)
+plt.show()
 #plt.plot([i for i in range(NOS+1)], state)
 # plt.savefig('diagno_prior.pdf')
 # plt.close()
 #fig2 = plt.figure()
-#plt.plot([i for i in range(NOS)], ESS_all[0])
-#print(proposals_all[0])
-plt.plot([i for i in range(NOS)], ESS)
-#plt.plot([i for i in range(NOS)], ESS_all[1])
-#print(proposals_all[1])
+plt.plot([i for i in range(NOS)], ESS_all[0])
+print(proposals_all[0])
+#plt.plot([i for i in range(NOS)], ESS)
+plt.plot([i for i in range(NOS)], ESS_all[1])
+print(proposals_all[1])
 # plt.plot([i for i in range(NOS)], ESS)
 # plt.savefig("ESS_gamma.pdf")
 # plt.close()
