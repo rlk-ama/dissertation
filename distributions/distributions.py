@@ -93,15 +93,18 @@ class Uniform(Distribution):
     def density(self, x, args_low=0, args_high=1):
         low = self.low(args_low)
         high = self.high(args_high)
-        return 1/(high-low)
+        if x > high or x < low:
+            return 0
+        else:
+            return 1/(high-low)
 
 class MultivariateUniform(Distribution):
 
     def __init__(self, ndims=1, size=None, func_lows=[lambda args: args], func_highs=[lambda args: args]):
         self.ndims = ndims
         self.size = size
-        self.lows = [lambda args: func_low(*args) if isinstance(args, list) else func_low(args) for func_low in func_lows]
-        self.highs = [lambda args: func_high(*args) if isinstance(args, list) else func_high(args) for func_high in func_highs]
+        self.lows = [lambda args, func=func_low: (func(*args) if isinstance(args, list) else func(args)) for func_low in func_lows]
+        self.highs = [lambda args, func=func_high: func(*args) if isinstance(args, list) else func(args) for func_high in func_highs]
 
     def sample(self, args_lows=[0], args_highs=[1]):
         samples = []
@@ -109,10 +112,13 @@ class MultivariateUniform(Distribution):
             samples.append(np.random.uniform(low=self.lows[i](args_lows[i]), high=self.highs[i](args_highs[i]), size=self.size))
         return samples
 
-    def density(self, args_lows=[0], args_highs=[1]):
+    def density(self, xs, args_lows=[0], args_highs=[1]):
         density = 1
         for i in range(self.ndims):
             low = self.lows[i](args_lows[i])
             high = self.highs[i](args_highs[i])
-            density *= 1/(high-low)
+            if xs[i] > high or xs[i] < low:
+                density *= 0
+            else:
+                density *= 1/(high-low)
         return density

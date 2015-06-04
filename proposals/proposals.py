@@ -22,7 +22,7 @@ class MultivariateUniformProposal(object):
         highs = highs*self.ndims
         return self.distribution.sample(args_lows=lows, args_highs=highs)
 
-    def density(self, lows=[0], highs=[1]):
+    def density(self, xs, lows=[0], highs=[1]):
         lows = lows*self.ndims
         highs = highs*self.ndims
-        return self.distribution.density(args_lows=lows, args_highs=highs)
+        return self.distribution.density(xs, args_lows=lows, args_highs=highs)
