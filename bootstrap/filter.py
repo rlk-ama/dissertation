@@ -3,7 +3,7 @@ import sys
 
 from math import log, exp
 
-numpy.seterr(over="raise", under="raise", invalid="raise")
+#numpy.seterr(over="raise", under="raise", invalid="raise")
 
 class BootstrapFilter(object):
 
@@ -32,10 +32,7 @@ class BootstrapFilter(object):
         for i in range(self.start+1, self.end+1):
             weights = numpy.array([weight if weight < sys.float_info[0]/(2*len(weights)) else sys.float_info[0]/(2*len(weights)) for weight in weights])
             numpy.divide(weights, sum(weights), out=weights)
-            try: #catch underflow error
-                ESS.append(1/sum([weight**2 for weight in weights]))
-            except FloatingPointError:
-                ESS.append(0)
+            ESS.append(1/sum([weight**2 for weight in weights]))
 
             indices = numpy.random.multinomial(N, weights, size=1)[0]
             ancestors = [particles[j] for j in range(len(indices)) for _ in range(indices[j])]
@@ -58,6 +55,7 @@ class BootstrapFilter(object):
                     weights[j] = obs[j]*transi[j]
                 except FloatingPointError:
                     weights[j] = sys.float_info[3]
+                if weights[j] == 0: weights[j] = sys.float_info[3]
             #numpy.multiply(obs, transi, out=weights)
             for j in range(len(transi)):
                 try:
