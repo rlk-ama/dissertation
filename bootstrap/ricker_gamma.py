@@ -1,6 +1,8 @@
 import numpy as np
 
-from distributions.distributions import LogNormal, Gamma, Poisson, Normal
+from distributions.distributions2 import LogNormal, Gamma, Poisson, Normal
+from utils.utilsc import param_gamma, param_gamma_arr
+from collections import Iterable
 
 class RickerMap(object):
 
@@ -22,7 +24,7 @@ class RickerMap(object):
         if  approx == 'simple':
             self.proposal = self.Proposal(Gamma(func_shape=lambda alpha, obs: alpha + obs,
                                                 func_scale=lambda beta: beta/(beta*self.phi+1)),
-                                          self.param_gamma)
+                                          self.r, self.sigma, param_gamma, param_gamma_arr)
         elif approx == 'complex':
             self.proposal = self.Proposal(Gamma(func_shape=lambda alpha, obs: alpha + obs,
                                                 func_scale=lambda beta: beta/(beta*self.phi+1)),
@@ -38,45 +40,60 @@ class RickerMap(object):
         def __init__(self, distribution):
             self.distribution = distribution
 
-        def sample(self, ancestor):
-            return self.distribution.sample(args_mean=ancestor)
+        def sample(self, ancestor, multi=False):
+            return self.distribution.sample(args_mean=ancestor, multi=multi)
 
         def density(self, particle, ancestor):
-            return self.distribution.density(particle, args_mean=ancestor)
+            sigma = np.array([1]*len(particle), dtype=np.float64)
+            return self.distribution.density(particle, args_mean=ancestor, args_sigma=sigma,multi=True)
 
     class Conditional(object):
 
         def __init__(self, distribution):
             self.distribution = distribution
 
-        def sample(self, ancestor):
-            return self.distribution.sample(args_lam=ancestor)
+        def sample(self, ancestor, multi=False):
+            return self.distribution.sample(args_lam=ancestor, multi=multi)
 
         def density(self, particle, observation):
-            return self.distribution.density(observation, args_lam=particle)
+            observations = np.array([observation]*len(particle), dtype=np.float64)
+            return self.distribution.density(observations, args_lam=particle, multi=True)
 
     class Proposal(object):
 
-        def __init__(self, distribution, param_gamma):
+        def __init__(self, distribution, r, sigma, param_gamma, param_gamma_arr):
             self.distribution = distribution
+            self.r = r
+            self.sigma = sigma
             self.param_gamma = param_gamma
+            self.param_gamma_arr = param_gamma_arr
 
         def sample(self, ancestor, observation):
-            alpha, beta = self.param_gamma(ancestor)
-            return self.distribution.sample(args_shape=[alpha, observation], args_scale=beta)
+            #if isinstance(ancestor, np.ndarray):
+            params = self.param_gamma_arr(self.r, self.sigma, ancestor)
+            shape = np.array(list(zip(params[0], [observation]*len(ancestor))), dtype=np.float64)
+            return self.distribution.sample(args_shape=shape, args_scale=params[1], multi=True)
+            # else:
+            #     alpha, beta = self.param_gamma(self.r, self.sigma, ancestor)
+            #     return self.distribution.sample(args_shape=[alpha, observation], args_scale=beta)
 
         def density(self, particle, ancestor, observation):
-            alpha, beta = self.param_gamma(ancestor)
-            return self.distribution.density(particle, args_shape=[alpha, observation], args_scale=beta)
+            #if isinstance(particle, np.ndarray):
+            params = self.param_gamma_arr(self.r, self.sigma, ancestor)
+            shape = np.array(list(zip(params[0], [observation]*len(particle))), dtype=np.float64)
+            return self.distribution.density(particle, args_shape=shape, args_scale=params[1], multi=True)
+            # else:
+            #     alpha, beta = self.param_gamma(self.r, self.sigma, ancestor)
+            #     return self.distribution.density(particle, args_shape=[alpha, observation], args_scale=beta)
 
     def observ_gen(self, length):
-        observ = []
-        state = []
+        observ = np.empty(length+1)
+        state = np.empty(length+1)
         x = self.initial.sample()
         y = 0
         for i in range(length+1):
-            observ.append(self.conditional.sample(x))
-            state.append(x)
+            observ[i] = self.conditional.sample(x)
+            state[i] = x
             x = self.kernel.sample(x)
         return observ, state
 
