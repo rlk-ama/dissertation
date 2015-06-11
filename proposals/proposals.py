@@ -1,8 +1,9 @@
-from distributions.distributions import Normal, MultivariateUniform
+from distributions.distributions2 import Normal, MultivariateUniform
 
 class RandomWalkProposal(object):
 
     def __init__(self, sigma=5):
+        self.sigma = sigma
         self.distribution = Normal(func_scale=lambda args: sigma)
 
     def sample(self, previous):
