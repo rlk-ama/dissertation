@@ -30,7 +30,7 @@ class RickerMap(object):
                                                 func_scale=lambda beta: beta/(beta*self.phi+1)),
                                           self.param_gamma2)
 
-        if observations:
+        if observations is not None:
             self.observations = observations
         else:
             self.observations, self.state = self.observ_gen(length)
