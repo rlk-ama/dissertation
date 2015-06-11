@@ -33,6 +33,7 @@ class BootstrapFilter(object):
         for i in range(self.start+1, self.end+1):
             #weights = np.array([weight if weight < sys.float_info[0]/(2*len(weights)) else sys.float_info[0]/(2*len(weights)) for weight in weights])
             np.divide(weights, sum(weights), out=weights)
+            #weights = np.array([weight if not np.isnan(weight) else sys.float_info[0] for weight in weights], dtype=np.float64)
             ESS.append(1/sum([weight**2 for weight in weights]))
 
             indices = np.random.multinomial(N, weights, size=1)[0]
