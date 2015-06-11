@@ -1,9 +1,10 @@
 import numpy as np
+from proposals.proposals import RandomWalkProposal
 
 class PMMH(object):
 
-    def __init__(self, filter, map, iterations, proposals, prior, init, initial, start, end, Ns, observations=None,
-                 support=None):
+    def __init__(self, filter, map, iterations, proposals, prior, init, initial, start, end, Ns, adaptation=1000,
+                 burnin=1000, target=0.15, observations=None, support=None):
         self.filter = filter
         self.map = map
         self.iterations = iterations
@@ -15,6 +16,11 @@ class PMMH(object):
         self.Ns = Ns
         self.observations = observations
         self.initial = initial
+        self.adaptation = adaptation
+        self.burnin = burnin
+        self.split = 100
+        self.steps = self.adaptation//self.split
+        self.target = target
         if support:
             self.support = support
         else:
@@ -36,13 +42,8 @@ class PMMH(object):
         uniform_draw = np.random.uniform(low=0, high=1, size=None)
         return np.log(uniform_draw) < ratio
 
-    def sample(self):
-        likeli = self.initalize()
-        theta = self.init
-        thetas = [theta]
-        steps = []
-        for iteration in range(self.iterations):
-            theta_star = [self.proposals[i].sample(thetas[iteration][i]) for i in range(len(thetas[iteration]))]
+    def sub_sample(self, theta, likeli):
+            theta_star = [self.proposals[i].sample(theta[i]) for i in range(len(theta))]
             if self.support(theta_star):
                 likeli_star = self.routine(theta_star)
                 zipped = list(zip(theta, theta_star))
@@ -51,11 +52,46 @@ class PMMH(object):
                 if self.accept_reject(numerator-denominator):
                     theta = theta_star
                     likeli = likeli_star
-                    steps.append(1)
+                    accept = 1
                 else:
-                    steps.append(0)
+                    accept = 0
             else:
-                steps.append(0)
-            thetas.append(theta)
+                accept = 0
+            return theta, likeli, accept
 
-        return thetas, steps
+    def sample(self):
+        likeli = self.initalize()
+        theta = self.init
+        thetas = [theta]
+        accepts = []
+        for iteration in range(self.burnin):
+            theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
+            thetas.append(theta)
+            accepts.append(accept)
+            print(iteration)
+
+        for step in range(self.steps):
+            start = self.burnin + step*self.split
+            end = self.burnin + (step + 1)*self.split
+            for iteration in range(start, end):
+                theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
+                thetas.append(theta)
+                accepts.append(accept)
+                print(iteration)
+            acceptance_rate = np.sum(accepts[self.burnin:end])/(end-self.burnin)
+            if acceptance_rate != self.target:
+                self.rescale(acceptance_rate)
+
+        for iteration in range(self.burnin + self.steps*self.split, self.iterations):
+            theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
+            thetas.append(theta)
+            accepts.append(accept)
+            print(iteration)
+
+        return thetas, accepts
+
+    def rescale(self, acceptance_rate):
+        coeff = abs((acceptance_rate - self.target)/self.target)
+        new = [self.proposals[i].sigma*(1+coeff) if acceptance_rate > self.target else self.proposals[i].sigma/(1+coeff) for i in range(len(self.proposals))]
+        self.proposals = [RandomWalkProposal(sigma=sigma) for sigma in new]
+        print(acceptance_rate, new)
