@@ -4,7 +4,7 @@ cimport numpy as np
 cimport cython
 from cython.view cimport array as cvarray
 
-from libc.math cimport lgamma, log, exp, pow
+from libc.math cimport lgamma, log, exp, abs
 from collections import Iterable
 
 cdef double PI = 3.14159265358979323846
@@ -19,6 +19,8 @@ cdef double density_normal(double x, double loc, double scale):
     output = exp(ldensity)
     return output
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 cdef double[::1] density_normal_array(double[::1] x, double[::1] loc, double[::1] scale):
     cdef int dim = x.shape[0]
     cdef double[::1] ldensity = np.empty(dim)
@@ -27,7 +29,7 @@ cdef double[::1] density_normal_array(double[::1] x, double[::1] loc, double[::1
     cdef double var
     for i in range(dim):
         var = scale[i]*scale[i]
-        ldensity[i] = -1/2*log(2*PI) -log(scale[i]) - 1/(2*var)*(x[i]-loc[i])*(x[i]-loc[i])
+        ldensity[i] = -1/2*log(2*PI) -log(abs(scale[i])) - 1/(2*var)*(x[i]-loc[i])*(x[i]-loc[i])
         output[i] = exp(ldensity[i])
     return output
 
@@ -38,6 +40,8 @@ cdef double density_lognormal(double x, double mean, double sigma):
     output = exp(ldensity)
     return output
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 cdef double[::1] density_lognormal_array(double[::1] x, double[::1] mean, double[::1] sigma):
     cdef int dim = x.shape[0]
     cdef double[::1] ldensity = np.empty(dim)
@@ -56,6 +60,8 @@ cdef double density_poisson(double x, double lam):
     output = exp(ldensity)
     return output
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 cdef double[::1] density_poisson_array(double[::1] x, double[::1] lam):
     cdef int dim = x.shape[0]
     cdef double[::1] ldensity = np.empty(dim)
@@ -72,6 +78,8 @@ cdef double density_gamma(double x, double shape, double scale):
     output = exp(ldensity)
     return output
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 cdef double[::1] density_gamma_array(double[::1] x,double[::1] shape, double[::1] scale):
     cdef int dim = x.shape[0]
     cdef double[::1] ldensity = np.empty(dim)
@@ -90,6 +98,8 @@ cdef double density_uniform(double x, double low, double high):
         output = 1/(high-low)
     return output
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 cdef double[::1] density_uniform_array(double[::1] x, double[::1] low, double[::1] high):
     cdef int dim = x.shape[0]
     cdef double[::1] ldensity = np.empty(dim)
@@ -108,6 +118,8 @@ def wrapper(func, args):
     else:
         return func(args)
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def wrapper_arr(func, args):
     cdef int dim = args.shape[0]
     cdef double[::1] output = np.empty(dim)
@@ -133,9 +145,12 @@ class Normal(object):
         self.loc = func_loc
         self.scale = func_scale
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def sample(self, args_loc=0, args_scale=1, multi=False):
         cdef int dim, i
-        cdef double[::1] output
+        cdef double[::1] output, loc, scale
+        cdef double loc_d, scale_d
         if multi:
             dim = args_loc.shape[0]
             output = np.empty(dim)
@@ -145,9 +160,13 @@ class Normal(object):
                 output[i] = np.random.normal(loc=loc[i], scale=scale[i], size=self.size)
             return output
         else:
-            return np.random.normal(loc=self.loc(args_loc), scale=self.scale(args_scale), size=self.size)
+            loc_d = wrapper(self.loc, args_loc)
+            scale_d = wrapper(self.scale, args_scale)
+            return np.random.normal(loc=loc_d, scale=scale_d, size=self.size)
 
     #@underflow
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def density(self, x, args_loc=0, args_scale=1, multi=False):
         cdef double loc, scale
         cdef double[::1] loc_arr, scale_arr
@@ -167,9 +186,12 @@ class LogNormal(object):
         self.mean =func_mean
         self.sigma = func_sigma
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def sample(self, args_mean=0, args_sigma=1, multi=False):
         cdef int dim, i
-        cdef double[::1] output
+        cdef double[::1] output, mean, sigma
+        cdef double mean_d, sigma_d
         if multi:
             dim = args_mean.shape[0]
             output = np.empty(dim)
@@ -179,9 +201,13 @@ class LogNormal(object):
                 output[i] = np.random.lognormal(mean=mean[i], sigma=sigma[i], size=self.size)
             return output
         else:
-            return np.random.lognormal(mean=self.mean(args_mean), sigma=self.sigma(args_sigma), size=self.size)
+            mean_d = wrapper(self.mean, args_mean)
+            sigma_d = wrapper(self.sigma, args_sigma)
+            return np.random.lognormal(mean=mean_d, sigma=sigma_d, size=self.size)
 
     #@underflow
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def density(self, x, args_mean=0, args_sigma=1, multi=False):
         cdef double mean, sigma
         cdef double[::1] mean_arr, sigma_arr
@@ -200,9 +226,12 @@ class Poisson(object):
         self.size = size
         self.lam = func_lam
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def sample(self, args_lam=0, multi=False):
         cdef int dim, i
-        cdef double[::1] output
+        cdef double[::1] output, lam
+        cdef double lam_d
         if multi:
             dim = args_lam.shape[0]
             output = np.empty(dim)
@@ -211,9 +240,12 @@ class Poisson(object):
                 output[i] = np.random.poisson(lam=lam[i], size=self.size)
             return output
         else:
-            return np.random.poisson(lam=self.lam(args_lam), size=self.size)
+            lam_d = wrapper(self.lam, args_lam)
+            return np.random.poisson(lam=lam_d, size=self.size)
 
     #@underflow
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def density(self, x, args_lam=0, multi=False):
         cdef double lam, x_d
         cdef double[::1] lam_arr
@@ -231,9 +263,12 @@ class Gamma(object):
         self.shape = func_shape
         self.scale = func_scale
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def sample(self, args_shape=1, args_scale=1, multi=False):
         cdef int dim, i
-        cdef double[::1] output
+        cdef double[::1] output, shape, scale
+        cdef shape_d, scale_d
         if multi:
             dim = args_shape.shape[0]
             output  = np.empty(dim)
@@ -243,11 +278,13 @@ class Gamma(object):
                 output[i] = np.random.gamma(shape=shape[i], scale=scale[i], size=self.size)
             return output
         else:
-            shape = wrapper(self.shape, args_shape)
-            scale = wrapper(self.scale, args_scale)
-            return np.random.gamma(shape=shape, scale=scale, size=self.size)
+            shape_d = wrapper(self.shape, args_shape)
+            scale_d = wrapper(self.scale, args_scale)
+            return np.random.gamma(shape=shape_d, scale=scale_d, size=self.size)
 
     #@underflow
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def density(self, x, args_shape=1, args_scale=1, multi=False):
         cdef double shape, scale
         cdef double[::1] shape_arr, scale_arr
@@ -267,12 +304,31 @@ class Uniform(object):
         self.low = func_low
         self.high = func_high
 
-    def sample(self, args_low=0, args_high=1):
-        return np.random.uniform(low=self.low(args_low), high=self.high(args_high), size=self.size)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def sample(self, args_low=0, args_high=1, multi=False):
+        cdef int dim, i
+        cdef double[::1] output, low, high
+        cdef double low_d, high_d
+        if multi:
+            dim = args_low.shape[0]
+            output = np.empty(dim)
+            low = wrapper_arr(self.low, args_low)
+            high = wrapper_arr(self.high, args_high)
+            for i in range(dim):
+                output[i] = np.random.uniform(low=low[i], high=high[i], size=self.size)
+            return output
+        else:
+            low_d = wrapper(self.low, args_low)
+            high_d = wrapper(self.low, args_low)
+            return np.random.uniform(low=low_d, high=high_d, size=self.size)
 
     #@underflow
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def density(self, x, args_low=0, args_high=1):
         cdef double low, high
+        cdef double[::1] low_arr, high_arr
         if isinstance(x, np.ndarray):
             low_arr = wrapper_arr(self.low, args_low)
             high_arr = wrapper_arr(self.high, args_high)
@@ -287,20 +343,28 @@ class MultivariateUniform(object):
     def __init__(self, ndims=1, size=None, func_lows=[lambda args: args], func_highs=[lambda args: args]):
         self.ndims = ndims
         self.size = size
-        self.lows = [lambda args, func=func_low: (func(*args) if isinstance(args, Iterable) else func(args)) for func_low in func_lows]
-        self.highs = [lambda args, func=func_high: func(*args) if isinstance(args, Iterable) else func(args) for func_high in func_highs]
+        self.lows = func_lows
+        self.highs = func_highs
 
-    def sample(self, args_lows=[0], args_highs=[1]):
-        samples = []
-        for i in range(self.ndims):
-            samples.append(np.random.uniform(low=self.lows[i](args_lows[i]), high=self.highs[i](args_highs[i]), size=self.size))
+    def sample(self, args_lows=[0], args_highs=[1], multi=False):
+        cdef int dims = self.ndims
+        cdef double[::1] samples = np.empty(dims)
+        cdef int i
+        cdef double low, high
+        for i in range(dims):
+            low = wrapper(self.lows[i], args_lows[i])
+            high = wrapper(self.highs[i], args_highs[i])
+            samples[i] = np.random.uniform(low=low, high=high, size=self.size)
         return samples
 
-    def density(self, xs, args_lows=[0], args_highs=[1]):
+    def density(self, xs, args_lows=[0], args_highs=[1], multi=False):
+        cdef double low, high, density
+        cdef int i, dim
         density = 1
-        for i in range(self.ndims):
-            low = self.lows[i](args_lows[i])
-            high = self.highs[i](args_highs[i])
+        dim = self.ndims
+        for i in range(dim):
+            low = wrapper(self.lows[i], args_lows[i])
+            high = wrapper(self.highs[i], args_highs[i])
             if xs[i] > high or xs[i] < low:
                 density *= 0
             else:
