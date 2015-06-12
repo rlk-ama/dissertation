@@ -21,18 +21,20 @@ cdef double density_normal(double x, double loc, double scale):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.cdivision(True)
 cdef double[::1] density_normal_array(double[::1] x, double[::1] loc, double[::1] scale):
     cdef int dim = x.shape[0]
     cdef double[::1] ldensity = np.empty(dim)
     cdef double[::1] output = np.empty(dim)
     cdef int i
-    cdef double var
+    cdef double var, sigma
     for i in range(dim):
         var = scale[i]*scale[i]
         ldensity[i] = -1/2*log(2*PI) -log(abs(scale[i])) - 1/(2*var)*(x[i]-loc[i])*(x[i]-loc[i])
         output[i] = exp(ldensity[i])
     return output
 
+@cython.cdivision(True)
 cdef double density_lognormal(double x, double mean, double sigma):
     cdef double ldensity, output, var
     var = sigma*sigma
@@ -42,6 +44,7 @@ cdef double density_lognormal(double x, double mean, double sigma):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.cdivision(True)
 cdef double[::1] density_lognormal_array(double[::1] x, double[::1] mean, double[::1] sigma):
     cdef int dim = x.shape[0]
     cdef double[::1] ldensity = np.empty(dim)
@@ -72,6 +75,7 @@ cdef double[::1] density_poisson_array(double[::1] x, double[::1] lam):
         output[i] = exp(ldensity[i])
     return output
 
+@cython.cdivision(True)
 cdef double density_gamma(double x, double shape, double scale):
     cdef double ldensity, output
     ldensity = -shape*log(scale) - lgamma(shape) + (shape-1)*log(x) - x/scale
@@ -80,6 +84,7 @@ cdef double density_gamma(double x, double shape, double scale):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.cdivision(True)
 cdef double[::1] density_gamma_array(double[::1] x,double[::1] shape, double[::1] scale):
     cdef int dim = x.shape[0]
     cdef double[::1] ldensity = np.empty(dim)
@@ -100,6 +105,7 @@ cdef double density_uniform(double x, double low, double high):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.cdivision(True)
 cdef double[::1] density_uniform_array(double[::1] x, double[::1] low, double[::1] high):
     cdef int dim = x.shape[0]
     cdef double[::1] ldensity = np.empty(dim)
@@ -128,7 +134,7 @@ def wrapper_arr(func, args):
         for i in range(dim):
             output[i] = func(*args[i])
     else:
-        for i in range(len(args)):
+        for i in range(dim):
             output[i] = func(args[i])
     return output
 
