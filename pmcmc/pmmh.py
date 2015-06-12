@@ -4,7 +4,7 @@ from proposals.proposals import RandomWalkProposal
 class PMMH(object):
 
     def __init__(self, filter, map, iterations, proposals, prior, init, initial, start, end, Ns, adaptation=1000,
-                 burnin=1000, target=0.15, observations=None, support=None):
+                 burnin=1000, target=0.15, target_low=0.1, observations=None, support=None):
         self.filter = filter
         self.map = map
         self.iterations = iterations
@@ -21,6 +21,7 @@ class PMMH(object):
         self.split = 100
         self.steps = self.adaptation//self.split
         self.target = target
+        self.target_low = target_low
         if support:
             self.support = support
         else:
@@ -68,27 +69,26 @@ class PMMH(object):
             theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
             thetas.append(theta)
             accepts.append(accept)
-            #print(iteration)
+            print(iteration)
 
-        acceptance_rate_prev = 0
-        for step in range(self.steps):
-            start = self.burnin + step*self.split
-            end = self.burnin + (step + 1)*self.split
+        start = self.burnin
+        acceptance_rate = np.sum(accepts[0:start])/start
+        while not self.target_low < acceptance_rate < self.target and start < self.burnin + self.adaptation:
+            self.rescale(acceptance_rate)
+            end = start + self.split
             for iteration in range(start, end):
                 theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
                 thetas.append(theta)
                 accepts.append(accept)
-                #print(iteration)
-            acceptance_rate = ((end-self.burnin-self.split)*acceptance_rate_prev + 2*np.sum(accepts[start:end]))/(end-self.burnin)
-            if acceptance_rate != self.target:
-                self.rescale(acceptance_rate)
-            acceptance_rate_prev = acceptance_rate
+                print(iteration)
+            acceptance_rate = ((end-self.burnin-self.split)*acceptance_rate + 2*np.sum(accepts[start:end]))/(end-self.burnin)
+            start = start + self.split
 
-        for iteration in range(self.burnin + self.steps*self.split, self.iterations):
+        for iteration in range(start, self.iterations):
             theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
             thetas.append(theta)
             accepts.append(accept)
-            #print(iteration)
+            print(iteration)
 
         return thetas, accepts
 
@@ -96,4 +96,4 @@ class PMMH(object):
         coeff = abs((acceptance_rate - self.target)/self.target)
         new = [self.proposals[i].sigma*(1+coeff) if acceptance_rate > self.target else self.proposals[i].sigma/(1+coeff) for i in range(len(self.proposals))]
         self.proposals = [RandomWalkProposal(sigma=sigma) for sigma in new]
-        #print(acceptance_rate, new)
+        print(acceptance_rate, new)
