@@ -1,8 +1,8 @@
 import numpy as np
 
 from distributions.distributions2 import LogNormal, Gamma, Poisson, Normal
-from utils.utilsc import param_gamma, param_gamma_arr
-from collections import Iterable
+from utils.utilsc import param_gamma, param_gamma_arr, func_mean, func_lam, func_shape, func_scale
+from functools import partial
 
 class RickerMap(object):
 
@@ -16,14 +16,16 @@ class RickerMap(object):
             self.initial = Normal()
             # self.initial = partial(np.random.normal, {'loc': 0, 'scale': 1000})
         #self.approx = approx
-
-        self.kernel = self.Kernel(LogNormal(func_mean=lambda args: np.log(self.r) + np.log(args) - args,
+        self.func_mean = partial(func_mean, r=self.r)
+        self.func_lam = partial(func_lam, phi=self.phi)
+        self.func_scale = partial(func_scale, phi=self.phi)
+        self.kernel = self.Kernel(LogNormal(func_mean=self.func_mean,
                                             func_sigma=lambda args: self.sigma))
         self.prior = self.kernel
-        self.conditional = self.Conditional(Poisson(func_lam=lambda args: self.phi*args))
+        self.conditional = self.Conditional(Poisson(func_lam=self.func_lam))
         if  approx == 'simple':
-            self.proposal = self.Proposal(Gamma(func_shape=lambda alpha, obs: alpha + obs,
-                                                func_scale=lambda beta: beta/(beta*self.phi+1)),
+            self.proposal = self.Proposal(Gamma(func_shape=func_shape,
+                                                func_scale=self.func_scale),
                                           self.r, self.sigma, param_gamma, param_gamma_arr)
         elif approx == 'complex':
             self.proposal = self.Proposal(Gamma(func_shape=lambda alpha, obs: alpha + obs,
@@ -39,13 +41,15 @@ class RickerMap(object):
 
         def __init__(self, distribution):
             self.distribution = distribution
+            self.sigma = []
 
         def sample(self, ancestor, multi=False):
             return self.distribution.sample(args_mean=ancestor, multi=multi)
 
         def density(self, particle, ancestor):
-            sigma = np.array([1]*len(particle), dtype=np.float64)
-            return self.distribution.density(particle, args_mean=ancestor, args_sigma=sigma,multi=True)
+            if not any(self.sigma):
+                self.sigma = np.array([1]*len(particle), dtype=np.float64)
+            return self.distribution.density(particle, args_mean=ancestor, args_sigma=self.sigma, multi=True)
 
     class Conditional(object):
 

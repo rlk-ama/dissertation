@@ -3,6 +3,7 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
+@cython.cdivision(True)
 cpdef tuple param_gamma(double r, double sigma, double n_prev):
     cdef double coeff, alpha, beta, var
     var = sigma*sigma
@@ -13,6 +14,7 @@ cpdef tuple param_gamma(double r, double sigma, double n_prev):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.cdivision(True)
 cpdef double[:, ::1] param_gamma_arr(double r, double sigma, double[::1] n_prevs):
     cdef int dim = n_prevs.shape[0]
     cdef double[::1] alphas = np.empty(dim)
@@ -28,3 +30,17 @@ cpdef double[:, ::1] param_gamma_arr(double r, double sigma, double[::1] n_prevs
     output[0] = alphas
     output[1] = betas
     return output
+
+
+cpdef double func_mean(double args, double r):
+    return log(r) + log(args) - args
+
+cpdef double func_lam(double args, double phi):
+    return phi*args
+
+cpdef double func_shape(double alpha, double obs):
+    return alpha + obs
+
+@cython.cdivision(True)
+cpdef double func_scale(double beta, double phi):
+    return beta/(beta*phi+1)
