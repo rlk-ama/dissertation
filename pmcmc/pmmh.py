@@ -4,7 +4,7 @@ from proposals.proposals import RandomWalkProposal
 class PMMH(object):
 
     def __init__(self, filter, map, iterations, proposals, prior, init, initial, start, end, Ns, adaptation=1000,
-                 burnin=1000, target=0.15, target_low=0.1, observations=None, support=None):
+                 burnin=1000, target=0.20, target_low=0.12, observations=None, support=None):
         self.filter = filter
         self.map = map
         self.iterations = iterations
@@ -72,7 +72,7 @@ class PMMH(object):
             print(iteration)
 
         start = self.burnin
-        acceptance_rate = np.sum(accepts[0:start])/start
+        acceptance_rate = np.sum(accepts[start-self.split:start])/self.split
         while not self.target_low < acceptance_rate < self.target and start < self.burnin + self.adaptation:
             self.rescale(acceptance_rate)
             end = start + self.split
@@ -81,7 +81,8 @@ class PMMH(object):
                 thetas.append(theta)
                 accepts.append(accept)
                 print(iteration)
-            acceptance_rate = ((end-self.burnin-self.split)*acceptance_rate + 2*np.sum(accepts[start:end]))/(end-self.burnin)
+            acceptance_rate = np.sum(accepts[start:end])/self.split #((end-self.burnin)*acceptance_rate + 2*np.sum(accepts[start:end]))/(end-self.burnin+self.split)
+            print(acceptance_rate)
             start = start + self.split
 
         for iteration in range(start, self.iterations):
