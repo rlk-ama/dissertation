@@ -1,0 +1,171 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[fleqn]{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{natbib}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{array}
+\usepackage{bbold}
+\usepackage{amssymb}
+\usepackage[procnames]{listings}
+\usepackage{color}
+\usepackage{graphicx}
+
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\makeatletter
+\newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
+\newsavebox{\mybox}\newsavebox{\mysim}
+\newcommand{\distras}[1]{%
+	\savebox{\mybox}{\hbox{\kern3pt$\scriptstyle#1$\kern3pt}}%
+	\savebox{\mysim}{\hbox{$\sim$}}%
+	\mathbin{\overset{#1}{\kern\z@\resizebox{\wd\mybox}{\ht\mysim}{$\sim$}}}%
+}
+\makeatother
+
+\title{PMMH diagnostic}
+\author{Raphael Lopez Kaufman}
+\date{}
+
+\begin{document}
+Simulation was performed with the parameters specified in Table~\ref{table:simul}. We used 500 particles for the filter and 8000 iterations for the PMMH sampler. The initial values for the parameters were drawn from normal distributions in order to assess the stability of the sampler. It can be noted that, although $\phi$ and $\sigma$ posterior means are not biased, $r$'s one is. 
+
+	\begin{table}[htb]
+		\centering
+		\vspace{5mm}
+		\begin{tabular}{c|c|c|c}
+			Parameter & True value &  Mean of initialisation normal &  Uniform prior \\ \hline
+			$r$ & 30 & 35 & $[7, 55]$\\ \hline
+			$\phi$ & 10 & 5 & $[3, 15]$\\ \hline
+			$\sigma$ & 0.3 &  0.5 & $[0.1, 0.7]$\\ \hline
+		\end{tabular}
+		\caption{Parameters used in the simulation to estimate $r$, $phi$ and $theta$}
+		\label{table:simul}
+		\vspace{5mm}
+	\end{table}
+
+Table~\ref{table:summary} presents the posterior means, standard deviation, 95\% credible intervals and effective sample sizes for each of the parameters averaged across ten chains. We discarded a 1000 iterations as burnin and adapted the variance of the random walk proposal during another 1000 iterations. The variances of the proposals for $\phi$n, $r$ and $\sigma$ were scaled up and down using this approach. Every 100 iterations the acceptance rate is calculated (on the last 100 iterations). Let's denote $a_{i}$ the current acceptance rate and $a^*$ the target acceptance rate (in our case 0.15) and $\sigma_{i+1}^j$ the variance of the random walk proposal for the jth coefficient for the next 100 iterations. Then $\sigma_{i+1} = \sigma_i(1+\alpha)$ if $a_{i} > a^*$ and $\sigma_{i+1} = \frac{\sigma_i}{1+\alpha}$ else,  where $\alpha = |a_{i}-a^*|/a^*$. 
+
+	\begin{table}[htb]
+		\centering
+		\vspace{5mm}
+		\begin{tabular}{c|c|c|c|c}
+			Parameter & Posterior mean & Standard deviation& Credible interval &  ESS \\ \hline
+			$r$ & 32.96 & 5.79 & $[22.68, 45.74]$ & 211 (for 6000 samples)\\ \hline
+			$\phi$ & 10.17 & 0.58 & $[9.11, 11.44]$ & 220 (for 6000 samples)\\ \hline
+			$\sigma$ & 0.306 &  0.107 & $[0.135, 0.554]$& 301 (for 6000 samples) \\ \hline
+		\end{tabular}
+		\caption{Parameters used in the simulation to estimate $r$, $phi$ and $theta$}
+		\label{table:summary}
+		\vspace{5mm}
+	\end{table}
+
+We also calculated the mean posterior empirical correlations between the three parameters. We obtained $\mathrm{Corr}(r, \phi) = -0.78$, $\mathrm{Corr}(r, \sigma) = -0.14$,  $\mathrm{Corr}(\phi, \sigma) = 0.16$. As can be also seen in the traceplots it seems that $r$ and $\phi$ are strongly negatively correlated.
+
+
+Figure~\ref{fig:samples}, Figure~\ref{fig:densities} and Figure~\ref{fig:acf} present, on the next pages, the traceplots, density estimates and autocorrelation plots of the samples from $r$, $\phi$ and $\sigma$.
+
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/rsimulR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/phisimulR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/sigmasimulR.pdf}
+		\end{minipage}
+		\caption{\textbf{(first row)} Traceplot of samples from $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$}
+		\label{fig:samples}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/rdensityR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/phidensityR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/sigmadensityR.pdf}
+		\end{minipage}
+		\caption{Density plots from two chains for\textbf{(first row)} $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$}
+		\label{fig:densities}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/acfrR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/acfphiR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/acfsigmaR.pdf}
+		\end{minipage}
+		\caption{Autocorrelation plots for samples from\textbf{(first row)} $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$}
+		\label{fig:acf}
+	\end{figure}
+
+Finally, Figure~\ref{fig:running} shows plots of the running means for each of the coefficients and Figure~\ref{fig:gelman} shows the evolution of Gelman and Rubin's shrink factor as the number of iterations increases.
+
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/runningrR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/runningphiR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/runningsigmaR.pdf}
+		\end{minipage}
+		\caption{Running mean plots for samples from\textbf{(first row)} $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$ across then chains}
+		\label{fig:running}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/gelmanrR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/gelmanphiR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/gelmansigmaR.pdf}
+		\end{minipage}
+		\caption{Plots showing the evolution of the  Gelman and Rubin's shrink factor for samples from\textbf{(first row)} $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$ across then chains}
+		\label{fig:gelman}
+	\end{figure}
+	
+\end{document}
