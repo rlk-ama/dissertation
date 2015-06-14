@@ -1,4 +1,5 @@
 from libc.math cimport exp, pow, log
+from collections import Iterable
 import numpy as np
 cimport numpy as np
 cimport cython
@@ -35,12 +36,35 @@ cpdef double[:, ::1] param_gamma_arr(double r, double sigma, double[::1] n_prevs
 cpdef double func_mean(double args, double r):
     return log(r) + log(args) - args
 
+cpdef double func_sigma(double sigma):
+    return sigma
+
 cpdef double func_lam(double args, double phi):
     return phi*args
 
-cpdef double func_shape(double alpha, double obs):
-    return alpha + obs
+cpdef double func_shape(double[::1] args):
+    return args[0] + args[1]
 
 @cython.cdivision(True)
 cpdef double func_scale(double beta, double phi):
     return beta/(beta*phi+1)
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef double[::1] wrapper_arr(func, double[::1] args):
+    cdef int dim = args.shape[0]
+    cdef double[::1] output = np.empty(dim)
+    cdef int i
+    for i in range(dim):
+        output[i] = func(args[i])
+    return output
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef double[::1] wrapper_arr_arr(func, double[:, ::1] args):
+    cdef int dim = args.shape[0]
+    cdef double[::1] output = np.empty(dim)
+    cdef int i
+    for i in range(dim):
+        output[i] = func(args[i])
+    return output

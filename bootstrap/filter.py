@@ -1,7 +1,6 @@
 import numpy as np
-import sys
 
-from math import log, exp
+from distributions.distributions2 import Gamma
 
 DTYPE = np.float64
 
@@ -20,14 +19,11 @@ class BootstrapFilter(object):
         particles_all = np.zeros(shape=(self.end-self.start, N))
         particles = np.empty(N)
 
-        weights = np.zeros(shape=N, dtype='float64')
         likelihoods = []
         ESS = []
         likelihood = 0
-
-        for i in range(N):
-            particles[i] = self.Map.initial.sample() #draw from initial distribution
-            weights[i] = 1.0/N
+        particles = Gamma().sample(np.array([3]*N, dtype=np.float64), np.array([1]*N, dtype=np.float64)) #draw from initial distribution
+        weights = np.array([1.0/N]*N, dtype=np.float64)
 
         for i in range(self.start+1, self.end+1):
             np.divide(weights, sum(weights), out=weights)
@@ -36,7 +32,7 @@ class BootstrapFilter(object):
             indices = np.random.multinomial(N, weights, size=1)[0]
             ancestors = np.array([particles[j] for j in range(len(indices)) for _ in range(indices[j])], dtype=DTYPE)
             if prior:
-                particles = np.array([self.Map.prior.sample(ancestor) for ancestor in ancestors], dtype=DTYPE)
+                particles = self.Map.prior.sample(ancestors, multi=True)
             else:
                 particles = self.Map.proposal.sample(ancestors, self.observations[i])
 
