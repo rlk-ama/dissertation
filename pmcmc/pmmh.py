@@ -4,7 +4,7 @@ from proposals.proposals import RandomWalkProposal
 class PMMH(object):
 
     def __init__(self, filter, map, iterations, proposals, prior, init, initial, start, end, Ns, adaptation=1000,
-                 burnin=1000, target=0.20, target_low=0.12, observations=None, support=None):
+                 burnin=1500, target=0.18, target_low=0.12, observations=None, support=None):
         self.filter = filter
         self.map = map
         self.iterations = iterations
@@ -44,7 +44,7 @@ class PMMH(object):
         return np.log(uniform_draw) < ratio
 
     def sub_sample(self, theta, likeli):
-            theta_star = [self.proposals[i].sample(theta[i]) for i in range(len(theta))]
+            theta_star = [self.proposals[i].sample(theta[i])[0] for i in range(len(theta))]
             if self.support(theta_star):
                 likeli_star = self.routine(theta_star)
                 zipped = list(zip(theta, theta_star))
