@@ -4,7 +4,7 @@ from proposals.proposals import RandomWalkProposal
 class PMMH(object):
 
     def __init__(self, filter, map, iterations, proposals, prior, init, initial, start, end, Ns, adaptation=1000,
-                 burnin=1500, target=0.18, target_low=0.12, observations=None, support=None):
+                 burnin=1500, target=0.15, target_low=0.10, observations=None, support=None):
         self.filter = filter
         self.map = map
         self.iterations = iterations
@@ -53,9 +53,7 @@ class PMMH(object):
                 if self.accept_reject(numerator-denominator):
                     theta = theta_star
                     likeli = likeli_star
-                    accept = 1
-                else:
-                    accept = 0
+                accept = min(1, np.exp(numerator-denominator))
             else:
                 accept = 0
             return theta, likeli, accept
@@ -65,6 +63,7 @@ class PMMH(object):
         theta = self.init
         thetas = [theta]
         accepts = []
+        takens = []
         for iteration in range(self.burnin):
             theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
             thetas.append(theta)
@@ -73,28 +72,34 @@ class PMMH(object):
 
         start = self.burnin
         acceptance_rate = np.sum(accepts[start-self.split:start])/self.split
-        while not self.target_low < acceptance_rate < self.target and start < self.burnin + self.adaptation:
-            self.rescale(acceptance_rate)
+        taken_rate = np.sum(takens[start-self.split:start])/self.split
+        print(acceptance_rate, taken_rate)
+        k = 1
+        while start < self.burnin + self.adaptation: #and not self.target_low < acceptance_rate < self.target:
+            self.rescale(acceptance_rate, k)
             end = start + self.split
             for iteration in range(start, end):
-                theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
+                theta, likeli, accept, taken = self.sub_sample(thetas[iteration], likeli)
                 thetas.append(theta)
                 accepts.append(accept)
+                takens.append(taken)
                 print(iteration)
             acceptance_rate = np.sum(accepts[start:end])/self.split #((end-self.burnin)*acceptance_rate + 2*np.sum(accepts[start:end]))/(end-self.burnin+self.split)
-            print(acceptance_rate)
+            taken_rate =  np.sum(takens[start:end])/self.split
+            print(acceptance_rate, taken_rate)
             start = start + self.split
+            k += 1
 
         for iteration in range(start, self.iterations):
-            theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
+            theta, likeli, accept, taken = self.sub_sample(thetas[iteration], likeli)
             thetas.append(theta)
             accepts.append(accept)
             print(iteration)
 
         return thetas, accepts
 
-    def rescale(self, acceptance_rate):
-        coeff = abs((acceptance_rate - self.target)/self.target)
-        new = [self.proposals[i].sigma*(1+coeff) if acceptance_rate > self.target else self.proposals[i].sigma/(1+coeff) for i in range(len(self.proposals))]
-        self.proposals = [RandomWalkProposal(sigma=sigma) for sigma in new]
-        print(acceptance_rate, new)
+    def rescale(self, acceptance_rate, k):
+        coeff = (acceptance_rate - self.target)/k
+        news = [self.proposals[i].sigma*np.exp(coeff) for i in range(len(self.proposals))]
+        self.proposals = [RandomWalkProposal(sigma=new) for new in news]
+        print(news)
