@@ -1,16 +1,30 @@
 from distributions.distributions2 import Normal, MultivariateUniform
+from collections import Iterable
+import numpy as np
+
+DTYPE = np.float64
 
 class RandomWalkProposal(object):
 
     def __init__(self, sigma=5):
         self.sigma = sigma
-        self.distribution = Normal(func_scale=lambda args: sigma)
+        self.distribution = Normal()
 
     def sample(self, previous):
-        return self.distribution.sample(args_loc=previous)
+        if not isinstance(self.sigma, Iterable):
+            self.sigma = _iterable(self.sigma)
+        if not isinstance(previous, Iterable):
+            previous = _iterable(previous)
+        return self.distribution.sample(loc=previous, scale=self.sigma)
 
     def density(self, current, previous):
-        return self.distribution.density(current, args_loc=previous)
+        if not isinstance(self.sigma, Iterable):
+            self.sigma = _iterable(self.sigma)
+        if not isinstance(current, Iterable):
+            current = _iterable(current)
+        if not isinstance(previous, Iterable):
+            previous = _iterable(previous)
+        return self.distribution.density(current, loc=previous, scale=self.sigma)
 
 class MultivariateUniformProposal(object):
 
@@ -27,3 +41,6 @@ class MultivariateUniformProposal(object):
         lows = lows*self.ndims
         highs = highs*self.ndims
         return self.distribution.density(xs, args_lows=lows, args_highs=highs)
+
+def _iterable(item):
+    return np.array([item], dtype=DTYPE)
