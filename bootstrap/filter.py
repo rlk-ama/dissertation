@@ -6,13 +6,13 @@ DTYPE = np.float64
 
 class BootstrapFilter(object):
 
-    def __init__(self, start, end, Ns, Map, proposal={'prior': False, 'optimal': True}):
+    def __init__(self, start, end, Ns, Map, proposal=None):
         self.start = start
         self.end = end
         self.Ns = Ns if isinstance(Ns, list) else [Ns]
         self.multiple = True if isinstance(Ns, list) else False
         self.Map = Map
-        self.proposal = proposal
+        self.proposal = proposal if proposal else {'prior': False, 'optimal': True}
         self.observations = self.Map.observations
     #@profile
     def sub_filter(self, N, prior):
@@ -27,10 +27,11 @@ class BootstrapFilter(object):
 
         for i in range(self.start+1, self.end+1):
             np.divide(weights, sum(weights), out=weights)
-            ESS.append(1/sum([weight**2 for weight in weights]))
+            ESS.append(1/sum(np.multiply(weights, weights)))
 
             indices = np.random.multinomial(N, weights, size=1)[0]
             ancestors = np.array([particles[j] for j in range(len(indices)) for _ in range(indices[j])], dtype=DTYPE)
+
             if prior:
                 particles = self.Map.prior.sample(ancestors, multi=True)
             else:
@@ -40,6 +41,7 @@ class BootstrapFilter(object):
                 denom = self.Map.prior.density(particles, ancestors) #q(x_t|x_t-1, y_t)
             else:
                 denom = self.Map.proposal.density(particles, ancestors, self.observations[i])
+
             obs = self.Map.conditional.density(particles, self.observations[i])
             transi = self.Map.kernel.density(particles, ancestors)
             weights_n = np.zeros(N)
