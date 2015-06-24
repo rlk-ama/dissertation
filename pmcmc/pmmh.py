@@ -34,7 +34,7 @@ class PMMH(object):
 
     def routine(self, parameters):
         Map = self.map(*parameters, initial=self.initial, observations=self.observations)
-        filter = self.filter(self.start, self.end, self.Ns, Map, proposal={'optimal': True})
+        filter = self.filter(self.start, self.end, self.Ns, Map, proposal={'prior': True})
         _, _, likeli, _ = next(filter.filter())
         return likeli[-1]
 
@@ -63,7 +63,6 @@ class PMMH(object):
         theta = self.init
         thetas = [theta]
         accepts = []
-        takens = []
         for iteration in range(self.burnin):
             theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
             thetas.append(theta)
@@ -72,26 +71,23 @@ class PMMH(object):
 
         start = self.burnin
         acceptance_rate = np.sum(accepts[start-self.split:start])/self.split
-        taken_rate = np.sum(takens[start-self.split:start])/self.split
-        print(acceptance_rate, taken_rate)
+        #print(acceptance_rate)
         k = 1
-        while start < self.burnin + self.adaptation: #and not self.target_low < acceptance_rate < self.target:
+        while start < self.burnin + self.adaptation:
             self.rescale(acceptance_rate, k)
             end = start + self.split
             for iteration in range(start, end):
-                theta, likeli, accept, taken = self.sub_sample(thetas[iteration], likeli)
+                theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
                 thetas.append(theta)
                 accepts.append(accept)
-                takens.append(taken)
                 print(iteration)
-            acceptance_rate = np.sum(accepts[start:end])/self.split #((end-self.burnin)*acceptance_rate + 2*np.sum(accepts[start:end]))/(end-self.burnin+self.split)
-            taken_rate =  np.sum(takens[start:end])/self.split
-            print(acceptance_rate, taken_rate)
+            acceptance_rate = np.sum(accepts[start:end])/self.split
+            #print(acceptance_rate)
             start = start + self.split
             k += 1
 
         for iteration in range(start, self.iterations):
-            theta, likeli, accept, taken = self.sub_sample(thetas[iteration], likeli)
+            theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
             thetas.append(theta)
             accepts.append(accept)
             print(iteration)
@@ -102,4 +98,4 @@ class PMMH(object):
         coeff = (acceptance_rate - self.target)/k
         news = [self.proposals[i].sigma*np.exp(coeff) for i in range(len(self.proposals))]
         self.proposals = [RandomWalkProposal(sigma=new) for new in news]
-        print(news)
+        #print(news)
