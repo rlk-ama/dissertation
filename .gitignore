@@ -59,4 +59,18 @@ docs/_build/
 # PyBuilder
 target/
 
+#figures and tex files
+figures/
+tex/*.pdf
+tex/*.aux
+tex/*.log
+tex/*.synctex.gz
 
+#cython specific and profiling files
+*.c
+*.html
+*.lprof
+*.prof
+
+#idea files
+*.idea
