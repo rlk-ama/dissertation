@@ -65,6 +65,8 @@ tex/*.pdf
 tex/*.aux
 tex/*.log
 tex/*.synctex.gz
+tex/*bbl
+tex/*blg
 
 #cython specific and profiling files
 *.c
