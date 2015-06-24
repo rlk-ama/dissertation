@@ -10,6 +10,14 @@ ext_modules=[
     Extension("utils.utilsc",
           sources=["utils/utilsc.pyx"],
           libraries=["m"] # Unix-like specific
+    ),
+        Extension("bootstrap.utils_ricker",
+          sources=["bootstrap/utils_ricker.pyx"],
+          libraries=["m"] # Unix-like specific
+    ),
+        Extension("bootstrap.utils_kalman",
+          sources=["bootstrap/utils_kalman.pyx"],
+          libraries=["m"] # Unix-like specific
     )
 ]
 
