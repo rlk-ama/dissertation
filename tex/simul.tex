@@ -39,7 +39,7 @@
 \date{}
 
 \begin{document}
-Simulation was performed with the parameters specified in Table~\ref{table:simul}. We used 500 particles for the filter and 8000 iterations for the PMMH sampler. The initial values for the parameters were drawn from normal distributions in order to assess the stability of the sampler. It can be noted that, although $\phi$ and $\sigma$ posterior means are not biased, $r$'s one is. 
+Simulation was performed with the parameters specified in Table~\ref{table:simul}. We used 500 particles for the filter and 8000 iterations for the PMMH sampler. The simulated data consisted of 50 observations. The initial values for the parameters were drawn from normal distributions in order to assess the stability of the sampler.
 
 	\begin{table}[htb]
 		\centering
@@ -50,12 +50,14 @@ Simulation was performed with the parameters specified in Table~\ref{table:simul
 			$\phi$ & 10 & 5 & $[3, 15]$\\ \hline
 			$\sigma$ & 0.3 &  0.5 & $[0.1, 0.7]$\\ \hline
 		\end{tabular}
-		\caption{Parameters used in the simulation to estimate $r$, $phi$ and $theta$}
+		\caption{Parameters used in the simulation to estimate $r$, $\phi$ and $\sigma$}
 		\label{table:simul}
 		\vspace{5mm}
 	\end{table}
 
-Table~\ref{table:summary} presents the posterior means, standard deviation, 95\% credible intervals and effective sample sizes for each of the parameters averaged across ten chains. We discarded a 1000 iterations as burnin and adapted the variance of the random walk proposal during another 1000 iterations. The variances of the proposals for $\phi$n, $r$ and $\sigma$ were scaled up and down using this approach. Every 100 iterations the acceptance rate is calculated (on the last 100 iterations). Let's denote $a_{i}$ the current acceptance rate and $a^*$ the target acceptance rate (in our case 0.15) and $\sigma_{i+1}^j$ the variance of the random walk proposal for the jth coefficient for the next 100 iterations. Then $\sigma_{i+1} = \sigma_i(1+\alpha)$ if $a_{i} > a^*$ and $\sigma_{i+1} = \frac{\sigma_i}{1+\alpha}$ else,  where $\alpha = |a_{i}-a^*|/a^*$. 
+Table~\ref{table:summary} presents the posterior means, standard deviation, 95\% credible intervals and effective sample sizes for each of the parameters averaged across ten chains. We discarded a 1000 iterations as burnin and adapted the variance of the random walk proposal during another 1000 iterations. The variances of the proposals for $\phi$n, $r$ and $\sigma$ were scaled up and down using this approach. Every 100 iterations the mean acceptance rate is calculated (on the last 100 iterations). Let's denote $a_{i}$ this mean acceptance rate, $a^*$ the target acceptance rate (in our case 0.15) and $\sigma_{i+1}^j$ the variance of the random walk proposal for the jth coefficient for the next 100 iterations. Then we used the Robbins-Monro update, as described in Andrieu and Thoms (2008)~\cite{Andrieu2008} to calculate $\sigma_{i+1}^j$  from $\sigma_{i}^j$. That is to say, denoting $\theta_i^j = \log(\sigma_i^j)$, we use the following update $\theta_{i+1}^j =  \theta_i^j + \gamma_{i+1}(\alpha_i-\alpha^*)$ with $\gamma_i = \frac{1}{i}$. This way, when $\alpha_i > \alpha^*$ $\sigma_{i+1}^j$ increase leading to a smaller acceptance rate and vice versa.
+
+It can be noted that, although $\phi$ and $\sigma$ posterior means are not biased, $r$'s one is. 
 
 	\begin{table}[htb]
 		\centering
@@ -66,7 +68,7 @@ Table~\ref{table:summary} presents the posterior means, standard deviation, 95\%
 			$\phi$ & 10.17 & 0.58 & $[9.11, 11.44]$ & 220 (for 6000 samples)\\ \hline
 			$\sigma$ & 0.306 &  0.107 & $[0.135, 0.554]$& 301 (for 6000 samples) \\ \hline
 		\end{tabular}
-		\caption{Parameters used in the simulation to estimate $r$, $phi$ and $theta$}
+		\caption{Parameters used in the simulation to estimate $r$, $\phi$ and $\sigma$}
 		\label{table:summary}
 		\vspace{5mm}
 	\end{table}
@@ -146,7 +148,7 @@ Finally, Figure~\ref{fig:running} shows plots of the running means for each of t
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/runningsigmaR.pdf}
 		\end{minipage}
-		\caption{Running mean plots for samples from\textbf{(first row)} $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$ across then chains}
+		\caption{Running mean plots for samples from\textbf{(first row)} $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$ across 10 chains}
 		\label{fig:running}
 	\end{figure}
 	
@@ -164,8 +166,62 @@ Finally, Figure~\ref{fig:running} shows plots of the running means for each of t
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/gelmansigmaR.pdf}
 		\end{minipage}
-		\caption{Plots showing the evolution of the  Gelman and Rubin's shrink factor for samples from\textbf{(first row)} $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$ across then chains}
+		\caption{Plots showing the evolution of the  Gelman and Rubin's shrink factor for samples from\textbf{(first row)} $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$ across 10 chains}
 		\label{fig:gelman}
 	\end{figure}
 	
+\clearpage 
+
+To assess our particle filter we calculated the mean squared errors for each parameters a well as the median and inter-quartile range of the squared errors, averaged geometrically across the parameters, that is to say $e_j = (\hat{r}_j-r)(\hat{\sigma}_j-\sigma)(\hat{\phi}_j-\phi)$ where $j$ denotes the number of the experiment (16 in total) and a hat denotes a posterior mean. Table~\ref{table:new} shows the new settings for these simulations. Table~\ref{table:mse} compares the mean squared errors obtained for 250 datasets by Wood with the one we obtained for 16 datasets (note that figures given for Wood are for a the Generalized Ricker Map as results for the Simple Ricker Map are not given in his paper). These poor results are confirmed by the running means (displayed in Figure~\ref{fig:rm}) which shows how, except for $\sigma$, we obtain posterior means away from the true value of the parameters used for simulation, and especially for $r$. Similarly we obtained for the $e_j$'s a median equal to 0.1 with an inter-quartile range equal to 0.19 whereas Wood obtained for these values 0.005 and 0.01.
+
+	\begin{table}[htb]
+		\centering
+		\vspace{5mm}
+		\begin{tabular}{c|c|c|c}
+			Parameter & True value &  Mean of initialisation normal &  Uniform prior \\ \hline
+			$r$ & 44.7 & 40 & $[24.7, 64.7]$\\ \hline
+			$\phi$ & 10 & 7 & $[5, 15]$\\ \hline
+			$\sigma$ & 0.2 &  0.5 & $[0.15, 0.45]$\\ \hline
+		\end{tabular}
+		\caption{Parameters used in the simulation to estimate $r$, $\phi$ and $\sigma$}
+		\label{table:new}
+		\vspace{5mm}
+	\end{table}
+
+	\begin{table}[htb]
+		\centering
+		\vspace{5mm}
+		\begin{tabular}{c|c|c}
+			Parameter & Wood's MSE & our MSE \\ \hline
+			$r$ & 0.0152 & 27.97 \\ \hline
+			$\phi$ & 0.0119 & 0.197\\ \hline
+			$\sigma$ & 0.0526 &  0.0027 \\ \hline
+		\end{tabular}
+		\caption{Mean squared errors of the posterior means obtained by Wood and in our study.}
+		\label{table:mse}
+		\vspace{5mm}
+	\end{table}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralr.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralphi.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralsigma.pdf}
+		\end{minipage}
+		\caption{Running mean plots for samples from\textbf{(first row)} $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$ across 16 chains}
+		\label{fig:rm}
+	\end{figure}
+
+\clearpage
+
+\bibliographystyle{plain}	
+\bibliography{mybib}{}
 \end{document}
