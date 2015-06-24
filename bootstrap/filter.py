@@ -1,12 +1,12 @@
 import numpy as np
 
-from distributions.distributions2 import Gamma
+from distributions.distributions2 import Normal
 
 DTYPE = np.float64
 
 class BootstrapFilter(object):
 
-    def __init__(self, start, end, Ns, Map, proposal=None):
+    def __init__(self, start, end, Ns, Map, initial=None, proposal=None):
         self.start = start
         self.end = end
         self.Ns = Ns if isinstance(Ns, list) else [Ns]
@@ -14,6 +14,12 @@ class BootstrapFilter(object):
         self.Map = Map
         self.proposal = proposal if proposal else {'prior': False, 'optimal': True}
         self.observations = self.Map.observations
+
+        if initial:
+            self.initial = initial
+        else:
+            self.initial = {'distribution': Normal, 'loc': 0, 'scale': 1}
+
     #@profile
     def sub_filter(self, N, prior):
         particles_all = np.zeros(shape=(self.end-self.start, N))
@@ -22,7 +28,7 @@ class BootstrapFilter(object):
         likelihoods = []
         ESS = []
         likelihood = 0
-        particles = Gamma().sample(np.array([3]*N, dtype=np.float64), np.array([1]*N, dtype=np.float64)) #draw from initial distribution
+        particles = self.initial['distribution']().sample(**{k:np.array([v]*N, dtype=np.float64) for k,v in self.initial.items() if k != 'distribution'}) #draw from initial distribution
         weights = np.array([1.0/N]*N, dtype=np.float64)
 
         for i in range(self.start+1, self.end+1):
@@ -33,7 +39,7 @@ class BootstrapFilter(object):
             ancestors = np.array([particles[j] for j in range(len(indices)) for _ in range(indices[j])], dtype=DTYPE)
 
             if prior:
-                particles = self.Map.prior.sample(ancestors, multi=True)
+                particles = self.Map.prior.sample(ancestors)
             else:
                 particles = self.Map.proposal.sample(ancestors, self.observations[i])
 
