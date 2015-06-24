@@ -1,7 +1,8 @@
 import numpy as np
 
 from distributions.distributions2 import LogNormal, Gamma, Poisson, Normal
-from utils.utilsc import param_gamma, param_gamma_arr, func_mean, func_lam, func_shape, func_scale, func_sigma, wrapper_arr, wrapper_arr_arr
+from utils.utilsc import wrapper_arr, wrapper_arr_arr
+from bootstrap.utils_ricker import param_gamma_arr, func_mean, func_lam, func_shape, func_scale, func_sigma
 from functools import partial
 
 class RickerMap(object):
@@ -24,9 +25,8 @@ class RickerMap(object):
             self.proposal = self.Proposal(Gamma(),
                                           self.r, self.sigma, self.phi, param_gamma_arr)
         elif approx == 'complex':
-            self.proposal = self.Proposal(Gamma(func_shape=lambda alpha, obs: alpha + obs,
-                                                func_scale=lambda beta: beta/(beta*self.phi+1)),
-                                          self.param_gamma2)
+            self.proposal = self.Proposal(Gamma(),
+                                          self.r, self.sigma, self.phi, param_gamma_arr)
 
         if observations is not None:
             self.observations = observations
@@ -101,64 +101,10 @@ class RickerMap(object):
             x = self.kernel.sample(x)
         return observ, state
 
-    # def param_gamma(self, n_prev):
-    #     coeff = self.r*n_prev*np.exp(-n_prev)
-    #     alpha = 1/self.sigma**2
-    #     beta = 1/alpha*np.exp(np.log(coeff)+self.sigma**2/2)
-    #     return alpha, beta
-
+    #TO DO: CHANGE
     def param_gamma2(self, n_prev):
 
         coeff = self.r*n_prev*np.exp(-n_prev)
         alpha = (6-self.sigma**2)/(3*self.sigma**2)
         beta = 1/alpha*np.exp(np.log(coeff)+ 1/(2*alpha))
         return alpha, beta
-
-
-    # def kernel(self, n):
-    #     out = np.random.lognormal(mean=0, sigma=self.sigma)
-    #     return self.r*n*np.exp(-n)*out
-    #
-    # def kernel_density(self, n, n_prev):
-    #     coeff = self.r*n_prev*np.exp(-n_prev)
-    #     mean = np.log(coeff)
-    #     out = 1/(n*self.sigma*np.sqrt(2*np.pi))*np.exp(-1/(2*self.sigma**2)*(np.log(n)-mean)**2)
-    #     return out
-
-
-    # def prior_proposal(self, n, obs):
-    #     out = np.random.lognormal(mean=0, sigma=self.sigma)
-    #     return self.r*n*np.exp(-n)*out
-    #
-    # def prior_proposal_density(self, n, n_prev, obs):
-    #     coeff = self.r*n_prev*np.exp(-n_prev)
-    #     mean = np.log(coeff)
-    #     out = 1/(n*self.sigma*np.sqrt(2*np.pi))*np.exp(-1/(2*self.sigma**2)*(np.log(n)-mean)**2)
-    #     return out
-
-
-    # def conditional(self, n):
-    #     out = np.random.poisson(lam=self.phi*n)
-    #     return out
-    #
-    # def conditional_density(self, n, y):
-    #     outlog = -self.phi*n + y*np.log(self.phi*n) - gammaln(y+1)
-    #     out = np.exp(outlog)
-    #     return out
-
-    # def proposal(self, n, y):
-    #     if self.approx == 'simple':
-    #         alpha, beta = self.param_gamma(n)
-    #     else:
-    #         alpha, beta = self.param_gamma2(n)
-    #     out = np.random.gamma(shape=y+alpha, scale=beta/(self.phi*beta+1))
-    #     return out
-    #
-    # def proposal_density(self, n, n_prev, y):
-    #     if self.approx == 'simple':
-    #         alpha, beta = self.param_gamma(n_prev)
-    #     else:
-    #         alpha, beta = self.param_gamma2(n_prev)
-    #     outlog= (alpha+y)*np.log((self.phi*beta+1)/beta) - gammaln(alpha+y) + (alpha+y-1)*np.log(n) - ((self.phi*beta+1)/beta)*n
-    #     out = np.exp(outlog)
-    #     return  out
