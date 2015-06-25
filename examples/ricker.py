@@ -40,8 +40,8 @@ if __name__ == "__main__":
     parser.add_argument("--r", type=float, help="Value for the parameter r in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
     parser.add_argument("--phi", type=float, help="Value for the parameter phi in the observation equation Y_t = Poisson(phi*N_t)")
     parser.add_argument("--sigma", type=float, help="Value for the standard deviation of Z_t in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
-    parser.add_argument("--number", type=int, help="Number of observations")
-    parser.add_argument("--particles", type=int, help="Number of particles")
+    parser.add_argument("--number", dest="NOS", type=int, help="Number of observations")
+    parser.add_argument("--particles", dest="NBS", type=int, help="Number of particles")
     parser.add_argument("--graphics", type=bool, help="Display graphics ?")
 
     args = parser.parse_args()
@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
     if args.graphics:
         plt.plot([i for i in range(NOS)], mean_esti)
-        plt.plot([i for i in range(NOS+1)], output['state'])
+        plt.plot([i for i in range(NOS)], output['state'])
         plt.title("Simulated state (green) and filtered state (blue)")
         plt.show()
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         plt.show()
 
         fig, ax1 = plt.subplots()
-        ax1.plot([i for i in range(NOS+1)], output['observations'])
+        ax1.plot([i for i in range(NOS)], output['observations'])
         ax2 = ax1.twinx()
         ax2.plot([i for i in range(NOS)], output['ESS'], color="red")
         plt.title("Observations (red), ESS (blue)")
