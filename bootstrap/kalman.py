@@ -86,10 +86,10 @@ class KalmanMap(object):
             return self.distribution.density(particle, loc=loc, scale=scale)
 
     def observ_gen(self, length):
-        observ = np.empty(length+1)
-        state = np.empty(length+1)
+        observ = np.empty(length)
+        state = np.empty(length)
         x = self.initial
-        for i in range(length+1):
+        for i in range(length):
             observ[i] = self.conditional.sample(x)[0]
             state[i] = x[0]
             x = self.kernel.sample(x)
