@@ -22,7 +22,7 @@ cdef double[::1] density_normal_array(double[::1] x, double[::1] loc, double[::1
     cdef double var, sigma
     for i in range(dim):
         var = scale[i]*scale[i]
-        ldensity[i] = -1/2*log(2*PI) -log(abs(scale[i])) - 1/(2*var)*(x[i]-loc[i])*(x[i]-loc[i])
+        ldensity[i] = -1/2.0*log(2*PI) -log(abs(scale[i])) - 1/(2*var)*(x[i]-loc[i])*(x[i]-loc[i])
         output[i] = exp(ldensity[i])
     return output
 
@@ -31,7 +31,7 @@ cdef double[::1] density_lognormal_array(double[::1] x, double[::1] mean, double
     cdef double var
     for i in range(dim):
         var = sigma[i]*sigma[i]
-        output[i] = exp(-log(x[i]) - 1/2*log(2*PI) -log(sigma[i]) - 1/(2*var)*(log(x[i])-mean[i])*(log(x[i])-mean[i]))
+        output[i] = exp(-log(x[i]) - 1/2.0*log(2*PI) -log(sigma[i]) - 1/(2*var)*(log(x[i])-mean[i])*(log(x[i])-mean[i]))
     return output
 
 cdef double *density_poisson_array(double *x, double *lam, double *output, int dim) nogil:
