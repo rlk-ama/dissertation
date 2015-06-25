@@ -4,7 +4,7 @@ from proposals.proposals import RandomWalkProposal
 class PMMH(object):
 
     def __init__(self, filter, map, iterations, proposals, prior, init, initial, start, end, Ns, adaptation=1000,
-                 burnin=1500, target=0.15, target_low=0.10, observations=None, support=None):
+                 burnin=1500, target=0.15, target_low=0.10, observations=None, support=None, initial_filter=None):
         self.filter = filter
         self.map = map
         self.iterations = iterations
@@ -22,6 +22,7 @@ class PMMH(object):
         self.steps = self.adaptation//self.split
         self.target = target
         self.target_low = target_low
+        self.initial_filter = initial_filter
         if support:
             self.support = support
         else:
@@ -34,8 +35,9 @@ class PMMH(object):
 
     def routine(self, parameters):
         Map = self.map(*parameters, initial=self.initial, observations=self.observations)
-        filter = self.filter(self.start, self.end, self.Ns, Map, proposal={'prior': True})
-        _, _, likeli, _ = next(filter.filter())
+        filter = self.filter(self.start, self.end, self.Ns, Map, proposal={'optimal': True}, initial=self.initial_filter,
+                             likeli=True)
+        _, likeli= next(filter.filter())
         return likeli[-1]
 
 
