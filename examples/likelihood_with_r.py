@@ -32,6 +32,7 @@ def perform_filter(inits=None, r=44.7, phi=10, sigma=0.5, NOS=50, NBS=1000, r_lo
 
     output = {
         'r': r,
+        'rs': rs,
         'state': state,
         'observations': observations,
         'likeli': likelis
@@ -50,7 +51,7 @@ if __name__ == "__main__":
     parser.add_argument("--particles", dest="NBS", type=int, help="Number of particles")
     parser.add_argument("--r_low", type=float, help="Start value for r parameters in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
     parser.add_argument("--r_high", type=float, help="End value for r parameters in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
-    parser.add_argument("--distretization", type=float, help="Step in discretization of range of values for r parameters in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
+    parser.add_argument("--discretization", type=float, help="Step in discretization of range of values for r parameters in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
 
     args = parser.parse_args()
     arguments = {k:v for k,v in args.__dict__.items() if v and k != 'graphics'}
@@ -58,7 +59,19 @@ if __name__ == "__main__":
     output = perform_filter(**arguments)
     length = len(output['likeli'])
 
-    plt.plot([i for i in range(length)], output['likeli'])
+    maxi_r = max(output['likeli'])
+    maxi_idx = output['likeli'].index(maxi_r)
+    maxi  = output['rs'][maxi_idx]
+
+    plt.plot(output['rs'], output['likeli'])
     plt.axvline(x=output['r'])
+    plt.axvline(x=maxi, color='red')
     plt.title("Likelihood")
+    plt.show()
+
+    plt.plot(output['rs'], output['likeli'])
+    plt.axvline(x=output['r'])
+    plt.axvline(x=maxi, color='red')
+    plt.title("Likelihood on log scale")
+    plt.xscale('log')
     plt.show()
