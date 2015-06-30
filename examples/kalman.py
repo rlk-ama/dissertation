@@ -73,7 +73,7 @@ if __name__ == "__main__":
             f.write(" ".join(map(str, output['state'])))
             f.write("\n")
         with open('/home/raphael/kalman_obs.txt', 'w') as f:
-            f.write(" ".join(map(str, output['observation'])))
+            f.write(" ".join(map(str, output['observations'])))
             f.write("\n")
 
     mean_esti_prior = [np.mean(est) for est in output['output']['prior']['estim']]
