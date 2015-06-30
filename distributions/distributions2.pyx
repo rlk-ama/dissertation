@@ -9,7 +9,7 @@ import numpy as np
 cimport numpy as np
 from cython.parallel import prange
 
-from libc.math cimport lgamma, log, exp, abs
+from libc.math cimport lgamma, log, exp
 from collections import Iterable
 
 cdef double PI = 3.14159265358979323846
@@ -19,19 +19,27 @@ cdef double[::1] density_normal_array(double[::1] x, double[::1] loc, double[::1
     cdef double[::1] ldensity = np.empty(dim)
     cdef double[::1] output = np.empty(dim)
     cdef int i
-    cdef double var, sigma
+    cdef double var, sigma, scale_abs
     for i in range(dim):
         var = scale[i]*scale[i]
-        ldensity[i] = -1/2.0*log(2*PI) -log(abs(scale[i])) - 1/(2*var)*(x[i]-loc[i])*(x[i]-loc[i])
+
+        if scale[i] < 0: scale_abs = -scale[i]
+        else: scale_abs = scale[i]
+
+        ldensity[i] = -1/2.0*log(2*PI) -log(scale_abs) - 1/(2*var)*(x[i]-loc[i])*(x[i]-loc[i])
         output[i] = exp(ldensity[i])
     return output
 
 cdef double[::1] density_lognormal_array(double[::1] x, double[::1] mean, double[::1] sigma, double[::1] output, int dim) nogil:
     cdef int i
-    cdef double var
+    cdef double var, sigma_abs
     for i in range(dim):
         var = sigma[i]*sigma[i]
-        output[i] = exp(-log(x[i]) - 1/2.0*log(2*PI) -log(sigma[i]) - 1/(2*var)*(log(x[i])-mean[i])*(log(x[i])-mean[i]))
+
+        if sigma[i] < 0: sigma_abs = -sigma[i]
+        else: sigma_abs = sigma[i]
+
+        output[i] = exp(-log(x[i]) - 1/2.0*log(2*PI) -log(sigma_abs) - 1/(2*var)*(log(x[i])-mean[i])*(log(x[i])-mean[i]))
     return output
 
 cdef double *density_poisson_array(double *x, double *lam, double *output, int dim) nogil:
