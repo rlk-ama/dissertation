@@ -6,14 +6,18 @@ from bootstrap.ricker_gamma import RickerMap
 from bootstrap.filter import BootstrapFilter
 from distributions.distributions2 import Gamma
 
-def perform_filter(inits=None, r=44.7, phi=10, sigma=0.5, NOS=50, NBS=1000, r_low=np.exp(2.5), r_high=np.exp(4.5), discretization=0.5):
+def perform_filter(inits=None, r=44.7, phi=10, sigma=0.5, NOS=50, NBS=1000, r_low=np.exp(2.5), r_high=np.exp(4.5),
+                   discretization=0.5, observations=None):
 
     if inits == None:
         inits = Gamma().sample(np.array([3], dtype=np.float64), np.array([1], dtype=np.float64))
 
-    Map_ref = RickerMap(r, phi, sigma, length=NOS, initial=inits, approx="simple")
-    state = Map_ref.state
-    observations = Map_ref.observations
+    if observations is None:
+        Map_ref = RickerMap(r, phi, sigma, length=NOS, initial=inits, approx="simple")
+        observations = Map_ref.observations
+    else:
+        observations = observations
+
     initial = {
         'distribution': Gamma,
         'shape': 3,
@@ -33,7 +37,6 @@ def perform_filter(inits=None, r=44.7, phi=10, sigma=0.5, NOS=50, NBS=1000, r_lo
     output = {
         'r': r,
         'rs': rs,
-        'state': state,
         'observations': observations,
         'likeli': likelis
     }
@@ -44,6 +47,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Options for the bootstrap filter")
     parser.add_argument("--inits", type=float, help="Initial value for the state")
+    parser.add_argument("--observations", type=argparse.FileType('r'), help="Observations, in a file, space separated")
     parser.add_argument("--r", type=float, help="Value for the parameter r in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
     parser.add_argument("--phi", type=float, help="Value for the parameter phi in the observation equation Y_t = Poisson(phi*N_t)")
     parser.add_argument("--sigma", type=float, help="Value for the standard deviation of Z_t in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
@@ -55,6 +59,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     arguments = {k:v for k,v in args.__dict__.items() if v and k != 'graphics'}
+
+    if 'observations' in arguments:
+        line = arguments['observations'].readline().split()
+        arguments['observations'] = np.array([float(obs) for obs in line])
 
     output = perform_filter(**arguments)
     length = len(output['likeli'])
