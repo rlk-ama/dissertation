@@ -6,13 +6,17 @@ from bootstrap.ricker_gamma import RickerMap
 from bootstrap.filter import BootstrapFilter
 from distributions.distributions2 import Gamma
 
-def perform_filter(inits=None, r=44.7, phi=10, sigma=0.5, NOS=50, NBS=1000):
+def perform_filter(inits=None, r=44.7, phi=10, sigma=0.5, NOS=50, NBS=1000, observations=None):
 
-    if inits == None:
+    if inits is None:
         inits = Gamma().sample(np.array([3], dtype=np.float64), np.array([1], dtype=np.float64))
 
-    Map_ricker = RickerMap(r, phi, sigma, length=NOS, initial=inits, approx="simple")
-    state = Map_ricker.state
+    if observations is None:
+        Map_ricker = RickerMap(r, phi, sigma, length=NOS, initial=inits, approx="simple")
+    else:
+        Map_ricker = RickerMap(r, phi, sigma, length=NOS, initial=inits, approx="simple", observations=observations)
+
+    state = None if observations is not None else Map_ricker.state
     observations = Map_ricker.observations
     initial = {
         'distribution': Gamma,
@@ -37,6 +41,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Options for the bootstrap filter")
     parser.add_argument("--inits", type=float, help="Initial value for the state")
+    parser.add_argument("--observations", type=argparse.FileType('r'), help="Observations, in a file, space separated")
     parser.add_argument("--r", type=float, help="Value for the parameter r in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
     parser.add_argument("--phi", type=float, help="Value for the parameter phi in the observation equation Y_t = Poisson(phi*N_t)")
     parser.add_argument("--sigma", type=float, help="Value for the standard deviation of Z_t in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
@@ -47,14 +52,30 @@ if __name__ == "__main__":
     args = parser.parse_args()
     arguments = {k:v for k,v in args.__dict__.items() if v and k != 'graphics'}
 
+    if 'inits' in arguments:
+        line = arguments['inits'][0].readline()
+        arguments['inits'] = np.array(line.split())
+
+    if 'observations' in arguments:
+        line = arguments['observations'].readline().split()
+        arguments['observations'] = np.array([float(obs) for obs in line])
+
     output = perform_filter(**arguments)
+
+    if 'observations' not in arguments:
+        with open('/home/raphael/ricker_state.txt', 'w') as f:
+            f.write(" ".join(map(str, output['state'])))
+            f.write("\n")
+        with open('/home/raphael/ricker_obs.txt', 'w') as f:
+            f.write(" ".join(map(str, output['observations'])))
+            f.write("\n")
 
     mean_esti = [np.mean(est) for est in output['estim']]
     NOS = len(mean_esti)
 
     if args.graphics:
         plt.plot([i for i in range(NOS)], mean_esti)
-        plt.plot([i for i in range(NOS)], output['state'])
+        plt.plot([i for i in range(NOS)], output['state'] if output['state'] is not None else output['observations'])
         plt.title("Simulated state (green) and filtered state (blue)")
         plt.show()
 
