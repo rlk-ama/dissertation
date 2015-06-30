@@ -16,7 +16,8 @@ cpdef double func_scale_obs(double sigma):
     return sigma
 
 cpdef double func_loc_proposal(double[::1] args, double phi, double scale_state, double scale_obs, double scale):
-    return scale*(phi*args[0]/scale_state*scale_state + args[1]/scale_obs*scale_obs)
+    cdef double output = scale*(phi*args[0]/(scale_state*scale_state) + args[1]/(scale_obs*scale_obs))
+    return output
 
 cpdef double func_scale_proposal(double scale):
     return sqrt(scale)
