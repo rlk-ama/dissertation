@@ -12,9 +12,11 @@ def perform_filter(inits=None, phi=0.95, scale_state=1, scale_obs=1, NOS=100, NB
     if inits == None:
         inits = Normal().sample(np.array([0], dtype=np.float64), np.array([1], dtype=np.float64))
 
-    Map_ref = KalmanMap(phi, scale_state, scale_obs, length=NOS, initial=inits)
-    state = Map_ref.state
-    observations = Map_ref.observations
+    if observations is None:
+        Map_ref = KalmanMap(phi, scale_state, scale_obs, length=NOS, initial=inits)
+        observations = Map_ref.observations
+    else:
+        observations = observations
 
 
     steps = int((phi_high-phi_low)/discretization) + 1
@@ -30,7 +32,6 @@ def perform_filter(inits=None, phi=0.95, scale_state=1, scale_obs=1, NOS=100, NB
     output = {
         'phi': phi,
         'phis': phis,
-        'state': state,
         'observations': observations,
         'likeli': likelis
     }
@@ -49,15 +50,24 @@ if __name__ == "__main__":
     parser.add_argument("--particles", dest="NBS", type=int, help="Number of particles")
     parser.add_argument("--phi_low", type=float, help="Start value for phi parameters in the state equation X_t = phi*X_{t-1} + Z_t")
     parser.add_argument("--phi_high", type=float, help="End value for phi parameters in the state equation X_t = phi*X_{t-1} + Z_t")
-    parser.add_argument("--distretization", type=float, help="Step in discretization of range of values for phi parameters in the state equation X_t = phi*X_{t-1} + Z_t")
+    parser.add_argument("--discretization", type=float, help="Step in discretization of range of values for phi parameters in the state equation X_t = phi*X_{t-1} + Z_t")
 
     args = parser.parse_args()
     arguments = {k:v for k,v in args.__dict__.items() if v and k != 'graphics'}
 
+    if 'observations' in arguments:
+        line = arguments['observations'].readline().split()
+        arguments['observations'] = np.array([float(obs) for obs in line])
+
     output = perform_filter(**arguments)
     length = len(output['likeli'])
 
+    maxi_phi = max(output['likeli'])
+    maxi_idx = output['likeli'].index(maxi_phi)
+    maxi  = output['phis'][maxi_idx]
+
     plt.plot(output['phis'], output['likeli'])
     plt.axvline(x=output['phi'])
+    plt.axvline(x=maxi, color='red')
     plt.title("Likelihood")
     plt.show()
