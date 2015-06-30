@@ -15,11 +15,13 @@ def perform_filter(inits=None, r_obs=44.7, phi_obs=10, sigma_obs=0.5, r_esti=46,
     Map_ricker = RickerMap(r_esti, phi_esti, sigma_esti, length=NOS, initial=inits, approx="simple", observations=Map_obs.observations)
     state = Map_obs.state
     observations = Map_obs.observations
+
     initial = {
         'distribution': Gamma,
         'shape': 3,
         'scale': 1,
     }
+
     filter_obs = BootstrapFilter(0, NOS, NBS, Map_obs, proposal={'optimal': True}, initial=initial)
     filter = BootstrapFilter(0, NOS, NBS, Map_ricker, proposal={'optimal': True}, initial=initial)
     proposal_obs, estim_obs, likeli_obs, ESS_obs = next(filter_obs.filter())
@@ -33,6 +35,7 @@ def perform_filter(inits=None, r_obs=44.7, phi_obs=10, sigma_obs=0.5, r_esti=46,
         'likeli': likeli,
         'likeli_obs': likeli_obs,
         'ESS': ESS,
+        'ESS_obs': ESS_obs,
     }
 
     return output
@@ -55,8 +58,8 @@ if __name__ == "__main__":
 
     for key, value in arguments.items():
         if key in {'r', 'phi', 'sigma'}:
-            arguments['%s_true' % key] = value[0]
-            arguments['%s_wrong' % key] = value[1]
+            arguments['%s_obs' % key] = value[0]
+            arguments['%s_esti' % key] = value[1]
 
     if 'r' in arguments:
         arguments.pop('r')
@@ -75,18 +78,12 @@ if __name__ == "__main__":
     plt.title("Simulated state (green) and filtered state (blue)")
     plt.show()
 
+    plt.plot([i for i in range(NOS)], output['ESS_obs'])
     plt.plot([i for i in range(NOS)], output['ESS'])
-    plt.title("Effective sample sizes")
+    plt.title("Effective sample sizes for true (blue) and wrong (green) parameters")
     plt.show()
 
-    plt.plot([i for i in range(NOS)], output['likeli'])
     plt.plot([i for i in range(NOS)], output['likeli_obs'])
-    plt.title("Likelihood for true parameters (green) and wrong parameters (blue)")
-    plt.show()
-
-    fig, ax1 = plt.subplots()
-    ax1.plot([i for i in range(NOS)], output['observations'])
-    ax2 = ax1.twinx()
-    ax2.plot([i for i in range(NOS)], output['ESS'], color="red")
-    plt.title("Observations (red), ESS (blue)")
+    plt.plot([i for i in range(NOS)], output['likeli'])
+    plt.title("Likelihood for true parameters (blue) and wrong parameters (green)")
     plt.show()
