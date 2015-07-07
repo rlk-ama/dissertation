@@ -34,6 +34,8 @@ class BootstrapFilter(object):
         likelihoods[0] = likelihood
 
         for i in range(self.start+1, self.end):
+            lweights = np.log(weights)
+            weights = np.exp(lweights - max(lweights))
             np.divide(weights, sum(weights), out=weights)
             ESS[i-1] = (1/sum(np.multiply(weights, weights)))
 
