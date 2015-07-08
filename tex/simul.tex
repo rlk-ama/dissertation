@@ -191,11 +191,11 @@ To assess our particle filter we calculated the mean squared errors for each par
 	\begin{table}[htb]
 		\centering
 		\vspace{5mm}
-		\begin{tabular}{c|c|c}
-			Parameter & Wood's MSE & our MSE \\ \hline
-			$r$ & 0.0152 & 27.97 \\ \hline
-			$\phi$ & 0.0119 & 0.197\\ \hline
-			$\sigma$ & 0.0526 &  0.0027 \\ \hline
+		\begin{tabular}{c|c|c|c}
+			Parameter & Wood's MSE & our MSE for 50 steps & our MSE for 100 steps\\ \hline
+			$r$ & 0.0152 & 27.97 & 14.7 \\ \hline
+			$\phi$ & 0.0119 & 0.197 & 0.11\\ \hline
+			$\sigma$ & 0.0526 &  0.0027 & 0.23 \\ \hline
 		\end{tabular}
 		\caption{Mean squared errors of the posterior means obtained by Wood and in our study.}
 		\label{table:mse}
