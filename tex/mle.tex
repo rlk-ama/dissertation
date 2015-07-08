@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[fleqn]{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{natbib}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{array}
+\usepackage{bbold}
+\usepackage{amssymb}
+\usepackage[procnames]{listings}
+\usepackage{color}
+\usepackage{graphicx}
+
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\title{Comparison between the optimal proposal and the prior proposal}
+\author{Raphael Lopez Kaufman}
+\date{}
+
+\begin{document}
+
+We compared the stability of the maximum likelihood estimate for r when using the prior and optimal proposal. We used simulated data with $\mathrm{T}=50$, $r=44.7$, $\phi=10$ and $\sigma=0.5$. We calculated the likelihood for $r \in [12, 90]$ using a discretisation size equal to 0.5 and 1000 particles. We repeated the experiment 50 times. The variance of the MLE we found was equal to 8.25 using the prior proposal and 4.03 using the optimal one. Figure~\ref{fig:comparison} shows the MLE obtained across the iterations.
+
+\begin{figure}[htb]
+	\centering
+	\begin{minipage}{0.9\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_prior.pdf}
+	\end{minipage}
+	\begin{minipage}{.9\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_optimal.pdf}
+	\end{minipage}
+	\caption{MLE for r with \textbf{(left)} prior,\textbf{(right)} optimal proposal}
+	\label{fig:comparison}
+\end{figure}
+	
+\end{document}
