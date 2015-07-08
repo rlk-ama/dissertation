@@ -54,12 +54,14 @@ class BootstrapFilter(object):
 
             obs = self.Map.conditional.density(particles, self.observations[i])
             transi = self.Map.kernel.density(particles, ancestors)
-            weights_n = np.zeros(N)
-            np.multiply(obs, transi, out=weights_n)
-            np.divide(weights_n, denom, out=weights_n)
-            if sum(weights_n) == 0:
-                continue
-            weights = np.copy(weights_n)
+            np.multiply(obs, transi, out=weights)
+            np.divide(weights, denom, out=weights)
+
+            if sum(weights) == 0:
+                likelihoods[i:].fill(-np.inf)
+                particles_all[i-1] = ancestors
+                return particles_all, likelihoods, ESS
+
             likelihood += -np.log(N) + np.log(sum(weights))
 
             likelihoods[i] = likelihood
@@ -100,12 +102,13 @@ class BootstrapFilter(object):
 
             obs = self.Map.conditional.density(particles, self.observations[i])
             transi = self.Map.kernel.density(particles, ancestors)
-            weights_n = np.zeros(N)
-            np.multiply(obs, transi, out=weights_n)
-            np.divide(weights_n, denom, out=weights_n)
-            if sum(weights_n) == 0:
-                continue
-            weights = np.copy(weights_n)
+            np.multiply(obs, transi, out=weights)
+            np.divide(weights, denom, out=weights)
+
+            if sum(weights) == 0:
+                likelihoods[i:].fill(-np.inf)
+                return likelihoods
+
             likelihood += -np.log(N) + np.log(sum(weights))
 
             likelihoods[i] = likelihood
