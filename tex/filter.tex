@@ -1,0 +1,123 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[fleqn]{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{natbib}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{array}
+\usepackage{bbold}
+\usepackage{amssymb}
+\usepackage[procnames]{listings}
+\usepackage{color}
+\usepackage{graphicx}
+
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\title{Filter diagnostic}
+\author{Raphael Lopez Kaufman}
+\date{}
+
+\begin{document}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_r_log_500.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_r_log_1000.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_r_log_1500.pdf}
+		\end{minipage}
+		\caption{Evolution of likelihood with $r$ for \textbf{(top)}500, \textbf{(middle)}1000 and \textbf{(bottom)}1500 particles (log scale)}
+		\label{fig:r}
+	\end{figure}
+	
+		\begin{figure}[htb]
+			\centering
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_phi_ricker_500.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_phi_ricker_1000.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_phi_ricker_1500.pdf}
+			\end{minipage}
+			\caption{Evolution of likelihood with $\phi$ for \textbf{(top)}500, \textbf{(middle)}1000 and \textbf{(bottom)}1500 particles}
+			\label{fig:phi}
+		\end{figure}
+
+		\begin{figure}[htb]
+			\centering
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_sigma_500.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_sigma_1000.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_sigma_1500.pdf}
+			\end{minipage}
+			\caption{Evolution of likelihood with $\sigma$ for \textbf{(top)}500, \textbf{(middle)}1000 and \textbf{(bottom)}1500 particles}
+			\label{fig:sigma}
+		\end{figure}
+		
+		\begin{figure}[htb]
+			\centering
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_phi_500.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_phi_1000.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_phi_1500.pdf}
+			\end{minipage}
+			\caption{Evolution of likelihood with $\phi$ for \textbf{(top)}500, \textbf{(middle)}1000 and \textbf{(bottom)}1500 particles}
+			\label{fig:phikal}
+		\end{figure}
+		
+		\begin{figure}[htb]
+			\centering
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/optimal_prior_kalman.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/ess_optimal_prior_kalman.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/likeli_optimal_prior_kalman.pdf}
+			\end{minipage}
+			\caption{\textbf{(top)}Observations and filtered state \textbf{(middle)} ESS and \textbf{(bottom)} log likelihoods}
+			\label{fig:kalman}
+		\end{figure}
+
+\end{document}
