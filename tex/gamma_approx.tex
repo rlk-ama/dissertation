@@ -42,7 +42,7 @@
 
 
 \section*{Bootstrap filter}
-In order to test a Python implementation of the bootstrap filter(which can be found here: https://github.com/rlk-ama/dissertation/bootstrap-filter/filter.py) we used the following simple model:
+In order to test a Python implementation of the bootstrap filter(which can be found here: https://github.com/rlk-ama/dissertation/bootstrap/filter.py) we used the following simple model:
 \begin{equation*}
 X_t = \phi X_{t-1} + V_t
 \end{equation*}
@@ -56,11 +56,11 @@ We compared the values of $\mathrm{E}[X_t|y_{0:t}]$ given by our implementation 
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/verif_filter.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/verif_filter.pdf}
 	\end{minipage}
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/ESS_filter.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/ESS_filter.pdf}
 	\end{minipage}
 	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the Python implementation of the bootstrap filter \textbf{(blue)} and a Kalman filter \textbf{(green)}. \textbf{(right)} The ESS for the Python implementation of the bootstrap filter. }
 	\label{fig:bootstrap}
@@ -77,11 +77,11 @@ where $ESS_t$ is the effective sample size at step $t$, $N$ the number of partic
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/cvESS4.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/cvESS4.pdf}
 	\end{minipage}
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/cvESS5.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/cvESS5.pdf}
 	\end{minipage}
 	\caption{$\frac{ESS_t}{N}$ as $N$ goes from 10 to 1000}
 	\label{fig:conv}
@@ -133,11 +133,11 @@ Figure~\ref{fig:approx} shows the quality of the approximation which seems decen
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/approx03.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/approx03.pdf}
 	\end{minipage}
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/approxcoeff5sigma03.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/approxcoeff5sigma03.pdf}
 	\end{minipage}
 	\caption{\textbf{(left)}QQ plot comparing a $\log\mathcal{N}(0, 0.3)$ and its gamma approximation. \textbf{(right)} QQ plot comparing a $\log\mathcal{N}(\log(5), 0.3)$ and its gamma approximation.}
 	\label{fig:approx}
@@ -159,11 +159,11 @@ Simulation carried out with $\log(r)=3$, $\phi=10$ and $\sigma=0.3$. We also set
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/diagno_prior.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/diagno_prior.pdf}
 	\end{minipage}
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/ESS_prior.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/ESS_prior.pdf}
 	\end{minipage}
 	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the prior proposal \textbf{(green)} simulated states \textbf{(blue)}. \textbf{(right)} The corresponding ESS. }
 	\label{fig:prior}
@@ -173,11 +173,11 @@ Simulation carried out with $\log(r)=3$, $\phi=10$ and $\sigma=0.3$. We also set
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/diagno_optimal.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/diagno_optimal.pdf}
 	\end{minipage}
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/ESS_optimal.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/ESS_optimal.pdf}
 	\end{minipage}
 	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the gamma proposal \textbf{(green)} simulated states \textbf{(blue)}. \textbf{(right)} The corresponding ESS. }
 	\label{fig:gamma}
@@ -220,11 +220,11 @@ Figure~\ref{fig:approx2} shows the quality of the approximation. The tails of th
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/approx203.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/approx203.pdf}
 	\end{minipage}
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/approx2coeff5sigma03.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/approx2coeff5sigma03.pdf}
 	\end{minipage}
 	\caption{\textbf{(left)}QQ plot comparing a $\log\mathcal{N}(0, 0.3)$ and its gamma approximation. \textbf{(right)} QQ plot comparing a $\log\mathcal{N}(\log(5), 0.3)$ and its gamma approximation.}
 	\label{fig:approx2}
@@ -236,11 +236,11 @@ Figure~\ref{fig:gamma2} shows the result of the simulation with the gamma propos
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/diagno_gamma2.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/diagno_gamma2.pdf}
 	\end{minipage}
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=0.97\linewidth]{bootstrap-filter/ESS_gamma2.pdf}
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/ESS_gamma2.pdf}
 	\end{minipage}
 	\caption{\textbf{(left)} Comparison of the expected value of the filtering distribution obtained using the prior proposal \textbf{(green)} simulated states \textbf{(blue)}. \textbf{(right)} The corresponding ESS. }
 	\label{fig:gamma2}
