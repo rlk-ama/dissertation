@@ -89,3 +89,5 @@ if __name__ == "__main__":
     plt.axhline(y=output['r'], color='red')
     plt.title("MSE for r with optimal proposal")
     plt.show()
+
+    print(np.var(output['prior']), np.var(output['optimal']))
