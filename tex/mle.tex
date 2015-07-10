@@ -30,7 +30,35 @@
 
 \begin{document}
 
-We compared the stability of the maximum likelihood estimate for r when using the prior and optimal proposal. We used simulated data with $\mathrm{T}=50$, $r=44.7$, $\phi=10$ and $\sigma=0.5$. We calculated the likelihood for $r \in [12, 90]$ using a discretisation size equal to 0.5 and 1000 particles. We repeated the experiment 50 times. The variance of the MLE we found was equal to 8.25 using the prior proposal and 4.03 using the optimal one. Figure~\ref{fig:comparison} shows the MLE obtained across the iterations.
+We compared the stability of the maximum likelihood estimate for r when using the prior and optimal proposal. We used simulated data with $\mathrm{T}=50$, $r=44.7$, $\phi=10$ and $\sigma=0.5$. We calculated the likelihood for $r \in [12, 90]$ using a discretisation size equal to 0.5. We repeated the experiment 50 times. The variances obtained using different numbers of particles are displayed in Table~\ref{table:mle}. Figure~\ref{fig:comparison500}, Figure~\ref{fig:comparison1000}, Figure~\ref{fig:comparison1500} shows the MLE obtained across the iterations using 500, 1000 and 1500 particles.
+
+	\begin{table}[htb]
+		\centering
+		\vspace{5mm}
+		\begin{tabular}{c|c|c}
+			Number of particles & Variance of MLE using prior &  Variance of MLE using gamma approximation \\ \hline
+			500 & 7.99 & 4.71\\ \hline
+			1000 & 8.25 & 4.03 \\ \hline
+			1500 & 6.28 &  2.88 \\ \hline
+		\end{tabular}
+		\caption{Variance of the MLE for r obtained using 500, 1000 and 1500 particles}
+		\label{table:mle}
+		\vspace{5mm}
+	\end{table}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_prior_500.pdf}
+		\end{minipage}
+		\begin{minipage}{.9\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_optimal_500.pdf}
+		\end{minipage}
+		\caption{MLE for r with \textbf{(left)} prior,\textbf{(right)} optimal proposal}
+		\label{fig:comparison500}
+	\end{figure}
 
 \begin{figure}[htb]
 	\centering
@@ -43,7 +71,21 @@ We compared the stability of the maximum likelihood estimate for r when using th
 		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_optimal.pdf}
 	\end{minipage}
 	\caption{MLE for r with \textbf{(left)} prior,\textbf{(right)} optimal proposal}
-	\label{fig:comparison}
+	\label{fig:comparison1000}
 \end{figure}
+
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_prior_1500.pdf}
+		\end{minipage}
+		\begin{minipage}{.9\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_optimal_1500.pdf}
+		\end{minipage}
+		\caption{MLE for r with \textbf{(left)} prior,\textbf{(right)} optimal proposal}
+		\label{fig:comparison1500}
+	\end{figure}
 	
 \end{document}
