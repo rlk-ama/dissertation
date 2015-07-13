@@ -76,3 +76,5 @@ tex/*blg
 
 #idea files
 *.idea
+
+ricker-libbi/samples*.txt
