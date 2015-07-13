@@ -6,8 +6,8 @@ from bootstrap.ricker_gamma import RickerMap
 from bootstrap.filter import BootstrapFilter
 from distributions.distributions2 import Gamma
 
-def perform_filter(inits=None, r=44.7, phi=10, sigma=0.5, NOS=50, NBS=1000, phi_low=5, phi_high=15,
-                   discretization=0.5, observations=None):
+def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, NOS=50, NBS=1000, low=np.exp(2.5), high=np.exp(4.5),
+                   discretization=0.5, observations=None, variable='r'):
 
     if inits == None:
         inits = Gamma().sample(np.array([3], dtype=np.float64), np.array([1], dtype=np.float64))
@@ -24,19 +24,29 @@ def perform_filter(inits=None, r=44.7, phi=10, sigma=0.5, NOS=50, NBS=1000, phi_
         'scale': 1,
     }
 
-    steps = int((phi_high-phi_low)/discretization) + 1
-    phis = np.linspace(phi_low, phi_high, steps)
+    steps = int((high-low)/discretization) + 1
+    variables = np.linspace(low, high, steps)
     likelis = []
 
-    for phi_ in phis:
-        Map_ricker = RickerMap(r, phi_, sigma, length=NOS, initial=inits, approx="simple", observations=observations)
+    for variable_ in variables:
+
+        if variable == 'r':
+            Map_ricker = RickerMap(variable_, phi, sigma, length=NOS, initial=inits, approx="simple", observations=observations)
+        elif variable == 'phi':
+            Map_ricker = RickerMap(r, variable_, sigma, length=NOS, initial=inits, approx="simple", observations=observations)
+        elif variable == 'sigma':
+            Map_ricker = RickerMap(r, phi, variable_, length=NOS, initial=inits, approx="simple", observations=observations)
+        else:
+            raise Exception("Parameter does not exist")
+
         filter = BootstrapFilter(0, NOS, NBS, Map_ricker, proposal={'optimal': True}, initial=initial, likeli=True)
         proposal, likeli = next(filter.filter())
         likelis.append(likeli[-1])
+        print(variable_)
 
     output = {
-        'phi': phi,
-        'phis': phis,
+        'variable': r if variable == 'r' else (phi if variable == 'phi' else sigma),
+        'variables': variables,
         'observations': observations,
         'likeli': likelis
     }
@@ -53,12 +63,13 @@ if __name__ == "__main__":
     parser.add_argument("--sigma", type=float, help="Value for the standard deviation of Z_t in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
     parser.add_argument("--number", dest="NOS", type=int, help="Number of observations")
     parser.add_argument("--particles", dest="NBS", type=int, help="Number of particles")
-    parser.add_argument("--phi_low", type=float, help="Start value for phi parameters in the state equation Y_t = Poisson(phi*N_t)")
-    parser.add_argument("--phi_high", type=float, help="End value for phi parameters in the state equation Y_t = Poisson(phi*N_t)")
-    parser.add_argument("--discretization", type=float, help="Step in discretization of range of values for phi parameters in the state equation Y_t = Poisson(phi*N_t)")
+    parser.add_argument("--variable", type=str, help="Variable you want to find the MLE of (among r, phi and sigma)", required=True)
+    parser.add_argument("--low", type=float, help="Start value for the variable in the state or observation equation")
+    parser.add_argument("--high", type=float, help="End value for the variable in the state or observation equation")
+    parser.add_argument("--discretization", type=float, help="Step in discretization of range of values for r parameters in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
 
     args = parser.parse_args()
-    arguments = {k:v for k,v in args.__dict__.items() if v and k != 'graphics'}
+    arguments = {k:v for k,v in args.__dict__.items() if v}
 
     if 'observations' in arguments:
         line = arguments['observations'].readline().split()
@@ -67,12 +78,19 @@ if __name__ == "__main__":
     output = perform_filter(**arguments)
     length = len(output['likeli'])
 
-    maxi_phi = max(output['likeli'])
-    maxi_idx = output['likeli'].index(maxi_phi)
-    maxi  = output['phis'][maxi_idx]
+    maxi_variable = max(output['likeli'])
+    maxi_idx = output['likeli'].index(maxi_variable)
+    maxi  = output['variables'][maxi_idx]
 
-    plt.plot(output['phis'], output['likeli'])
-    plt.axvline(x=output['phi'])
+    plt.plot(output['variables'], output['likeli'])
+    plt.axvline(x=output['variable'])
     plt.axvline(x=maxi, color='red')
     plt.title("Likelihood")
+    plt.show()
+
+    plt.plot(output['variables'], output['likeli'])
+    plt.axvline(x=output['variable'])
+    plt.axvline(x=maxi, color='red')
+    plt.title("Likelihood on log scale")
+    plt.xscale('log')
     plt.show()
