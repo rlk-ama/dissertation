@@ -94,9 +94,11 @@ if __name__ == "__main__":
     particles = args.NBS
     with open(''.join([path, 'prior_{}_{}.txt'.format(variable, particles)]) if path[-1] == '/' else '/'.join([path, 'prior_{}_{}.txt'.format(variable, particles)]), 'w') as f:
         f.write(' '.join(map(str, output['prior'])))
+        f.write('\n')
 
     with open(''.join([path, 'gamma_{}_{}.txt'.format(variable, particles)]) if path[-1] == '/' else '/'.join([path, 'gamma_{}_{}.txt'.format(variable, particles)]), 'w') as f:
         f.write(' '.join(map(str, output['optimal'])))
+        f.write('\n')
 
     plt.plot([i for i in range(output['repeat'])], output['prior'])
     plt.axhline(y=output['variable'], color='red')
