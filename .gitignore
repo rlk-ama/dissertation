@@ -78,3 +78,8 @@ tex/*blg
 *.idea
 
 ricker-libbi/samples*.txt
+ricker-libbi/data/
+ricker-libbi/results/
+.Ricker/
+
+unused/
