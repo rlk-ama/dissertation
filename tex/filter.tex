@@ -24,12 +24,34 @@
 \addtolength{\topmargin}{-.875in}
 \addtolength{\textheight}{1.75in}
 
+\makeatletter
+\newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
+\newsavebox{\mybox}\newsavebox{\mysim}
+\newcommand{\distras}[1]{%
+	\savebox{\mybox}{\hbox{\kern3pt$\scriptstyle#1$\kern3pt}}%
+	\savebox{\mysim}{\hbox{$\sim$}}%
+	\mathbin{\overset{#1}{\kern\z@\resizebox{\wd\mybox}{\ht\mysim}{$\sim$}}}%
+}
+\makeatother
+
 \title{Filter diagnostic}
 \author{Raphael Lopez Kaufman}
 \date{}
 
 \begin{document}
 	
+	
+Figure~\ref{fig:kalman} shows the filtered state, the ESS and the log-likelihood obtained using a Kalman filter, a particle filter with the transition density as the proposal and one with the optimal density as the proposal.
+The state space model was:
+\begin{equation*}
+X_t = \phi X_{t-1} + \sigma_V V_t
+\end{equation*}
+\begin{equation*}
+Y_t = X_t + \sigma_W W_t
+\end{equation*}
+where $V_t, W_t \distas{iid} \mathcal{N} (0,1)$, $\phi=0.95$, $\sigma_V = 0.6$ $\sigma_W = 0.7$
+
+\iffalse
 	\begin{figure}[htb]
 		\centering
 		\begin{minipage}{0.6\textwidth}
@@ -83,6 +105,7 @@
 			\caption{Evolution of likelihood with $\sigma$ for \textbf{(top)}500, \textbf{(middle)}1000 and \textbf{(bottom)}1500 particles}
 			\label{fig:sigma}
 		\end{figure}
+
 		
 		\begin{figure}[htb]
 			\centering
@@ -101,7 +124,8 @@
 			\caption{Evolution of likelihood with $\phi$ for \textbf{(top)}500, \textbf{(middle)}1000 and \textbf{(bottom)}1500 particles}
 			\label{fig:phikal}
 		\end{figure}
-		
+
+\fi
 		\begin{figure}[htb]
 			\centering
 			\begin{minipage}{0.6\textwidth}
