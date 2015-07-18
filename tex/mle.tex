@@ -30,62 +30,246 @@
 
 \begin{document}
 
-We compared the stability of the maximum likelihood estimate for r when using the prior and optimal proposal. We used simulated data with $\mathrm{T}=50$, $r=44.7$, $\phi=10$ and $\sigma=0.5$. We calculated the likelihood for $r \in [12, 90]$ using a discretisation size equal to 0.5. We repeated the experiment 50 times. The variances obtained using different numbers of particles are displayed in Table~\ref{table:mle}. Figure~\ref{fig:comparison500}, Figure~\ref{fig:comparison1000}, Figure~\ref{fig:comparison1500} shows the MLE obtained across the iterations using 500, 1000 and 1500 particles.
+We compared the stability of the maximum likelihood estimate for r when using the transition density as the proposal and the gamma approximation to the optimal proposal. We used simulated data with $\mathrm{T}=50$, $r=44.7$, $\phi=10$ and $\sigma=0.3$. We calculated the likelihood for $r \in [12, 90]$ using a discretisation size equal to 0.5. We repeated the experiment 50 times. The variances obtained using different numbers of particles are displayed in Table~\ref{table:mle}. Figure~\ref{fig:comparisonr}, shows the MLE obtained across the iterations using 500, 1000 and 1500 particles.
+
+We used the same methodology for $\phi$ and $\sigma$, using respectively a discretisation path of 0.06 and 0.003 in the intervals [5, 15] and [0.15, 0.6]. Table~\ref{fig:mlephi}, Table~\ref{fig:mlesigma}, Figure~\ref{fig:comparisonphi} and Figure~\ref{fig:comparisonsigma}
+
+
+Figure~\ref{fig:likelir} shows the log-likelihood, on a log scale, as r increases. The MLE is signalled by the red vertical bar, whereas the true value of r by a blue one. 
 
 	\begin{table}[htb]
 		\centering
 		\vspace{5mm}
-		\begin{tabular}{c|c|c}
-			Number of particles & Variance of MLE using prior &  Variance of MLE using gamma approximation \\ \hline
-			500 & 7.99 & 4.71\\ \hline
-			1000 & 8.25 & 4.03 \\ \hline
-			1500 & 6.28 &  2.88 \\ \hline
+		\begin{tabular}{c|c|c|c|c}
+			Nb of particles & Var prior &  Var gamma approx & MSE prior & MSE gamma approx \\ \hline
+			50 & 21.23 & 13.12 & 26.78 & 16.15\\ \hline
+			100 & 11.12 & 10.59 & 15.10 & 15.28\\ \hline
+			200 & 8.65 & 5.18 & 10.56 & 8.08\\ \hline
+			500 & 4.95 & 4.59 & 9.37 & 8.06\\ \hline
+			1000 & 4.52 & 2.76 & 7.79 & 6.13\\ \hline
+			1500 & 3.07 & 2.41 & 6.50 & 6.17 \\ \hline
 		\end{tabular}
-		\caption{Variance of the MLE for r obtained using 500, 1000 and 1500 particles}
+		\caption{Variance and MSE of the MLE for r obtained using 50, 100, 200, 500, 1000 and 1500 particles}
 		\label{table:mle}
 		\vspace{5mm}
 	\end{table}
+
+	\begin{table}[htb]
+		\centering
+		\vspace{5mm}
+		\begin{tabular}{c|c|c|c|c}
+			Nb of particles & Var prior &  Var gamma approx & MSE prior & MSE gamma approx \\ \hline
+			50 & 0.079 & 0.055 & 0.010 & 0.055\\ \hline
+			100 & 0.048 & 0.036 & 0.049 & 0.042\\ \hline
+			200 & 0.040 & 0.033 & 0.040 & 0.033\\ \hline
+			500 & 0.024 & 0.018 & 0.024 & 0.020\\ \hline
+			1000 & 0.019 & 0.015 & 0.020 & 0.018\\ \hline
+			1500 & 0.015 & 0.011 & 0.015 & 0.011 \\ \hline
+		\end{tabular}
+		\caption{Variance and MSE of $\phi$ the MLE for phi obtained using 50, 100, 200, 500, 1000 and 1500 particles}
+		\label{table:mlephi}
+		\vspace{5mm}
+	\end{table}
+
+	\begin{table}[htb]
+		\centering
+		\vspace{5mm}
+		\begin{tabular}{c|c|c|c|c}
+			Nb of particles & Var prior &  Var gamma approx & MSE prior & MSE gamma approx \\ \hline
+			50 & 0.0043 & 0.0027 & 0.0061 & 0.0074\\ \hline
+			100 & 0.0036 & 0.0022 & 0.0069 & 0.0081\\ \hline
+			200 & 0.0023 & 0.0018 & 0.0084 & 0.0100\\ \hline
+			500 & 0.0015 & 0.0011 & 0.0084 & 0.0094\\ \hline
+			1000 & 0.00093 & 0.00086 & 0.0089 & 0.0087\\ \hline
+			1500 & 0.0013 & 0.00085 & 0.0082 & 0.0082 \\ \hline
+		\end{tabular}
+		\caption{Variance and MSE of $\sigma$ the MLE for phi obtained using 50, 100, 200, 500, 1000 and 1500 particles}
+		\label{table:mlesigma}
+		\vspace{5mm}
+	\end{table}
+
 	
 	\begin{figure}[htb]
 		\centering
-		\begin{minipage}{0.9\textwidth}
+		\begin{minipage}{0.3\textwidth}
 			\centering
-			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_prior_500.pdf}
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_prior_50.pdf}
 		\end{minipage}
-		\begin{minipage}{.9\textwidth}
+		\begin{minipage}{.3\textwidth}
 			\centering
-			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_optimal_500.pdf}
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_prior_100.pdf}
 		\end{minipage}
-		\caption{MLE for r with \textbf{(left)} prior,\textbf{(right)} optimal proposal}
-		\label{fig:comparison500}
+		\begin{minipage}{0.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_prior_200.pdf}
+		\end{minipage}
+		\begin{minipage}{0.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_gamma_50.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_gamma_100.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_gamma_200.pdf}
+		\end{minipage}
+		\begin{minipage}{0.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_prior_500.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_prior_1000.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_prior_1500.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_gamma_500.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_gamma_1000.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_r_gamma_1500.pdf}
+		\end{minipage}
+		\caption{MLE for r with \textbf{(top)} transition density proposal,\textbf{(bottom)} gamma approximation to optimal proposal for \textbf{(left)} 500, \textbf{(middle)} 1000, \textbf{(right)} 1500 particles}
+		\label{fig:comparisonr}
 	\end{figure}
-
-\begin{figure}[htb]
-	\centering
-	\begin{minipage}{0.9\textwidth}
-		\centering
-		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_prior.pdf}
-	\end{minipage}
-	\begin{minipage}{.9\textwidth}
-		\centering
-		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_optimal.pdf}
-	\end{minipage}
-	\caption{MLE for r with \textbf{(left)} prior,\textbf{(right)} optimal proposal}
-	\label{fig:comparison1000}
-\end{figure}
-
+	
 	\begin{figure}[htb]
 		\centering
-		\begin{minipage}{0.9\textwidth}
+		\begin{minipage}[t]{0.3\textwidth}
 			\centering
-			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_prior_1500.pdf}
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mlelikelir.pdf}
 		\end{minipage}
-		\begin{minipage}{.9\textwidth}
+		\begin{minipage}[t]{.3\textwidth}
 			\centering
-			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle_r_optimal_1500.pdf}
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mlelikelir_1000.pdf}
 		\end{minipage}
-		\caption{MLE for r with \textbf{(left)} prior,\textbf{(right)} optimal proposal}
-		\label{fig:comparison1500}
+		\begin{minipage}[t]{0.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mlelikelir_1500.pdf}
+		\end{minipage}
+		\caption{Log-likeihood for r with gamma approximation to optimal proposal for \textbf{(left)} 500, \textbf{(middle)} 1000, \textbf{(right)} 1500 particles}
+		\label{fig:likelir}
+	\end{figure}
+	
+
+	\begin{figure}[htb]
+	\centering
+	\begin{minipage}{0.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_prior_50.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_prior_100.pdf}
+	\end{minipage}
+	\begin{minipage}{0.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_prior_200.pdf}
+	\end{minipage}
+	\begin{minipage}{0.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_gamma_50.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_gamma_100.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_gamma_200.pdf}
+	\end{minipage}
+	
+	\begin{minipage}{0.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_prior_500.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_prior_1000.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_prior_1500.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_gamma_500.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_gamma_1000.pdf}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\centering
+		\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_phi_gamma_1500.pdf}
+	\end{minipage}
+	\caption{MLE for $\phi$ with \textbf{(top)} transition density proposal,\textbf{(bottom)} gamma approximation to optimal proposal for \textbf{(left)} 500, \textbf{(middle)} 1000, \textbf{(right)} 1500 particles}
+	\label{fig:comparisonphi}
+\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_prior_50.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_prior_100.pdf}
+		\end{minipage}
+		\begin{minipage}{0.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_prior_200.pdf}
+		\end{minipage}
+		\begin{minipage}{0.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_gamma_50.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_gamma_100.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_gamma_200.pdf}
+		\end{minipage}
+		
+		\begin{minipage}{0.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_prior_500.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_prior_1000.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_prior_1500.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_gamma_500.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_gamma_1000.pdf}
+		\end{minipage}
+		\begin{minipage}{.3\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mle2_sigma_gamma_1500.pdf}
+		\end{minipage}
+		\caption{MLE for $\sigma$ with \textbf{(top)} transition density proposal,\textbf{(bottom)} gamma approximation to optimal proposal for \textbf{(left)} 500, \textbf{(middle)} 1000, \textbf{(right)} 1500 particles}
+		\label{fig:comparisonsigma}
 	\end{figure}
 	
 \end{document}
