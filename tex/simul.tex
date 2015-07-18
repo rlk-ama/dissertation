@@ -169,56 +169,6 @@ Finally, Figure~\ref{fig:running} shows plots of the running means for each of t
 		\caption{Plots showing the evolution of the  Gelman and Rubin's shrink factor for samples from\textbf{(first row)} $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$ across 10 chains}
 		\label{fig:gelman}
 	\end{figure}
-	
-\clearpage 
-
-To assess our particle filter we calculated the mean squared errors for each parameters a well as the median and inter-quartile range of the squared errors, averaged geometrically across the parameters, that is to say $e_j = (\hat{r}_j-r)(\hat{\sigma}_j-\sigma)(\hat{\phi}_j-\phi)$ where $j$ denotes the number of the experiment (16 in total) and a hat denotes a posterior mean. Table~\ref{table:new} shows the new settings for these simulations. Table~\ref{table:mse} compares the mean squared errors obtained for 250 datasets by Wood with the one we obtained for 16 datasets (note that figures given for Wood are for a the Generalized Ricker Map as results for the Simple Ricker Map are not given in his paper). These poor results are confirmed by the running means (displayed in Figure~\ref{fig:rm}) which shows how, except for $\sigma$, we obtain posterior means away from the true value of the parameters used for simulation, and especially for $r$. Similarly we obtained for the $e_j$'s a median equal to 0.1 with an inter-quartile range equal to 0.19 whereas Wood obtained for these values 0.005 and 0.01.
-
-	\begin{table}[htb]
-		\centering
-		\vspace{5mm}
-		\begin{tabular}{c|c|c|c}
-			Parameter & True value &  Mean of initialisation normal &  Uniform prior \\ \hline
-			$r$ & 44.7 & 40 & $[24.7, 64.7]$\\ \hline
-			$\phi$ & 10 & 7 & $[5, 15]$\\ \hline
-			$\sigma$ & 0.2 &  0.5 & $[0.15, 0.45]$\\ \hline
-		\end{tabular}
-		\caption{Parameters used in the simulation to estimate $r$, $\phi$ and $\sigma$}
-		\label{table:new}
-		\vspace{5mm}
-	\end{table}
-
-	\begin{table}[htb]
-		\centering
-		\vspace{5mm}
-		\begin{tabular}{c|c|c|c}
-			Parameter & Wood's MSE & our MSE for 50 steps & our MSE for 100 steps\\ \hline
-			$r$ & 0.0152 & 27.97 & 14.7 \\ \hline
-			$\phi$ & 0.0119 & 0.197 & 0.11\\ \hline
-			$\sigma$ & 0.0526 &  0.0027 & 0.23 \\ \hline
-		\end{tabular}
-		\caption{Mean squared errors of the posterior means obtained by Wood and in our study.}
-		\label{table:mse}
-		\vspace{5mm}
-	\end{table}
-	
-	\begin{figure}[htb]
-		\centering
-		\begin{minipage}{0.6\textwidth}
-			\centering
-			\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralr.pdf}
-		\end{minipage}
-		\begin{minipage}{0.6\textwidth}
-			\centering
-			\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralphi.pdf}
-		\end{minipage}
-		\begin{minipage}{0.6\textwidth}
-			\centering
-			\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralsigma.pdf}
-		\end{minipage}
-		\caption{Running mean plots for samples from\textbf{(first row)} $r$,\textbf{(second row)} $\phi$ and \textbf{(third row)} $\sigma$ across 16 chains}
-		\label{fig:rm}
-	\end{figure}
 
 \clearpage
 
