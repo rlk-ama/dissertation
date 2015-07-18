@@ -4,7 +4,7 @@
 #cython: nonecheck=False
 #cython: profile=False
 
-from libc.math cimport exp, log
+from libc.math cimport exp, log, pow
 import numpy as np
 cimport numpy as np
 
@@ -27,6 +27,9 @@ cpdef double[:, ::1] param_gamma_arr(double r, double sigma, double[::1] n_prevs
 
 cpdef double func_mean(double args, double r):
     return log(r) + log(args) - args
+
+cpdef double func_mean_generalized(double args, double r, double theta):
+    return log(r) + log(args) - pow(args, theta)
 
 cpdef double func_sigma(double sigma):
     return sigma

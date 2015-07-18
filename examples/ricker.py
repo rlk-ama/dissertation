@@ -2,19 +2,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 
-from bootstrap.ricker_gamma import RickerMap
+from bootstrap.ricker_gamma import RickerMap, RickerGeneralizedMap
 from bootstrap.filter import BootstrapFilter
 from distributions.distributions2 import Gamma
 
-def perform_filter(inits=None, r=44.7, phi=10, sigma=0.5, NOS=50, NBS=1000, observations=None):
+def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, theta=1, NOS=50, NBS=1000, observations=None,generalized=False):
 
     if inits is None:
         inits = Gamma().sample(np.array([3], dtype=np.float64), np.array([1], dtype=np.float64))
 
     if observations is None:
-        Map_ricker = RickerMap(r, phi, sigma, length=NOS, initial=inits, approx="simple")
+        if generalized:
+            Map_ricker = RickerGeneralizedMap(r, phi, theta, sigma, length=NOS, initial=inits, approx="simple")
+        else:
+            Map_ricker = RickerMap(r, phi, sigma, length=NOS, initial=inits, approx="simple")
     else:
-        Map_ricker = RickerMap(r, phi, sigma, length=NOS, initial=inits, approx="simple", observations=observations)
+        if generalized:
+            Map_ricker = RickerGeneralizedMap(r, phi, theta, sigma, length=NOS, initial=inits, approx="simple", observations=observations)
+        else:
+            Map_ricker = RickerMap(r, phi, sigma, length=NOS, initial=inits, approx="simple", observations=observations)
 
     state = None if observations is not None else Map_ricker.state
     observations = Map_ricker.observations
@@ -43,10 +49,12 @@ if __name__ == "__main__":
     parser.add_argument("--inits", type=float, help="Initial value for the state")
     parser.add_argument("--observations", type=argparse.FileType('r'), help="Observations, in a file, space separated")
     parser.add_argument("--r", type=float, help="Value for the parameter r in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
+    parser.add_argument("--theta", type=float, help="Value for the parameter r in the state equation N_t = r*N_{t-1}*exp(-N_{t-1}**theta)*exp(-Z_t)")
     parser.add_argument("--phi", type=float, help="Value for the parameter phi in the observation equation Y_t = Poisson(phi*N_t)")
     parser.add_argument("--sigma", type=float, help="Value for the standard deviation of Z_t in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
     parser.add_argument("--number", dest="NOS", type=int, help="Number of observations")
     parser.add_argument("--particles", dest="NBS", type=int, help="Number of particles")
+    parser.add_argument("--generalized", type=bool, help="DO you want to use Generalized Ricker Map ?")
     parser.add_argument("--graphics", type=bool, help="Display graphics ?")
 
     args = parser.parse_args()
