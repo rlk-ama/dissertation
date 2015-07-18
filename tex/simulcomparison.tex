@@ -1,0 +1,153 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[fleqn]{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{natbib}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{array}
+\usepackage{bbold}
+\usepackage{amssymb}
+\usepackage[procnames]{listings}
+\usepackage{color}
+\usepackage{graphicx}
+
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\title{PMMH diagnostic}
+\author{Raphael Lopez Kaufman}
+\date{}
+
+\begin{document}
+
+To assess our particle filter we calculated the median squared errors for each parameters a well as the median and inter-quartile range of the squared errors, averaged geometrically across the parameters, that is to say $e_j = ((\hat{r}_j-r)(\hat{\sigma}_j-\sigma)(\hat{\phi}_j-\phi))^\frac{1}{3}$ where $j$ denotes the number of the experiment and a hat denotes a posterior mean.
+
+For both metrics we took posterior means as point estimates.
+Table~\ref{table:new} shows the new settings for these simulations. Table~\ref{table:msecomp} compares the median squared errors obtained for 250 datasets by Wood with the one we obtained for 51 datasets using Libbi (there the particle filter uses the transition density as the proposal), our implementation with the transition density as the proposal for the particle filter and finally the gamma approximation to the transition density to approximate the optimal proposal (note that figures given for Wood are for a the Generalized Ricker Map as results for the Simple Ricker Map are not given in his paper). Note that these 51 datasets were not the same across the four methods, however they all consist of the same number of observations (50) and we used 500 particles for all our filters.
+
+	\begin{table}[htb]
+		\centering
+		\vspace{5mm}
+		\begin{tabular}{c|c|c|c}
+			Parameter & True value &  Mean of initialisation normal &  Uniform prior \\ \hline
+			$r$ & 44.7 & 40 & $[24.7, 64.7]$\\ \hline
+			$\phi$ & 10 & 7 & $[5, 15]$\\ \hline
+			$\sigma$ & 0.3 &  0.5 & $[0.15, 0.45]$\\ \hline
+		\end{tabular}
+		\caption{Parameters used in the simulation to estimate $r$, $\phi$ and $\sigma$}
+		\label{table:new}
+		\vspace{5mm}
+	\end{table}
+	
+	\begin{table}[htb]
+		\centering
+		\begin{tabular}{c|c|c|c|c}
+			Parameter & Wood's median SE & Libbi median SE & median SE with prior proposal & median SE with gamma approx\\ \hline
+			$r$ & 0.0152 & 16.93 & 7.12 & 16.34 \\ \hline
+			$\phi$ & 0.0119 & 0.0948 & 0.084 & 0.101 \\ \hline
+			$\sigma$ & 0.0526 & 0.0019 & 0.0011 & 0.00083  \\ \hline
+		\end{tabular}
+		\caption{Median squared errors of the posterior means obtained by Wood and in our study.}
+		\label{table:msecomp}
+		\vspace{5mm}
+	\end{table}
+	
+Table~\ref{table:measure} shows the median and the inter-quartile range of the $e_j$s for each of the four methods. Results obtained with Libbi and our sampler are similar, but quite different from Wood's. The distribution of these errors seem also much more symmetric in the last three cases.
+
+	\begin{table}[htb]
+		\centering
+		\begin{tabular}{c|c|c|c|c}
+			Method & Median &  Inter-quartile range & 1st quartile & 3rd quartile \\ \hline
+			Wood & 0.003 & 0.015 & 0.001 & 0.016\\ \hline
+			Libbi & 0.098 & 0.144  & 0.044 & 0.189\\ \hline
+			Prior proposal & 0.062 &  0.118 & 0.0167 & 0.135\\ \hline
+			Gamma approx & 0.086 &  0.171 & 0.0269 & 0.193\\ \hline
+		\end{tabular}
+		\caption{Values obtained for Wood's custom error measure with the four methods}
+		\label{table:measure}
+	\end{table}
+
+
+\clearpage
+Table~\ref{table:mse} shows the change in the mean squared errors when the number of observations is increased. We, as expected, see a decrease in the mean squared errors.
+	\begin{table}[htb]
+		\centering
+		\begin{tabular}{c|c|c|c}
+			Parameter & Wood's MSE & our MSE for 50 steps & our MSE for 100 steps\\ \hline
+			$r$ & 0.0152 & 27.97 & 14.7 \\ \hline
+			$\phi$ & 0.0119 & 0.197 & 0.11\\ \hline
+			$\sigma$ & 0.0526 &  0.0027 & 0.0023 \\ \hline
+		\end{tabular}
+		\caption{Mean squared errors of the posterior means obtained by Wood and in our study.}
+		\label{table:mse}
+		\vspace{0mm}
+	\end{table}
+	
+These results are confirmed by the running means (displayed in Figure~\ref{fig:rmr}, Figure~\ref{fig:rmphi}, Figure~\ref{fig:rmsigma}) which shows how, except for $\sigma$, we obtain posterior means away from the true value of the parameters used for simulation, and especially for $r$.
+
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralrlibbi.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralrprior.pdf}
+		\end{minipage}
+		\begin{minipage}{0.6\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralr.pdf}
+		\end{minipage}
+		\caption{Running mean for $r$ using samples from \textbf{(first row)} Libbi simulation,\textbf{(second row)} our implementation using the transition density and \textbf{(third row)} gamma approximation as proposal across 51 chains}
+		\label{fig:rmr}
+	\end{figure}
+	
+	
+		\begin{figure}[htb]
+			\centering
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralphilibbi.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralphiprior.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralphi.pdf}
+			\end{minipage}
+			\caption{Running mean for $\phi$ using samples from \textbf{(first row)} Libbi simulation,\textbf{(second row)} our implementation using the transition density and \textbf{(third row)} gamma approximation as proposal across 51 chains}
+			\label{fig:rmphi}
+		\end{figure}
+		
+		\begin{figure}[htb]
+			\centering
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralsigmalibbi.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralsigmaprior.pdf}
+			\end{minipage}
+			\begin{minipage}{0.6\textwidth}
+				\centering
+				\includegraphics[width=0.97\linewidth]{/home/raphael/rmseveralsigma.pdf}
+			\end{minipage}
+			\caption{Running mean for $\sigma$ using samples from \textbf{(first row)} Libbi simulation,\textbf{(second row)} our implementation using the transition density and \textbf{(third row)} gamma approximation as proposal across 51 chains}
+			\label{fig:rmsigma}
+		\end{figure}
+		
+\end{document}
