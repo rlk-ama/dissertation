@@ -40,15 +40,16 @@ class RickerMap(object):
             self.r = r
             self.sigma = sigma
             self.func_mean = partial(func_mean, r=self.r)
+            self.func_sigma = partial(func_sigma, sigma=self.sigma)
 
         def sample(self, ancestor):
-            mean = wrapper_arr(self.func_mean, ancestor)
-            sigma = wrapper_arr(func_sigma, np.array([self.sigma]*len(ancestor), dtype=np.float64))
+            mean = self.func_mean(ancestor, len(ancestor))
+            sigma = self.func_sigma(len(ancestor))
             return  self.distribution.sample(mean=mean, sigma=sigma)
-
+        #@profile
         def density(self, particle, ancestor):
-            mean = wrapper_arr(self.func_mean, ancestor)
-            sigma = wrapper_arr(func_sigma, np.array([self.sigma]*len(ancestor), dtype=np.float64))
+            mean = self.func_mean(ancestor, len(ancestor))
+            sigma = self.func_sigma(len(ancestor))
             return self.distribution.density(particle, mean=mean, sigma=sigma)
 
     class Conditional(object):
@@ -59,12 +60,12 @@ class RickerMap(object):
             self.func_lam = partial(func_lam, phi=self.phi)
 
         def sample(self, ancestor):
-            lam = wrapper_arr(self.func_lam, ancestor)
+            lam = self.func_lam(ancestor, len(ancestor))
             return self.distribution.sample(lam)
-        #@profile
+
         def density(self, particle, observation):
             observations = np.array([observation]*len(particle), dtype=np.float64)
-            lam = wrapper_arr(self.func_lam, particle)
+            lam = self.func_lam(particle, len(particle))
             return self.distribution.density(observations, lam)
 
     class Proposal(object):
@@ -79,16 +80,14 @@ class RickerMap(object):
 
         def sample(self, ancestor, observation):
             params = self.param_gamma_arr(self.r, self.sigma, ancestor)
-            shape_args = np.array(list(zip(params[0], [observation]*len(ancestor))), dtype=np.float64)
-            shape = wrapper_arr_arr(func_shape, shape_args)
-            scale = wrapper_arr(self.func_scale, params[1])
+            shape = func_shape(params[0], observation, len(params[0]))
+            scale = self.func_scale(params[1], len(params[1]))
             return self.distribution.sample(shape=shape, scale=scale)
         #@profile
         def density(self, particle, ancestor, observation):
             params = self.param_gamma_arr(self.r, self.sigma, ancestor)
-            shape_args = np.array(list(zip(params[0], [observation]*len(particle))), dtype=np.float64)
-            shape = wrapper_arr_arr(func_shape, shape_args)
-            scale = wrapper_arr(self.func_scale, params[1])
+            shape = func_shape(params[0], observation, len(params[0]))
+            scale = self.func_scale(params[1], len(params[1]))
             return self.distribution.density(particle, shape=shape, scale=scale)
 
     def observ_gen(self, length):

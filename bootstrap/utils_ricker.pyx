@@ -25,20 +25,40 @@ cpdef double[:, ::1] param_gamma_arr(double r, double sigma, double[::1] n_prevs
     return output
 
 
-cpdef double func_mean(double args, double r):
-    return log(r) + log(args) - args
+cpdef double[::1] func_mean(double[::1] args, int dim, double r):
+    cdef double[::1] output = np.empty(dim)
+    cdef int i
+    for i in range(dim):
+        output[i] = log(r) + log(args[i]) - args[i]
+    return output
 
 cpdef double func_mean_generalized(double args, double r, double theta):
     return log(r) + log(args) - pow(args, theta)
 
-cpdef double func_sigma(double sigma):
-    return sigma
+cpdef double[::1] func_sigma(int dim, double sigma):
+    cdef double[::1] output = np.empty(dim)
+    cdef int i
+    for i in range(dim):
+        output[i] = sigma
+    return output
 
-cpdef double func_lam(double args, double phi):
-    return phi*args
+cpdef double[::1] func_lam(double[::1] args, int dim, double phi):
+    cdef double[::1] output = np.empty(dim)
+    cdef int i
+    for i in range(dim):
+        output[i] = phi*args[i]
+    return output
 
-cpdef double func_shape(double[::1] args):
-    return args[0] + args[1]
+cpdef double[::1] func_shape(double[::1] args, double observation, int dim):
+    cdef double[::1] output = np.empty(dim)
+    cdef int i
+    for i in range(dim):
+        output[i] =  args[i] + observation
+    return output
 
-cpdef double func_scale(double beta, double phi):
-    return beta/(beta*phi+1)
+cpdef double[::1] func_scale(double[::1] beta, int dim, double phi):
+    cdef double[::1] output = np.empty(dim)
+    cdef int i
+    for i in range(dim):
+        output[i] =  beta[i]/(beta[i]*phi+1)
+    return output
