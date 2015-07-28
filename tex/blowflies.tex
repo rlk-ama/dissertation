@@ -47,16 +47,16 @@
 		R_t \sim \mathrm{Poisson}(PN_{t-\tau}e^{\frac{N_{t-\tau}}{N_0}}e_t)
 	\end{equation*}
 	\begin{equation*}
-	S_t \sim \mathrm{Binomial}(e^{\delta\epsilon_t}, N_{t-1})
+	S_t \sim \mathrm{Binomial}(e^{-\delta\epsilon_t}, N_{t-1})
 	\end{equation*}
-	where $e_t \sim \mathrm{Gamma(\sigma_p^{-2}, \sigma_p^{-2})}$ and $\epsilon_t \sim \mathrm{Gamma(\sigma_d^{-2}, \sigma_d^{-2})}$ Indeed, in Wood paper $e_t$ and $\epsilon_t$ are described as Gamma distributed with unit mean and respective variances $\sigma_p^2$ and $\sigma_d^2$. Yet if $\mathrm{X} \sim \mathrm{Gamma}(\alpha, \beta)$ then $\mathrm{E}(\mathrm{X}) = \frac{\alpha}{\beta}$ and $\mathrm{Var}(\mathrm{X}) = \frac{\alpha}{\beta^2}$ leading in our case to $\alpha=\beta=\sigma^{-2}$
+	where $e_t \sim \mathrm{Gamma(\sigma_p^{-2}, \sigma_p^{-2})}$ and $\epsilon_t \sim \mathrm{Gamma(\sigma_d^{-2}, \sigma_d^{-2})}$ Indeed, in Wood's paper $e_t$ and $\epsilon_t$ are described as Gamma distributed with unit mean and respective variances $\sigma_p^2$ and $\sigma_d^2$. Yet if $\mathrm{X} \sim \mathrm{Gamma}(\alpha, \beta)$ then $\mathrm{E}(\mathrm{X}) = \frac{\alpha}{\beta}$ and $\mathrm{Var}(\mathrm{X}) = \frac{\alpha}{\beta^2}$ leading in our case to $\alpha=\beta=\sigma^{-2}$
 	
 	To this effect we are going to use the following particle filter algorithm:
 	\begin{itemize}
-		\item sample $S_t^{(i)} \sim q_s(\ \cdot \ ; N_{t-1}, N_t)$
-		\item sample $R_t^{(i,j)} \sim q_r(\ \cdot \ ; N_{t-\tau}, N_t)$
-		\item set $W_t^{(i)} \propto \hat{p}(N_t |S_t^{(i)})\frac{g_s(S_t^{(i)} | N_{t-1})}{q_s(S_t^{(i)} | N_{t-1}, N_t)}$
-		where $\hat{p}(N_t |S_t^{(i)}) = \frac{1}{M}\sum_{j=1}^{M}\delta_{N_t}(S_t^{(i)}+R_t^{(i,j)})\frac{g_r(R_t^{(i,j)} | N_{t-\tau})}{q_r( R_t^{(i,j)}| N_{t-\tau}, N_t)}$
+		\item sample $S_t^{(i)} \sim q_s(\ \cdot \ ; N_{t-1}^{(i)}, N_t)$
+		\item sample $R_t^{(i,j)} \sim q_r(\ \cdot \ ; N_{t-\tau}^{(i)}, N_t)$
+		\item set $W_t^{(i)} \propto \hat{p}(N_t |S_t^{(i)})\frac{g_s(S_t^{(i)} | N_{t-1}^{(i)})}{q_s(S_t^{(i)} | N_{t-1}^{(i)}, N_t)}$
+		where $\hat{p}(N_t |S_t^{(i)}) = \frac{1}{M}\sum_{j=1}^{M}\delta_{N_t}(S_t^{(i)}+R_t^{(i,j)})\frac{g_r(R_t^{(i,j)} | N_{t-\tau}^{(i)})}{q_r( R_t^{(i,j)}| N_{t-\tau}^{(i)}, N_t)}$
 	\end{itemize}
 	
 	$R_t$ and $S_t$ are compounded distributions.
@@ -83,15 +83,15 @@
 	g_s(s_t | n_{t-1}) & = \int_{0}^{\infty}g_s(s_t, \epsilon_t | n_{t-1})\ \mathrm{d}\epsilon_t \\
 	& = \int_{0}^{\infty}g_s(s_t | \epsilon_t, n_{t-\tau})p(\epsilon_t)\ \mathrm{d}\epsilon_t \\
 	& = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)} \int_{0}^{\infty}e^{-\delta\epsilon_t s_t}(1-e^{-\delta\epsilon_t})^{n_{t-1}-s_t}\epsilon_t^{\alpha-1}e^{-\alpha\epsilon_t}\ \mathrm{d}\epsilon_t \\
-	& = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)}\int_{0}^{\infty}e^{-(\delta+\alpha)\epsilon_t s_t}(1-e^{-\delta\epsilon_t})^{n_{t-1}-s_t}\epsilon_t^{\alpha-1}\ \mathrm{d}\epsilon_t \\
+	& = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)}\int_{0}^{\infty}e^{-(\delta s_t+\alpha)\epsilon_t }(1-e^{-\delta\epsilon_t})^{n_{t-1}-s_t}\epsilon_t^{\alpha-1}\ \mathrm{d}\epsilon_t \\
 	\end{split}
 	\end{equation*}
 	where $\alpha = \sigma_d^{-2}$
 	This equation has no closed form but is easily calculated using numerical integration.
 	
-	As for $q_s(\ \cdot \ ; N_{t-1}, N_t)$ we can notice that if $\epsilon_t$ were Beta distributed then $q_s(\ \cdot \ ; N_{t-1})$ would be a Beta-Binomial and $\alpha$ and $q_s(\ \cdot \ ; N_{t-1}, N_t)$ would be the same distribution but restricted to the interval $[0, N_t]$. 
+	As for $q_s(\ \cdot \ ; N_{t-1}, N_t)$ we can notice that if $\epsilon_t$ were Beta distributed then $q_s(\ \cdot \ ; N_{t-1})$ would be a Beta-Binomial and $q_s(\ \cdot \ ; N_{t-1}, N_t)$ would be the same distribution but restricted to the interval $[0, N_t]$. 
 	
 	Since $n\mathrm{Beta}(\alpha, n) \rightarrow \mathrm{Gamma}(\alpha, 1)$ as $n \rightarrow \infty$ (the convergence is in distribution) (to show this take $X_n \sim \mathrm{Beta}(\alpha, n)$ and $Y_n = nX_n$ and now notice that $\forall s \in \mathrm{E}(Y_n^s) = n^s\frac{\Gamma(\alpha+s)\Gamma(n+\alpha)}{\Gamma(n+\alpha+s)\Gamma(\alpha)} \rightarrow \frac{\Gamma(\alpha+s)}{\Gamma(\alpha)} = \mathrm{E}(Z^s)$ where $Z \sim \mathrm{Gamma}(\alpha, 1)$ ie $Y_n \rightarrow \mathrm{Gamma}(\alpha, 1)$ in distribution) and since $\alpha\mathrm{Gamma(\alpha, \alpha) \sim \mathrm{Gamma}(\alpha, 1)}$ we can conclude that $\frac{n}{\alpha}\mathrm{Beta}(\alpha, n) \rightarrow \mathrm{Gamma}(\alpha, \alpha)$. 
 	
-	Therefore by having $\epsilon_t \sim \frac{n}{\alpha}\mathrm{Beta}(\alpha, n)$ with $n$ sufficiently large instead of $\epsilon \sim \mathrm{Gamma}(\alpha, \alpha)$ we can use the following proposal $q_s(\ \cdot \ ; N_{t-1}, N_t) = \mathrm{Beta-Binomial}(N_{t-1}, \alpha, n)$ which is hopefully not too far away from the true distribution of $S_t | N_{t-1}$
+	Therefore by having $\epsilon_t \sim \frac{n}{\alpha}\mathrm{Beta}(\alpha, n)$ with $n$ sufficiently large instead of $\epsilon_t \sim \mathrm{Gamma}(\alpha, \alpha)$ we can use the following proposal $q_s(\ \cdot \ ; N_{t-1}, N_t) = \mathrm{Beta-Binomial}(N_{t-1}, \alpha, n)$ which is hopefully not too far away from the true distribution of $S_t | N_{t-1}$
 \end{document}
