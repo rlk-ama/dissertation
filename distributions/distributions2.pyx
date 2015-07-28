@@ -58,6 +58,26 @@ cdef double[::1] density_gamma_array(double[::1] x,double[::1] shape, double[::1
         output[i] = exp(ldensity[i])
     return output
 
+cdef double[::1] density_binomial_array(double[::1] x, double[::1] n, double[::1] p):
+    cdef int dim = x.shape[0]
+    cdef double[::1] ldensity = np.empty(dim)
+    cdef double[::1] output = np.empty(dim)
+    cdef int i
+    for i in range(dim):
+        ldensity[i] = lgamma(n[i]+1) - lgamma(x[i]+1) - lgamma(n[i]+x[i]+1) + x[i]*log(p[i]) + (n[i]-x[i])*log(1-p[i])
+        output[i] = exp(ldensity[i])
+    return output
+
+cdef double[::1] density_negativebinomial_array(double[::1] x, double[::1] n, double[::1] p):
+    cdef int dim = x.shape[0]
+    cdef double[::1] ldensity = np.empty(dim)
+    cdef double[::1] output = np.empty(dim)
+    cdef int i
+    for i in range(dim):
+        ldensity[i] = lgamma(n[i]+x[i]) - lgamma(x[i]+1) - lgamma(n[i]) + x[i]*log(1-p[i]) + n[i]*log(p[i])
+        output[i] = exp(ldensity[i])
+    return output
+
 cdef double[::1] density_uniform_array(double[::1] x, double[::1] low, double[::1] high):
     cdef int dim = x.shape[0]
     cdef double[::1] ldensity = np.empty(dim)
@@ -176,6 +196,41 @@ class Uniform(object):
 
     def density(self, double[::1] x, double[::1] low, double[::1] high):
         return density_uniform_array(x, low, high)
+
+
+class Binomial(object):
+
+    def __init__(self, size=None):
+        self.size = size
+
+    def sample(self, double[::1] n, double[::1] p):
+        cdef int dim, i
+        cdef double[::1] output
+        dim = n.shape[0]
+        output  = np.empty(dim)
+        for i in range(dim):
+            output[i] = np.random.binomial(n=n[i], p=p[i], size=self.size)
+        return output
+
+    def density(self, double[::1] x, double[::1] n, double[::1] p):
+        return  density_binomial_array(x, n, p)
+
+class  NegativeBinomial(object):
+
+    def __init__(self, size=None):
+        self.size = size
+
+    def sample(self, double[::1] n, double[::1] p):
+        cdef int dim, i
+        cdef double[::1] output
+        dim = n.shape[0]
+        output  = np.empty(dim)
+        for i in range(dim):
+            output[i] = np.random.negative_binomial(n=n[i], p=p[i], size=self.size)
+        return output
+
+    def density(self, double[::1] x, double[::1] n, double[::1] p):
+        return  density_negativebinomial_array(x, n, p)
 
 class MultivariateUniform(object):
 
