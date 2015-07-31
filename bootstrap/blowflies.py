@@ -23,13 +23,9 @@ class BlowflyMap(object):
         else:
             self.initial = Normal().sample(loc=np.array([50], dtype=np.float64), scale=np.array([1], dtype=np.float64))
 
-        self.kernel = self.Kernel(delta=self.delta, sigmad=self.sigmad, transi_s=transi_s, choose=self.choose)
+        self.kernel = self.Kernel(delta=self.delta, sigmad=self.sigmad, choose=self.choose)
         self.proposal = self.Proposal(delta=self.delta, sigmad=self.sigmad, choose=self.choose, coeff_betabinom=self.coeff)
-        self.conditional = self.Conditional(p=self.p, n0=self.n0, sigmap=self.sigmap, m=self.m, tau=self.tau,
-                                            delta=self.delta, sigmad=self.sigmad)
-
-        self.proposal = self.Proposal()
-
+        self.conditional = self.Conditional(p=self.p, n0=self.n0, sigmap=self.sigmap, m=self.m, tau=self.tau, choose=self.choose)
 
         if observations is not None:
             self.observations = observations
@@ -38,7 +34,7 @@ class BlowflyMap(object):
 
     class Kernel(object):
 
-        def __init__(self, delta, sigmad, transi_s, choose):
+        def __init__(self, delta, sigmad, choose):
             self.delta = delta
             self.shape = 1/sigmad**2
             self.choose = choose
@@ -51,66 +47,56 @@ class BlowflyMap(object):
 
     class Conditional(object):
 
-        def __init__(self, p, n0, sigmap, m, tau, delta, sigmad):
+        def __init__(self, p, n0, sigmap, m, tau, choose):
             self.distribution_r = NegativeBinomial()
-            self.distribution_s = MysteryDistr
             self.p = p
             self.n0 = n0
             self.shape_r = 1/sigmap**2
+            self.shape_r_arr = None
             self.m = m
             self.tau = tau
-            self.delta = delta
-            self.shape_s = 1/sigmad**2
             self.coeff_r = coeff_r
             self.coeff_beta = coeff_beta
-            self.transi_s = transi_s
             self.proba_r = proba_r
+            self.choose = choose
+            self.proposal_r = NegativeBinomial(tweaked=True)
 
-        def sample(self, ancestor):
-            return self.distribution_s.sample(ancestor)
+        def sample(self, ancestors, n, p):
+            return self.distribution_r.sample(ancestors, n=n, p=p)
 
-        def density(self, particle, observation, ancestor):
-            prev, delayed = zip(*ancestor)
-            prev = np.array(prev, dtype=np.float64)
-            delayed = np.array(delayed, dtype=np.float64)
-
-            ss = self.sample(prev)
-            dens_ss = self.transi_s(ss, prev, self.delta, self.shape_s, len(ss))
-            proposal_ss = self.distribution_s.density(ss, prev, self.delta, self.shape_s)
-            weight_ss = np.multiply(dens_ss, proposal_ss)
-
-            coeff_beta = self.coeff_beta(delayed, self.p, self.n0, len(observation))
+        def density(self, indices, particles, observations, next):
+            ancestors = self.choose(indices, observations, self.tau)
+            coeff_beta = self.coeff_beta(ancestors, self.p, self.n0, len(ancestors))
             proba_r = self.proba_r(coeff_beta, self.shape_r)
-            rs_total = []
-            counts = np.zeros(len(particle))
-            for i in range(self.m):
-                rs = self.distribution_r.sample(n=np.array([self.shape_r]*len(particle), dtype=np.float64), p=proba_r)
-                rs = [rs[i] for i in range(len(rs)) if rs[i] + ss[i] <= observation]
-                rs_total.extend(rs)
-                for j in range(len(particle)):
-                    if rs[i] + ss[i] <= particle:
-                        counts[i] += 1
-            cond_weights = np.multiply(counts, 1/self.m)
 
-            np.multiply(weight_ss, cond_weights, out=weight_ss)
-            return weight_ss
+            if self.shape_r_arr == None:
+                self.shape_r_arr = np.array([self.shape_r]*len(ancestors), dtype=np.float64)
+
+            rs = self.distribution_r.sample(n=self.shape_r_arr, p=proba_r)
+            dens_rs = self.distribution_r.density(rs, n=self.shape_r_arr, p=proba_r)
+            prop_rs = self.proposal_r.density(rs, n=self.shape_r_arr, p=proba_r, next=next)
+            weights = np.divide(dens_rs, prop_rs)
+            deltas =  [0 if rs[i] + particles[i] <= next else 0 for i in range(len(rs))]
+            np.multiply(weights, deltas, out=weights)
+            return weights
 
     class Proposal(object):
 
-        def __init__(self,delta, sigmad, choose, coeff_betabinom, distribution):
+        def __init__(self,delta, sigmad, choose, coeff_betabinom):
             self.delta = delta
             self.shape = 1/sigmad**2
             self.choose = choose
             self.coeff_betabinom = coeff_betabinom
-            self.distribution = distribution
+            self.distribution = BetaBinomial(tweaked=True)
             self.particles_nb = None
 
-        def sample(self, indices, observations):
+        def sample(self, indices, observations, observation_next):
             if self.particles_nb == None:
                 self.particles_nb = len(indices)
                 self.coeff_betabinom = np.array([self.coeff_betabinom]*self.particles_nb, dtype=np.float64)
             ancestors = self.choose(indices, observations, 1)
-            return self.distribution.samples(n=ancestors, shape1=self.coeff_betabinom, shape2=self.coeff_betabinom)
+            return self.distribution.sample(n=ancestors, shape1=self.coeff_betabinom, shape2=self.coeff_betabinom,
+                                            next=observation_next)
 
         #@profile
         def density(self, particles, indices, observations):

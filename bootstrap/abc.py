@@ -12,6 +12,7 @@ class BootstrapFilter(object):
         self.multiple = True if isinstance(Ns, list) else False
         self.Map = Map
         self.observations = self.Map.observations
+        self.observations_next = self.Map.observations_next
         self.likeli = likeli
         self.rep = rep
 
@@ -34,14 +35,14 @@ class BootstrapFilter(object):
             ESS[i-1] = (1/sum(np.multiply(weights, weights)))
             indices = np.random.multinomial(N, weights, size=1)[0]
 
-            particles = self.Map.proposal.sample(indices, self.observations)
+            particles = self.Map.proposal.sample(indices, self.observations, self.observations_next[i])
             denom = self.Map.proposal.density(particles, indices, self.observations)
             kernel = self.Map.kernel.density(particles, indices, self.observations)
 
-            num = 0
+            num = [0]*len(particles)
             for i in range(self.rep):
-                cond = self.Map.conditional.density(indices, particles, self.observations)
-                num += cond
+                cond = self.Map.conditional.density(indices, particles, self.observations,  self.observations_next[i])
+                num = num + cond
             num = num/self.rep
 
             np.multiply(num, kernel, out=weights)

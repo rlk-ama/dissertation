@@ -5,6 +5,7 @@
 #cython: profile=False
 
 import numpy as np
+from rpy2 import robjects
 
 cimport numpy as np
 from cython.parallel import prange
@@ -215,18 +216,60 @@ class Binomial(object):
     def density(self, double[::1] x, double[::1] n, double[::1] p):
         return  density_binomial_array(x, n, p)
 
-class  NegativeBinomial(object):
+class BetaBinomial(object):
 
-    def __init__(self, size=None):
+    def __init__(self, size=None, tweaked=False):
         self.size = size
+        self.tweaked = tweaked
+        self.r = robjects
+        self.r.r('''
+        libray(VGAM)
+        sample = function(shape1, shape2, nb) return(rbetabinom.ab(1, n=nb, shape1=shape1, shape2=shape2)
+        density = function(particles, shape1, shape2, nb) return(dbetabinom.ab(particles, n=nb, shape1=shape1, shape2=shape2)
+        ''')
 
-    def sample(self, double[::1] n, double[::1] p):
+    def sample(self, int[::1] n, double[::1] shape1, double[::1] shape2, double next=0):
+        cdef int dim, i
+        cdef double[::1] output
+        cdef double samp
+        dim = n.shape[0]
+        output  = np.empty(dim)
+        for i in range(dim):
+            samp = self.r.globalenv['sample'](n=n[i], shape1=shape1[i], shape2=shape2[i])
+            if self.tweaked:
+                while samp > next:
+                    samp = self.r.globalenv['sample'](n=n[i], shape1=shape1[i], shape2=shape2[i])
+            output[i] = samp
+        return output
+
+    def density(self, double[::1] x, int[::1] n, double[::1] shape1, double[::1] shape2):
         cdef int dim, i
         cdef double[::1] output
         dim = n.shape[0]
         output  = np.empty(dim)
         for i in range(dim):
-            output[i] = np.random.negative_binomial(n=n[i], p=p[i], size=self.size)
+            output[i] = self.r.globalenv['density'](x[i], n=n[i], shape1=shape1[i], shape2=shape2[i])
+        return output
+
+
+class  NegativeBinomial(object):
+
+    def __init__(self, size=None, tweaked=False):
+        self.size = size
+        self.tweaked = tweaked
+
+    def sample(self, double[::1] n, double[::1] p, double next=0):
+        cdef int dim, i
+        cdef double[::1] output
+        cdef double samp
+        dim = n.shape[0]
+        output  = np.empty(dim)
+        for i in range(dim):
+            samp = np.random.negative_binomial(n=n[i], p=p[i], size=self.size)
+            if self.tweaked:
+                while sample > next:
+                    samp = np.random.negative_binomial(n=n[i], p=p[i], size=self.size)
+            output[i] = samp
         return output
 
     def density(self, double[::1] x, double[::1] n, double[::1] p):
