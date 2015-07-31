@@ -38,7 +38,9 @@ true_sigma = 0.3
 PARTICLES = c(50, 100, 200, 500, 1000, 1500)
 
 
-output = msevar(PARTICLES, PATH, true_r, 'r')
+output_r = msevar(PARTICLES, PATH, true_r, 'r')
+output_phi = msevar(PARTICLES, PATH, true_phi, 'phi')
+output_sigma = msevar(PARTICLES, PATH, true_sigma, 'sigma')
 plotmle(PARTICLES, SAVE_PATH, PATH, true_r, 'r')
 plotmle(PARTICLES, SAVE_PATH, PATH, true_phi, 'phi')
 plotmle(PARTICLES, SAVE_PATH, PATH, true_sigma, 'sigma')
