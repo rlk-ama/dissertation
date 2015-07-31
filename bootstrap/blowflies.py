@@ -1,12 +1,14 @@
 import numpy as np
 
-from distributions.distributions2 import Normal, BetaBinomial, NegativeBinomial, Poisson, Gamma, Binomial, MysteryDistr
+from distributions.distributions2 import Normal, BetaBinomial, NegativeBinomial, Poisson, Gamma, Binomial, BetaBinomial
 from bootstrap.utils_blowflies import transi_s, coeff_r, coeff_beta, proba_r
-from functools import partial
+from scipy.special import gamma, psi
+from scipy.optimize import fsolve
+from scipy.integrate import quad
 
-class RickerMap(object):
+class BlowflyMap(object):
 
-    def __init__(self, p, n0, sigmap, delta, sigmad, tau, m, initial=None, observations=None, length=None, approx='simple'):
+    def __init__(self, p, n0, sigmap, delta, sigmad, tau, m, initial=None, observations=None, length=None):
         self.p = p
         self.n0 = n0
         self.sigmap = sigmap
@@ -14,14 +16,15 @@ class RickerMap(object):
         self.sigmad = sigmad
         self.tau = tau
         self.m = m
+        self.coeff = self.coeff_betabinom(self.sigmad)
 
         if initial:
             self.initial = initial
         else:
             self.initial = Normal().sample(loc=np.array([50], dtype=np.float64), scale=np.array([1], dtype=np.float64))
 
-        self.kernel = self.Kernel(delta=self.delta, sigmad=self.sigmad, p=self.p, n0=self.n0, sigmap =self.sigmap)
-        self.prior = self.kernel
+        self.kernel = self.Kernel(delta=self.delta, sigmad=self.sigmad, transi_s=transi_s, choose=self.choose)
+        self.proposal = self.Proposal(delta=self.delta, sigmad=self.sigmad, choose=self.choose, coeff_betabinom=self.coeff)
         self.conditional = self.Conditional(p=self.p, n0=self.n0, sigmap=self.sigmap, m=self.m, tau=self.tau,
                                             delta=self.delta, sigmad=self.sigmad)
 
@@ -35,20 +38,16 @@ class RickerMap(object):
 
     class Kernel(object):
 
-        def __init__(self, delta, sigmad, p, n0, sigmap):
-            self.distribution = BetaBinomial()
+        def __init__(self, delta, sigmad, transi_s, choose):
             self.delta = delta
             self.shape = 1/sigmad**2
-            self.p = p,
-            self.n0 = n0
-
-        def sample(self, ancestor):
-            #TODO
-            pass
+            self.choose = choose
+            self.transi_s = transi_s
 
         #@profile
-        def density(self, particle, ancestor):
-            return [1]*len(particle)
+        def density(self, particles, indices, observations):
+            ancestors = self.choose(indices, observations, 1)
+            return self.transi_s(particles, ancestors, self.delta, self.shape, len(particles))
 
     class Conditional(object):
 
@@ -98,15 +97,28 @@ class RickerMap(object):
 
     class Proposal(object):
 
-        def __init__(self):
-            pass
+        def __init__(self,delta, sigmad, choose, coeff_betabinom, distribution):
+            self.delta = delta
+            self.shape = 1/sigmad**2
+            self.choose = choose
+            self.coeff_betabinom = coeff_betabinom
+            self.distribution = distribution
+            self.particles_nb = None
 
-        def sample(self, ancestor, observation):
-            return ancestor
+        def sample(self, indices, observations):
+            if self.particles_nb == None:
+                self.particles_nb = len(indices)
+                self.coeff_betabinom = np.array([self.coeff_betabinom]*self.particles_nb, dtype=np.float64)
+            ancestors = self.choose(indices, observations, 1)
+            return self.distribution.samples(n=ancestors, shape1=self.coeff_betabinom, shape2=self.coeff_betabinom)
 
         #@profile
-        def density(self, particle, ancestor, observation):
-            return [1]*len(ancestor)
+        def density(self, particles, indices, observations):
+            if self.particles_nb == None:
+                self.particles_nb = len(indices)
+                self.coeff_betabinom = np.array([self.coeff_betabinom]*self.particles_nb, dtype=np.float64)
+            ancestors = self.choose(indices, observations, 1)
+            return self.distribution.density(particles, n=ancestors, shape1=self.coeff_betabinom, shape2=self.coeff_betabinom)
 
     def observ_gen(self, length):
         observ = np.empty(length)
@@ -127,3 +139,14 @@ class RickerMap(object):
             r = Poisson().sample(lam=np.array(self.p*state[i-self.tau]*np.exp(-state[i-self.tau]/self.n0)*e[i]), dtype=np.float64)
 
         return observ, state
+
+    def choose(self, indices, observations, delay):
+        row = observations[-delay]
+        return np.take(row, indices)
+
+    def coeff_betabinom(self, alpha):
+        def func(x): return np.log(1-x)*(alpha**alpha)/gamma(alpha)*(-np.log(x))**(alpha-1)*(x**(alpha-1))
+
+        def equations(p): return (-psi(p[0]+p[1])+psi(p[0])+1, -psi(p[0]+p[1])+psi(p[1])-quad(func, 0, 1)[0])
+
+        return fsolve(equations, (alpha, alpha))

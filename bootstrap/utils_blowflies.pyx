@@ -13,11 +13,24 @@ cdef double func(double x, double particle, double ancestor, double delta, doubl
     cdef coeff = gamma(ancestor + 1)/(gamma(particle + 1)*gamma(ancestor-particle+1)*pow(shape, shape)/gamma(shape)
     return coeff*exp(-(delta*particle + shape)*x)*pow((1-exp(-delta*x)), ancestor-particle)*pow(x, shape-1)
 
-cpdef double[:: 1] transi_s(double[:: 1] particle, double[:: 1] ancestor, double delta, double shape, int dim):
+cpdef double[:: 1] transi_s(double[:: 1] particles, double[:: 1] ancestors, double delta, double shape, int dim):
     cdef double[::1] output = np.empty(dim)
-    cdef int i
+    cdef double internal_sum
+    cdef int i, j, particle, ancestor, sgn
     for i in range(dim):
-        output[i] = quad(func, args=(particle[i], ancestor[i], delta, shape))[0]
+        internal_sum = 0
+        particle = particles[i]
+        ancestor = ancestors[i]
+
+        for j in range(ancestor- particle):
+            if j % 2 == 0:
+                sgn = 1
+            else:
+                sgn = -1
+
+            internal_sum = internal_sum + exp(-lgamma[j+1] - lgamma[ancestor-particle-j+1] - shape*log(delta*(particle+j)+shape))*sgn
+
+        output[i] = exp(lgamma(ancestor+1)-lgamma(particle+1))*internal_sum
     return  output
 
 
