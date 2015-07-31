@@ -82,6 +82,10 @@ if __name__ == "__main__":
     arguments = {k:v for k,v in args.__dict__.items() if v is not None and k != 'destination'}
     path = args.destination
 
+    if 'observations' in arguments:
+        line = arguments['observations'].readline().split()
+        arguments['observations'] = np.array([float(obs) for obs in line])
+
     run = 0
 
     for thetas, phis, sigmas, acceptance_rate in simulation(**arguments):
