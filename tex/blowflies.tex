@@ -84,14 +84,65 @@
 	& = \int_{0}^{\infty}g_s(s_t | \epsilon_t, n_{t-\tau})p(\epsilon_t)\ \mathrm{d}\epsilon_t \\
 	& = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)} \int_{0}^{\infty}e^{-\delta\epsilon_t s_t}(1-e^{-\delta\epsilon_t})^{n_{t-1}-s_t}\epsilon_t^{\alpha-1}e^{-\alpha\epsilon_t}\ \mathrm{d}\epsilon_t \\
 	& = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)}\int_{0}^{\infty}e^{-(\delta s_t+\alpha)\epsilon_t }(1-e^{-\delta\epsilon_t})^{n_{t-1}-s_t}\epsilon_t^{\alpha-1}\ \mathrm{d}\epsilon_t \\
+	& = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)}\sum_{k=0}^{n_{t-1}-s_t}\binom{n_{t-1}-s_t}{k}(-1)^k \ \int_{0}^{\infty}e^{-(\delta s_t+\alpha + k\delta)\epsilon_t }\epsilon_t^{\alpha-1}\ \mathrm{d}\epsilon_t \\
+	& = \binom{n_{t-1}}{s_t}\alpha^\alpha\sum_{k=0}^{n_{t-1}-s_t}\binom{n_{t-1}-s_t}{k}\frac{(-1)^k}{(\delta(s_t+k)+\alpha)^\alpha}
 	\end{split}
 	\end{equation*}
 	where $\alpha = \sigma_d^{-2}$
-	This equation has no closed form but is easily calculated using numerical integration.
+	We thus have a close form for $g_s(s_t | n_{t-1})$ but it is not the density of a known distribution.
 	
-	As for $q_s(\ \cdot \ ; N_{t-1}, N_t)$ we can notice that if $\epsilon_t$ were Beta distributed then $q_s(\ \cdot \ ; N_{t-1})$ would be a Beta-Binomial and $q_s(\ \cdot \ ; N_{t-1}, N_t)$ would be the same distribution but restricted to the interval $[0, N_t]$. 
+	As for $q_s(\ \cdot \ ; N_{t-1}, N_t)$ we can notice that if $e^{-\epsilon_t}$ were Beta distributed then $q_s(\ \cdot \ ; N_{t-1})$ would be a Beta-Binomial and $q_s(\ \cdot \ ; N_{t-1}, N_t)$ would be the same distribution but restricted to the interval $[0, N_t]$. 
 	
-	Since $n\mathrm{Beta}(\alpha, n) \rightarrow \mathrm{Gamma}(\alpha, 1)$ as $n \rightarrow \infty$ (the convergence is in distribution) (to show this take $X_n \sim \mathrm{Beta}(\alpha, n)$ and $Y_n = nX_n$ and now notice that $\forall s \in \mathrm{E}(Y_n^s) = n^s\frac{\Gamma(\alpha+s)\Gamma(n+\alpha)}{\Gamma(n+\alpha+s)\Gamma(\alpha)} \rightarrow \frac{\Gamma(\alpha+s)}{\Gamma(\alpha)} = \mathrm{E}(Z^s)$ where $Z \sim \mathrm{Gamma}(\alpha, 1)$ ie $Y_n \rightarrow \mathrm{Gamma}(\alpha, 1)$ in distribution) and since $\alpha\mathrm{Gamma(\alpha, \alpha) \sim \mathrm{Gamma}(\alpha, 1)}$ we can conclude that $\frac{n}{\alpha}\mathrm{Beta}(\alpha, n) \rightarrow \mathrm{Gamma}(\alpha, \alpha)$. 
-	
-	Therefore by having $\epsilon_t \sim \frac{n}{\alpha}\mathrm{Beta}(\alpha, n)$ with $n$ sufficiently large instead of $\epsilon_t \sim \mathrm{Gamma}(\alpha, \alpha)$ we can use the following proposal $q_s(\ \cdot \ ; N_{t-1}, N_t) = \mathrm{Beta-Binomial}(N_{t-1}, \alpha, n)$ which is hopefully not too far away from the true distribution of $S_t | N_{t-1}$
+Notice that $e^{-\epsilon} \in ]0, 1]$. So it's the support of a Beta. Natural idea is to minimize the KL divergence between the distribution of $e^{-\epsilon}$ (we know its density its just an easy change of variable) and a Beta. 
+If we denote $P=e^{-\epsilon}$ and $q_P(p)=\frac{\beta^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\beta-1}$ its density and if we denote $q(\ \cdot \ ; a, b)$ the density of a $\mathrm{Beta}(a,b)$ we have:
+
+\begin{equation*}
+\begin{split}
+D_{KL}(a,b) & = \int_{0}^{1}q_P(p)\frac{q_P(p)}{q(p; a, b)}\mathrm{d}p \\
+& \propto - \int_{0}^{1}q_P(p)\log(q(p; a, b))\mathrm{d}p \\
+& \propto - \int_{0}^{1}q_P(p)\log(\frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}p^{a-1}(1-p)^{b-1})\mathrm{d}p \\
+& \propto -\log\Gamma(a+b) + \log\Gamma(a) + \log\Gamma(b) \\ & \qquad  + (a-1)\int_{0}^{1}(-\log p)\frac{\beta^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\beta-1}\mathrm{d}p \\ & \qquad - (b-1)\int_{0}^{1}\log (1-p)\frac{\beta^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\beta-1}\mathrm{d}p
+\end{split}
+\end{equation*}
+
+Now notice that $-\log p(-\log p)^{\alpha-1}p^{\beta-1}= (-\log p)^{\alpha}p^{\beta-1}$ is proportional to the density of $e^{-X}$ where $X \sim \mathrm{Gamma}(\alpha+1, \beta)$ and if we denote $K=\int_{0}^{1}\log(1-p)\frac{\beta^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\beta-1}\mathrm{d}p$ we have:
+
+\begin{equation*}
+\begin{split}
+D_{KL}(a,b) & = \propto -\log\Gamma(a+b) + \log\Gamma(a) + \log\Gamma(b) \\ 
+& \qquad  + (a-1)\frac{\beta^\alpha}{\Gamma(\alpha)}\frac{\Gamma(\alpha+1)}{\beta^{\alpha+1}} - (b-1)K \\
+& \propto -\log\Gamma(a+b) + \log\Gamma(a) + \log\Gamma(b) + (a-1)\frac{\alpha}{\beta} - (b-1)K
+\end{split}
+\end{equation*}
+
+Now we minimize by finding a critical point:
+\begin{equation}
+\frac{\partial }{\partial a}D_{KL} = -\psi^{(0)}(a+b) + \psi^{(0)}(a) + \frac{\alpha}{\beta} = 0
+\end{equation}
+\begin{equation}
+\frac{\partial }{\partial b}D_{KL} = -\psi^{(0)}(a+b) + \psi^{(0)}(b) - K = 0
+\end{equation}
+where $\psi^{(0)}$ is the digamma function.
+$K$ is easily calculated numerically and so is the system of two equations above
+
+This critical point is indeed a minimum since 
+\begin{equation}
+\frac{\partial^2 }{\partial a^2}D_{KL} = -\psi^{(1)}(a+b) + \psi^{(1)}(a)
+\end{equation}
+\begin{equation}
+\frac{\partial^2 }{\partial b^2}D_{KL} = -\psi^{(1)}(a+b) + \psi^{(1)}(b)
+\end{equation}
+where $\psi^{(1)}$ is the trigamma function. 
+These two functions are always negative as $\psi^{(1)}$ is strictly non increasing and $a, b > 0$.
+
+I did a numerical example with  $\alpha = \beta = 10$ and found $a = 6.739281$ and $b=10.736471$. I sampled 10000 times from $e^{-\epsilon}$ and the Beta with coefficient $a$ and $b$ and  the QQ-plot shown in Figure~\ref{fig:qq} seems to indicate that the approximation is accurate
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/approxbeta.pdf}
+	\caption{QQ plot comparing the Beta approximation and $e^{-\epsilon}$}
+	\label{fig:qq}
+\end{figure}
+
+\clearpage
 \end{document}
