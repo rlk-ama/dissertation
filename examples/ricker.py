@@ -6,7 +6,8 @@ from bootstrap.ricker_gamma import RickerMap, RickerGeneralizedMap
 from bootstrap.filter import BootstrapFilter
 from distributions.distributions2 import Gamma
 
-def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, theta=1, NOS=50, NBS=1000, observations=None,generalized=False):
+def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, theta=1, NOS=50, NBS=1000, observations=None, generalized=False,
+                   filter_proposal='optimal'):
 
     if inits is None:
         inits = Gamma().sample(np.array([3], dtype=np.float64), np.array([1], dtype=np.float64))
@@ -29,7 +30,7 @@ def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, theta=1, NOS=50, NBS=1
         'shape': 3,
         'scale': 1,
     }
-    filter = BootstrapFilter(0, NOS, NBS, Map_ricker, proposal={'optimal': True}, initial=initial)
+    filter = BootstrapFilter(0, NOS, NBS, Map_ricker, proposal={filter_proposal: True}, initial=initial)
     proposal, estim, likeli, ESS = next(filter.filter())
 
     output = {
@@ -56,6 +57,7 @@ if __name__ == "__main__":
     parser.add_argument("--particles", dest="NBS", type=int, help="Number of particles")
     parser.add_argument("--generalized", type=bool, help="DO you want to use Generalized Ricker Map ?")
     parser.add_argument("--graphics", type=bool, help="Display graphics ?")
+    parser.add_argument("--filter_proposal", type=str, help="Proposal for the particle fitler, either prior or optimal")
 
     args = parser.parse_args()
     arguments = {k:v for k,v in args.__dict__.items() if v and k != 'graphics'}
