@@ -8,7 +8,7 @@ from libc.math cimport exp, log, pow
 import numpy as np
 cimport numpy as np
 
-cpdef double[:, ::1] param_gamma_arr(double r, double sigma, double[::1] n_prevs):
+cpdef double[:, ::1] param_gamma_arr(double r, double sigma, double[::1] n_prevs, double scaling):
     cdef int dim = n_prevs.shape[0]
     cdef double[::1] alphas = np.empty(dim)
     cdef double[::1] betas = np.empty(dim)
@@ -17,7 +17,7 @@ cpdef double[:, ::1] param_gamma_arr(double r, double sigma, double[::1] n_prevs
     cdef int i
     var = sigma*sigma
     for i in range(dim):
-        coeff = r*n_prevs[i]*exp(-n_prevs[i])
+        coeff = r*n_prevs[i]*exp(-n_prevs[i]/scaling)
         alphas[i] = 1/var
         betas[i] = 1/alphas[i]*exp(log(coeff) + var/2)
     output[0] = alphas
@@ -25,11 +25,11 @@ cpdef double[:, ::1] param_gamma_arr(double r, double sigma, double[::1] n_prevs
     return output
 
 
-cpdef double[::1] func_mean(double[::1] args, int dim, double r):
+cpdef double[::1] func_mean(double[::1] args, int dim, double r, double scaling):
     cdef double[::1] output = np.empty(dim)
     cdef int i
     for i in range(dim):
-        output[i] = log(r) + log(args[i]) - args[i]
+        output[i] = log(r) + log(args[i]) - args[i]/scaling
     return output
 
 cpdef double func_mean_generalized(double args, double r, double theta):

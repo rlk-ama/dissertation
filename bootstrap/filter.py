@@ -21,7 +21,7 @@ class BootstrapFilter(object):
         else:
             self.initial = {'distribution': Normal, 'loc': 0, 'scale': 1}
 
-    #@profile
+    @profile
     def sub_filter(self, N, prior):
         particles_all = np.zeros(shape=(self.end-self.start, N))
         likelihoods = np.zeros(self.end-self.start)
@@ -85,6 +85,8 @@ class BootstrapFilter(object):
         likelihoods[0] = likelihood
 
         for i in range(self.start+1, self.end):
+            lweights = np.log(weights)
+            weights = np.exp(lweights - max(lweights))
             np.divide(weights, sum(weights), out=weights)
 
             indices = np.random.multinomial(N, weights, size=1)[0]
