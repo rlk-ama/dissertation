@@ -38,7 +38,7 @@ def simulation(r=44.7, phi=10, sigma=0.3, scaling=1, NOS=50, NBS=500, iter=17500
     }
 
     proposals = [RandomWalkProposal(sigma=sigma_proposal) for sigma_proposal in sigma_proposals]
-    prior = MultivariateUniformProposal(ndims=3, func_lows=[lambda args: param/2 for param in initial_params],
+    prior = MultivariateUniformProposal(ndims=len(initial_params), func_lows=[lambda args: param/2 for param in initial_params],
                                         func_highs=[lambda args: 1.5*param for param in initial_params])
     support = lambda x: all([x[i] > initial_params[i]/2 and x[i] < 1.5*initial_params[i] for i in range(len(initial_params))])
 
@@ -55,10 +55,9 @@ def simulation(r=44.7, phi=10, sigma=0.3, scaling=1, NOS=50, NBS=500, iter=17500
                     support=support, adaptation=adaptation, burnin=burnin, target=target, target_low=target_low, initial_filter=initial_filter,
                     filter_proposal=filter_proposal)
         samples, acceptance = mcmc.sample()
-        thetas, phis, sigmas = zip(*samples)
         acceptance_rate = np.sum(acceptance[burnin+adaptation:])/len(acceptance[burnin+adaptation:])
 
-        yield thetas, phis, sigmas, acceptance_rate
+        yield  samples, acceptance_rate
 
 if __name__ == "__main__":
 
@@ -100,12 +99,12 @@ if __name__ == "__main__":
 
     run = 0
 
-    for thetas, phis, sigmas, acceptance_rate in simulation(**arguments):
+    for samples, acceptance_rate in simulation(**arguments):
         with open(''.join([path, 'samples_{}.txt'.format(run)]) if path[-1] == '/' else '/'.join([path, 'samples_{}.txt'.format(run)]), 'w') as f:
             f.write(str(acceptance_rate))
             f.write("\n")
-            for j in range(len(thetas)):
-                f.write(" ".join(map(str,[thetas[j], phis[j], sigmas[j]])))
+            for j in range(len(samples)):
+                f.write(" ".join(map(str,[parameter for parameter in samples[j]])))
                 f.write("\n")
         print(run)
         run += 1
