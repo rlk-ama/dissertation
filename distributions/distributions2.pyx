@@ -267,7 +267,7 @@ class  NegativeBinomial(object):
         for i in range(dim):
             samp = np.random.negative_binomial(n=n[i], p=p[i], size=self.size)
             if self.tweaked:
-                while sample > next:
+                while samp > next:
                     samp = np.random.negative_binomial(n=n[i], p=p[i], size=self.size)
             output[i] = samp
         return output
