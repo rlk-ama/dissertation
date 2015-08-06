@@ -3,7 +3,7 @@ import numpy as np
 
 DTYPE = np.float64
 
-class BootstrapFilter(object):
+class ABCFilter(object):
 
     def __init__(self, start, end, Ns, Map, rep, likeli=False):
         self.start = start
@@ -12,7 +12,6 @@ class BootstrapFilter(object):
         self.multiple = True if isinstance(Ns, list) else False
         self.Map = Map
         self.observations = self.Map.observations
-        self.observations_next = self.Map.observations_next
         self.likeli = likeli
         self.rep = rep
 
@@ -33,17 +32,16 @@ class BootstrapFilter(object):
             weights = self.normalize(weights)
 
             ESS[i-1] = (1/sum(np.multiply(weights, weights)))
-            indices = np.random.multinomial(N, weights, size=1)[0]
 
-            particles = self.Map.proposal.sample(indices, self.observations, self.observations_next[i])
-            denom = self.Map.proposal.density(particles, indices, self.observations)
-            kernel = self.Map.kernel.density(particles, indices, self.observations)
+            particles = self.Map.proposal.sample(self.observations, i, N)
+            denom = self.Map.proposal.density(particles, self.observations, i)
+            kernel = self.Map.kernel.density(particles, self.observations, i)
 
             num = [0]*len(particles)
             for i in range(self.rep):
-                cond = self.Map.conditional.density(indices, particles, self.observations,  self.observations_next[i])
+                cond = self.Map.conditional.density(particles, self.observations, i)
                 num = num + cond
-            num = num/self.rep
+            num = np.divide(num, self.rep)
 
             np.multiply(num, kernel, out=weights)
             np.divide(weights, denom, out=weights)
@@ -54,12 +52,11 @@ class BootstrapFilter(object):
                 if not self.likeli:
                     return particles_all, likelihoods, ESS
                 else:
-                    return  likelihoods
+                    return likelihoods
 
             likelihood += -np.log(N) + np.log(sum(weights))
 
             likelihoods[i] = likelihood
-            self.rotate(indices, self.observations)
 
             if not self.likeli:
                 particles_all[i-1] = particles
@@ -67,17 +64,10 @@ class BootstrapFilter(object):
         if not self.likeli:
             weights = self.normalize(weights)
             ESS[self.end-1] = 1/sum(np.multiply(weights, weights))
-            indices = np.random.multinomial(N, weights, size=1)[0]
-            ancestors = np.array([self.observations[-1, j] for j in range(len(indices)) for _ in range(indices[j])], dtype=DTYPE)
-            particles_all[self.end-1] = ancestors
             return particles_all, likelihoods, ESS
         else:
             return likelihoods
 
-    def rotate(self, indices, observations):
-        new = np.array([observations[-1, j] for j in range(len(indices)) for _ in range(indices[j])], dtype=DTYPE)
-        self.observations = np.roll(self.observations, -1, 0)
-        self.observations[-1] = 0
 
     def normalize(self, weights):
         lweights = np.log(weights)
@@ -87,4 +77,4 @@ class BootstrapFilter(object):
 
     def filter(self):
         for N in self.Ns:
-            yield self.sub_filter(N, True)
+            yield self.sub_filter(N, self.likeli)

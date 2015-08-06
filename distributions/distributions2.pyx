@@ -223,32 +223,32 @@ class BetaBinomial(object):
         self.tweaked = tweaked
         self.r = robjects
         self.r.r('''
-        libray(VGAM)
-        sample = function(shape1, shape2, nb) return(rbetabinom.ab(1, n=nb, shape1=shape1, shape2=shape2)
-        density = function(particles, shape1, shape2, nb) return(dbetabinom.ab(particles, n=nb, shape1=shape1, shape2=shape2)
+        library(VGAM)
+        sample = function(shape1, shape2, size) return(rbetabinom.ab(1, size=size, shape1=shape1, shape2=shape2))
+        density = function(particles, shape1, shape2, size) return(dbetabinom.ab(particles, size=size, shape1=shape1, shape2=shape2))
         ''')
 
-    def sample(self, int[::1] n, double[::1] shape1, double[::1] shape2, double next=0):
+    def sample(self, double[::1] n, double[::1] shape1, double[::1] shape2, double[::1] next=None):
         cdef int dim, i
         cdef double[::1] output
         cdef double samp
         dim = n.shape[0]
         output  = np.empty(dim)
         for i in range(dim):
-            samp = self.r.globalenv['sample'](n=n[i], shape1=shape1[i], shape2=shape2[i])
+            samp = self.r.globalenv['sample'](size=n[i], shape1=shape1[i], shape2=shape2[i])[0]
             if self.tweaked:
-                while samp > next:
-                    samp = self.r.globalenv['sample'](n=n[i], shape1=shape1[i], shape2=shape2[i])
+                while samp > next[i]:
+                    samp = self.r.globalenv['sample'](size=n[i], shape1=shape1[i], shape2=shape2[i])[0]
             output[i] = samp
         return output
 
-    def density(self, double[::1] x, int[::1] n, double[::1] shape1, double[::1] shape2):
+    def density(self, double[::1] x, double[::1] n, double[::1] shape1, double[::1] shape2):
         cdef int dim, i
         cdef double[::1] output
         dim = n.shape[0]
         output  = np.empty(dim)
         for i in range(dim):
-            output[i] = self.r.globalenv['density'](x[i], n=n[i], shape1=shape1[i], shape2=shape2[i])
+            output[i] = self.r.globalenv['density'](x[i], size=n[i], shape1=shape1[i], shape2=shape2[i])[0]
         return output
 
 

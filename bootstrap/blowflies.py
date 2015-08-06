@@ -16,16 +16,16 @@ class BlowflyMap(object):
         self.sigmad = sigmad
         self.tau = tau
         self.m = m
-        self.coeff = self.coeff_betabinom(self.sigmad)
+        self.coeff = self.coeff_betabinom(1/self.sigmad**2)
 
         if initial:
             self.initial = initial
         else:
-            self.initial = Normal().sample(loc=np.array([50], dtype=np.float64), scale=np.array([1], dtype=np.float64))
+            self.initial = Normal().sample(loc=np.array([1000], dtype=np.float64), scale=np.array([10], dtype=np.float64))
 
-        self.kernel = self.Kernel(delta=self.delta, sigmad=self.sigmad, choose=self.choose)
-        self.proposal = self.Proposal(delta=self.delta, sigmad=self.sigmad, choose=self.choose, coeff_betabinom=self.coeff)
-        self.conditional = self.Conditional(p=self.p, n0=self.n0, sigmap=self.sigmap, m=self.m, tau=self.tau, choose=self.choose)
+        self.kernel = self.Kernel(delta=self.delta, sigmad=self.sigmad)
+        self.proposal = self.Proposal(delta=self.delta, sigmad=self.sigmad, coeff_betabinom=self.coeff)
+        self.conditional = self.Conditional(p=self.p, n0=self.n0, sigmap=self.sigmap, m=self.m, tau=self.tau)
 
         if observations is not None:
             self.observations = observations
@@ -34,20 +34,19 @@ class BlowflyMap(object):
 
     class Kernel(object):
 
-        def __init__(self, delta, sigmad, choose):
+        def __init__(self, delta, sigmad):
             self.delta = delta
             self.shape = 1/sigmad**2
-            self.choose = choose
             self.transi_s = transi_s
 
         #@profile
-        def density(self, particles, indices, observations):
-            ancestors = self.choose(indices, observations, 1)
-            return self.transi_s(particles, ancestors, self.delta, self.shape, len(particles))
+        def density(self, particles, observations, index):
+            ancestor = observations[index-1]
+            return self.transi_s(particles, ancestor, self.delta, self.shape, len(particles))
 
     class Conditional(object):
 
-        def __init__(self, p, n0, sigmap, m, tau, choose):
+        def __init__(self, p, n0, sigmap, m, tau):
             self.distribution_r = NegativeBinomial()
             self.p = p
             self.n0 = n0
@@ -58,77 +57,71 @@ class BlowflyMap(object):
             self.coeff_r = coeff_r
             self.coeff_beta = coeff_beta
             self.proba_r = proba_r
-            self.choose = choose
             self.proposal_r = NegativeBinomial(tweaked=True)
 
-        def sample(self, ancestors, n, p):
-            return self.distribution_r.sample(ancestors, n=n, p=p)
-
-        def density(self, indices, particles, observations, next):
-            ancestors = self.choose(indices, observations, self.tau)
-            coeff_beta = self.coeff_beta(ancestors, self.p, self.n0, len(ancestors))
+        def density(self, particles, observations, index):
+            ancestor = observations[index-self.tau]
+            next_obs = observations[index]
+            coeff_beta = self.coeff_beta(ancestor, self.p, self.n0, len(particles))
             proba_r = self.proba_r(coeff_beta, self.shape_r)
 
             if self.shape_r_arr == None:
-                self.shape_r_arr = np.array([self.shape_r]*len(ancestors), dtype=np.float64)
+                self.shape_r_arr = np.array([self.shape_r]*len(particles), dtype=np.float64)
 
-            rs = self.distribution_r.sample(n=self.shape_r_arr, p=proba_r)
+            rs = self.proposal_r.sample(n=self.shape_r_arr, p=proba_r, next=next_obs)
             dens_rs = self.distribution_r.density(rs, n=self.shape_r_arr, p=proba_r)
-            prop_rs = self.proposal_r.density(rs, n=self.shape_r_arr, p=proba_r, next=next)
+            prop_rs = self.proposal_r.density(rs, n=self.shape_r_arr, p=proba_r)
             weights = np.divide(dens_rs, prop_rs)
-            deltas =  [0 if rs[i] + particles[i] <= next else 0 for i in range(len(rs))]
+            deltas =  [0 if rs[i] + particles[i] != next_obs else 1 for i in range(len(rs))]
             np.multiply(weights, deltas, out=weights)
             return weights
 
     class Proposal(object):
 
-        def __init__(self,delta, sigmad, choose, coeff_betabinom):
+        def __init__(self,delta, sigmad,  coeff_betabinom):
             self.delta = delta
             self.shape = 1/sigmad**2
-            self.choose = choose
             self.coeff_betabinom = coeff_betabinom
             self.distribution = BetaBinomial(tweaked=True)
             self.particles_nb = None
 
-        def sample(self, indices, observations, observation_next):
+        def sample(self, observations, index, length):
             if self.particles_nb == None:
-                self.particles_nb = len(indices)
-                self.coeff_betabinom = np.array([self.coeff_betabinom]*self.particles_nb, dtype=np.float64)
-            ancestors = self.choose(indices, observations, 1)
-            return self.distribution.sample(n=ancestors, shape1=self.coeff_betabinom, shape2=self.coeff_betabinom,
-                                            next=observation_next)
+                self.particles_nb = length
+                self.shape1 = np.array([self.coeff_betabinom[0]]*self.particles_nb, dtype=np.float64)
+                self.shape2 = np.array([self.coeff_betabinom[1]]*self.particles_nb, dtype=np.float64)
+            ancestor = np.array([observations[index-1]]*length, dtype=np.float64)
+            next_obs = np.array([observations[index]]*length, dtype=np.float64)
+            return self.distribution.sample(n=ancestor, shape1=self.shape1, shape2=self.shape2, next=next_obs)
 
         #@profile
-        def density(self, particles, indices, observations):
+        def density(self, particles, observations, index):
             if self.particles_nb == None:
-                self.particles_nb = len(indices)
-                self.coeff_betabinom = np.array([self.coeff_betabinom]*self.particles_nb, dtype=np.float64)
-            ancestors = self.choose(indices, observations, 1)
-            return self.distribution.density(particles, n=ancestors, shape1=self.coeff_betabinom, shape2=self.coeff_betabinom)
+                self.particles_nb = len(particles)
+                self.shape1 = np.array([self.coeff_betabinom[0]]*self.particles_nb, dtype=np.float64)
+                self.shape2 = np.array([self.coeff_betabinom[1]]*self.particles_nb, dtype=np.float64)
+            ancestor = observations[index-1]
+            return self.distribution.density(particles, n=ancestor, shape1=self.shape1, shape2=self.shape2)
 
     def observ_gen(self, length):
         observ = np.empty(length)
         state = np.empty(length)
         epsilon = Gamma().sample(shape=np.array([1/self.sigmad**2]*length, dtype=np.float64),
                                  scale=np.array([self.sigmad**2]*length, dtype=np.float64))
-        e = Gamma().sample(shape=np.array([1/self.sigmap**2]*(length-self.tau), dtype=np.float64),
-                             scale=np.array([self.sigmap**2]*(length-self.tau), dtype=np.float64))
+        e = Gamma().sample(shape=np.array([1/self.sigmap**2]*(length-self.tau+1), dtype=np.float64),
+                             scale=np.array([self.sigmap**2]*(length-self.tau+1), dtype=np.float64))
         x = self.initial
         for i in range(self.tau):
             observ[i] = state[i] = x[0]
             x = Binomial().sample(n=x, p=np.array([np.exp(-self.delta*epsilon[i])], dtype=np.float64))
 
-        r = Poisson().sample(lam=np.array(self.p*state[i-self.tau]*np.exp(-state[i-self.tau]/self.n0)*e[i]), dtype=np.float64)
+        r = Poisson().sample(lam=np.array([self.p*state[i-self.tau+1]*np.exp(-state[i-self.tau+1]/self.n0)*e[i-self.tau+1]], dtype=np.float64))
         for i in range(self.tau, length):
             observ[i] =  state[i] = x[0] + r[0]
-            x = Binomial().sample(n=x, p=np.array([np.exp(-self.delta*epsilon[i])], dtype=np.float64))
-            r = Poisson().sample(lam=np.array(self.p*state[i-self.tau]*np.exp(-state[i-self.tau]/self.n0)*e[i]), dtype=np.float64)
+            x = Binomial().sample(n=np.array([state[i]], dtype=np.float64), p=np.array([np.exp(-self.delta*epsilon[i])], dtype=np.float64))
+            r = Poisson().sample(lam=np.array([self.p*state[i-self.tau+1]*np.exp(-state[i-self.tau+1]/self.n0)*e[i-self.tau+1]], dtype=np.float64))
 
         return observ, state
-
-    def choose(self, indices, observations, delay):
-        row = observations[-delay]
-        return np.take(row, indices)
 
     def coeff_betabinom(self, alpha):
         def func(x): return np.log(1-x)*(alpha**alpha)/gamma(alpha)*(-np.log(x))**(alpha-1)*(x**(alpha-1))
