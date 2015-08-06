@@ -1,0 +1,47 @@
+\documentclass{report}
+\usepackage[utf8]{inputenc}
+\usepackage[fleqn]{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{natbib}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{array}
+\usepackage{bbold}
+\usepackage{amssymb}
+\usepackage[procnames]{listings}
+\usepackage{color}
+\usepackage{graphicx}
+
+\begin{document}
+	\section*{The Ricker map}
+	The Ricker map is a difference equation used to describe the population dynamics of a wide range of ecological populations. It was first described in a seminal paper by Ricker (1954)~\cite{Ricker1954} to account for fish population sizes in fisheries. \\
+	If we denote by $N_t$ the size of a population a time $t$, Ricker established that if:
+	\begin{itemize}
+		\item the average offspring size per individual per unit time is a constant number $r > 0$
+		\item there is a crowding effect which reduces by a factor $e^{-\frac{N_t}{K}}$ the offspring size where $K > 0$
+		\item generations do not overlap
+	\end{itemize}
+	then 
+	\begin{equation}
+		N_{t+1} = r N_t e^{-\frac{N_t}{K}}
+		\label{eq:ricker}
+	\end{equation}
+	The fact that generations do no overlap, which is generally a strong assumption in biology, is acceptable in the case of seasonally breeding populations, which are widespread in ecology. \\
+	This model has very complex dynamics depending on the values of the parameter $r$. It has become a classic discrete population model, and although not taking into account any of the exterior factors which influence greatly ecological populations (such as destruction of natural ecosystems, pervading pollution, etc ...), it provides an accurate description of many experimental population dynamics. \\
+	To understand why estimating the parameters of this model given experimental data is non trivial, we first describe its chaotic behaviour. Equation~\ref{eq:ricker} has two equilibria, $N_{eq, 1} = 0$ and $N_{eq, 2} = K\log r$, which are the solutions of  $N_{eq} = r N_{eq} e^{-\frac{N_{eq}}{K}}$. Linearisation around these two equilibria, give $N_{t+1} - N_{eq, 1} = r(N_{t} - N_{eq, 1})$ and $N_{t+1} - N_{eq, 2} = (1-\log r)(N_{t} - N_{eq, 1})$. Therefore $N_{eq, 1}$ is stable when $0 < r < 1$ and unstable when $r > 1$ and $N_{eq, 2}$ is stable when $1 < r < e^2$ and unstable when $r < 1$ or $r > e^2$. The corresponding bifurcation diagram, with $K$ fixed and equal to 1, is shown in Figure~\ref{fig:stability}. When $r$ exceeds $e^2$ there are no stable equilibrium and solutions start oscillating between several values. When $r=e^2$ oscillation occurs between 2 values, then 4 then 8 and so on until a critical value above which solutions follow an aperiodic pattern. This is characteristic of chaos, where a small change in the value of r leads to very different solutions,  $e^2$ is called a \emph{bifurcation value}, and this geometric progression in the length of the cycles is called a \emph{period doubling cascade} to chaos.
+	
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/stability.pdf}
+	\caption{Bifurcation diagram of the Ricker map. \textbf{Dotted} lines correspond to unstable equilibria and \textbf{solid} lines to stable ones}
+	\label{fig:qq}
+\end{figure}
+	
+	\bibliographystyle{plain}
+	\bibliography{mybib}{}
+\end{document}
