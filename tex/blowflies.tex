@@ -65,11 +65,11 @@
 	\begin{split}
 			g_r(r_t | n_{t-\tau}) & = \int_{0}^{\infty}g_r(r_t, e_t | n_{t-\tau})\ \mathrm{d}e_t \\
 			& = \int_{0}^{\infty}g_r(r_t | e_t, n_{t-\tau})p(e_t | n_{t-\tau})\ \mathrm{d}e_t \\
-			& = \int_{0}^{\infty}g_r(r_t | e_t, n_{t-\tau})p(e_t)\ \mathrm{d}e_t \\
-			& = \int_{0}^{\infty}e^{-\beta(n_{t-\tau})e_t}\frac{(\beta(n_{t-\tau})e_t)^{r_t}}{\Gamma(r_t+1)}\frac{\alpha^\alpha}{\Gamma(\alpha)}e_t^{\alpha-1}e^{-\alpha e_t}\ \mathrm{d}e_t \\
-			& = \frac{\beta(n_{t-\tau})^{r_t}}{\Gamma(r_t+1)}\frac{\alpha^\alpha}{\Gamma(\alpha)}\int_{0}^{\infty}e^{-(\beta(n_{t-\tau})+\alpha)e_t}e_t^{r_t+\alpha-1}\ \mathrm{d}e_t \\
-			& = \frac{\beta(n_{t-\tau})^r_t}{\Gamma(r_t+1)}\frac{\alpha^\alpha}{\Gamma(\alpha)}\frac{\Gamma(r_t+\alpha)}{(\beta(n_{t-\tau})+\alpha)^{r_t+\alpha}} \\
-			& = \binom{r_t + \alpha - 1}{r_t}(\frac{\beta(n_{t-\tau})}{\beta(n_{t-\tau}) + \alpha})^{r_t}(\frac{\alpha}{\beta(n_{t-\tau}) + \alpha})^\alpha
+			& \propto \int_{0}^{\infty}g_r(r_t | e_t, n_{t-\tau})p(e_t)\ \mathrm{d}e_t \\
+			& \propto \int_{0}^{\infty}e^{-\beta(n_{t-\tau})e_t}\frac{(\beta(n_{t-\tau})e_t)^{r_t}}{\Gamma(r_t+1)}\frac{\alpha^\alpha}{\Gamma(\alpha)}e_t^{\alpha-1}e^{-\alpha e_t}\ \mathrm{d}e_t \\
+			& \propto \frac{\beta(n_{t-\tau})^{r_t}}{\Gamma(r_t+1)}\frac{\alpha^\alpha}{\Gamma(\alpha)}\int_{0}^{\infty}e^{-(\beta(n_{t-\tau})+\alpha)e_t}e_t^{r_t+\alpha-1}\ \mathrm{d}e_t \\
+			& \propto \frac{\beta(n_{t-\tau})^r_t}{\Gamma(r_t+1)}\frac{\alpha^\alpha}{\Gamma(\alpha)}\frac{\Gamma(r_t+\alpha)}{(\beta(n_{t-\tau})+\alpha)^{r_t+\alpha}} \\
+			& \propto \binom{r_t + \alpha - 1}{r_t}(\frac{\beta(n_{t-\tau})}{\beta(n_{t-\tau}) + \alpha})^{r_t}(\frac{\alpha}{\beta(n_{t-\tau}) + \alpha})^\alpha
 	\end{split}
 	\end{equation*}
 	where $\beta(n_{t-\tau}) = Pn_{t-\tau}e^{-\frac{n_{t-\tau}}{N_0}}$ and $\alpha = \sigma_p^{-2}$
@@ -81,11 +81,11 @@
 	\begin{equation*}
 	\begin{split}
 	g_s(s_t | n_{t-1}) & = \int_{0}^{\infty}g_s(s_t, \epsilon_t | n_{t-1})\ \mathrm{d}\epsilon_t \\
-	& = \int_{0}^{\infty}g_s(s_t | \epsilon_t, n_{t-\tau})p(\epsilon_t)\ \mathrm{d}\epsilon_t \\
-	& = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)} \int_{0}^{\infty}e^{-\delta\epsilon_t s_t}(1-e^{-\delta\epsilon_t})^{n_{t-1}-s_t}\epsilon_t^{\alpha-1}e^{-\alpha\epsilon_t}\ \mathrm{d}\epsilon_t \\
-	& = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)}\int_{0}^{\infty}e^{-(\delta s_t+\alpha)\epsilon_t }(1-e^{-\delta\epsilon_t})^{n_{t-1}-s_t}\epsilon_t^{\alpha-1}\ \mathrm{d}\epsilon_t \\
-	& = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)}\sum_{k=0}^{n_{t-1}-s_t}\binom{n_{t-1}-s_t}{k}(-1)^k \ \int_{0}^{\infty}e^{-(\delta s_t+\alpha + k\delta)\epsilon_t }\epsilon_t^{\alpha-1}\ \mathrm{d}\epsilon_t \\
-	& = \binom{n_{t-1}}{s_t}\alpha^\alpha\sum_{k=0}^{n_{t-1}-s_t}\binom{n_{t-1}-s_t}{k}\frac{(-1)^k}{(\delta(s_t+k)+\alpha)^\alpha}
+	& \propto \int_{0}^{\infty}g_s(s_t | \epsilon_t, n_{t-\tau})p(\epsilon_t)\ \mathrm{d}\epsilon_t \\
+	& \propto \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)} \int_{0}^{\infty}e^{-\delta\epsilon_t s_t}(1-e^{-\delta\epsilon_t})^{n_{t-1}-s_t}\epsilon_t^{\alpha-1}e^{-\alpha\epsilon_t}\ \mathrm{d}\epsilon_t \\
+	& \propto \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)}\int_{0}^{\infty}e^{-(\delta s_t+\alpha)\epsilon_t }(1-e^{-\delta\epsilon_t})^{n_{t-1}-s_t}\epsilon_t^{\alpha-1}\ \mathrm{d}\epsilon_t \\
+	& \propto \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)}\sum_{k=0}^{n_{t-1}-s_t}\binom{n_{t-1}-s_t}{k}(-1)^k \ \int_{0}^{\infty}e^{-(\delta s_t+\alpha + k\delta)\epsilon_t }\epsilon_t^{\alpha-1}\ \mathrm{d}\epsilon_t \\
+	& \propto \binom{n_{t-1}}{s_t}\alpha^\alpha\sum_{k=0}^{n_{t-1}-s_t}\binom{n_{t-1}-s_t}{k}\frac{(-1)^k}{(\delta(s_t+k)+\alpha)^\alpha}
 	\end{split}
 	\end{equation*}
 	where $\alpha = \sigma_d^{-2}$
