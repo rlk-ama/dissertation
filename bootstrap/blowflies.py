@@ -8,15 +8,14 @@ from scipy.integrate import quad
 
 class BlowflyMap(object):
 
-    def __init__(self, p, n0, sigmap, delta, sigmad, tau, m, initial=None, observations=None, length=None):
+    def __init__(self, p, n0, sigmap, delta, sigmad, tau, initial=None, observations=None, length=None):
         self.p = p
         self.n0 = n0
         self.sigmap = sigmap
         self.delta = delta
         self.sigmad = sigmad
         self.tau = tau
-        self.m = m
-        self.coeff = self.coeff_betabinom(1/self.sigmad**2)
+        self.coeff = self.coeff_betabinom(1/self.sigmad**2, 1/(self.sigmad**2*self.delta))
 
         if initial:
             self.initial = initial
@@ -25,7 +24,7 @@ class BlowflyMap(object):
 
         self.kernel = self.Kernel(delta=self.delta, sigmad=self.sigmad)
         self.proposal = self.Proposal(delta=self.delta, sigmad=self.sigmad, coeff_betabinom=self.coeff)
-        self.conditional = self.Conditional(p=self.p, n0=self.n0, sigmap=self.sigmap, m=self.m, tau=self.tau)
+        self.conditional = self.Conditional(p=self.p, n0=self.n0, sigmap=self.sigmap, tau=self.tau)
 
         if observations is not None:
             self.observations = observations
@@ -46,13 +45,12 @@ class BlowflyMap(object):
 
     class Conditional(object):
 
-        def __init__(self, p, n0, sigmap, m, tau):
+        def __init__(self, p, n0, sigmap, tau):
             self.distribution_r = NegativeBinomial()
             self.p = p
             self.n0 = n0
             self.shape_r = 1/sigmap**2
             self.shape_r_arr = None
-            self.m = m
             self.tau = tau
             self.coeff_r = coeff_r
             self.coeff_beta = coeff_beta
@@ -63,9 +61,9 @@ class BlowflyMap(object):
             ancestor = observations[index-self.tau]
             next_obs = observations[index]
             coeff_beta = self.coeff_beta(ancestor, self.p, self.n0, len(particles))
-            proba_r = self.proba_r(coeff_beta, self.shape_r)
+            proba_r = self.proba_r(coeff_beta, self.shape_r, len(particles))
 
-            if self.shape_r_arr == None:
+            if self.shape_r_arr is None:
                 self.shape_r_arr = np.array([self.shape_r]*len(particles), dtype=np.float64)
 
             rs = self.proposal_r.sample(n=self.shape_r_arr, p=proba_r, next=next_obs)
@@ -100,7 +98,7 @@ class BlowflyMap(object):
                 self.particles_nb = len(particles)
                 self.shape1 = np.array([self.coeff_betabinom[0]]*self.particles_nb, dtype=np.float64)
                 self.shape2 = np.array([self.coeff_betabinom[1]]*self.particles_nb, dtype=np.float64)
-            ancestor = observations[index-1]
+            ancestor = np.array([observations[index-1]]*len(particles), dtype=np.float64)
             return self.distribution.density(particles, n=ancestor, shape1=self.shape1, shape2=self.shape2)
 
     def observ_gen(self, length):
@@ -123,9 +121,9 @@ class BlowflyMap(object):
 
         return observ, state
 
-    def coeff_betabinom(self, alpha):
-        def func(x): return np.log(1-x)*(alpha**alpha)/gamma(alpha)*(-np.log(x))**(alpha-1)*(x**(alpha-1))
+    def coeff_betabinom(self, alpha, beta):
+        def func(x): return np.log(1-x)*(beta**alpha)/gamma(alpha)*(-np.log(x))**(alpha-1)*(x**(beta-1))
 
-        def equations(p): return (-psi(p[0]+p[1])+psi(p[0])+1, -psi(p[0]+p[1])+psi(p[1])-quad(func, 0, 1)[0])
+        def equations(p): return (-psi(p[0]+p[1])+psi(p[0])+alpha/beta, -psi(p[0]+p[1])+psi(p[1])-quad(func, 0, 1)[0])
 
         return fsolve(equations, (alpha, alpha))

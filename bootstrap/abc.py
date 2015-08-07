@@ -26,19 +26,18 @@ class ABCFilter(object):
         likelihood = 0
         weights = np.array([1.0/N]*N, dtype=np.float64)
 
-        likelihoods[0] = likelihood
-
         for i in range(self.start+1, self.end):
+            print(i)
             weights = self.normalize(weights)
 
-            ESS[i-1] = (1/sum(np.multiply(weights, weights)))
+            ESS[i-self.start-1] = (1/sum(np.multiply(weights, weights)))
 
             particles = self.Map.proposal.sample(self.observations, i, N)
             denom = self.Map.proposal.density(particles, self.observations, i)
-            kernel = self.Map.kernel.density(particles, self.observations, i)
+            kernel = denom #self.Map.kernel.density(particles, self.observations, i)
 
             num = [0]*len(particles)
-            for i in range(self.rep):
+            for j in range(self.rep):
                 cond = self.Map.conditional.density(particles, self.observations, i)
                 num = num + cond
             num = np.divide(num, self.rep)
@@ -47,7 +46,7 @@ class ABCFilter(object):
             np.divide(weights, denom, out=weights)
 
             if sum(weights) == 0:
-                likelihoods[i:].fill(-np.inf)
+                likelihoods[i-self.start-1:].fill(-np.inf)
 
                 if not self.likeli:
                     return particles_all, likelihoods, ESS
@@ -56,14 +55,14 @@ class ABCFilter(object):
 
             likelihood += -np.log(N) + np.log(sum(weights))
 
-            likelihoods[i] = likelihood
+            likelihoods[i-self.start-1] = likelihood
 
             if not self.likeli:
-                particles_all[i-1] = particles
+                particles_all.append(particles)
 
         if not self.likeli:
             weights = self.normalize(weights)
-            ESS[self.end-1] = 1/sum(np.multiply(weights, weights))
+            ESS[self.end-self.start-1] = 1/sum(np.multiply(weights, weights))
             return particles_all, likelihoods, ESS
         else:
             return likelihoods

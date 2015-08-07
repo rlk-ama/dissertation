@@ -10,26 +10,17 @@ import numpy as np
 cimport numpy as np
 
 cdef double func(double x, double particle, double ancestor, double delta, double shape):
-    cdef double coeff = tgamma(ancestor + 1)/(tgamma(particle + 1)*tgamma(ancestor-particle+1))*pow(shape, shape)/tgamma(shape)
-    return coeff*exp(-(delta*particle + shape)*x)*pow((1-exp(-delta*x)), ancestor-particle)*pow(x, shape-1)
+    return exp(-(delta*particle + shape)*x)*pow((1-exp(-delta*x)), ancestor-particle)*pow(x, shape-1)
 
-cpdef double[:: 1] transi_s(double[:: 1] particles, int ancestor, double delta, double shape, int dim):
+cpdef double[:: 1] transi_s(double[:: 1] particles, double ancestor, double delta, double shape, int dim):
     cdef double[::1] output = np.empty(dim)
-    cdef double internal_sum
-    cdef int i, j, particle, sgn
+    cdef double coeff, particle
+    cdef int i
     for i in range(dim):
-        internal_sum = 0
-        particle = int(particles[i])
-
-        for j in range(ancestor- particle):
-            if j % 2 == 0:
-                sgn = 1
-            else:
-                sgn = -1
-
-            internal_sum = internal_sum + exp(-lgamma(j+1) - lgamma(ancestor-particle-j+1) - shape*log(delta*(particle+j)+shape))*sgn
-
-        output[i] = exp(lgamma(ancestor+1)-lgamma(particle+1))*internal_sum
+        particle = particles[i]
+        coeff = exp(lgamma(ancestor+1)-lgamma(ancestor-particle+1)-lgamma(particle+1)+shape*log(shape)-lgamma(shape))
+        inte = quad(func, 0, np.inf, args=(particle, ancestor, delta, shape))[0]
+        output[i] = exp(log(coeff) + log(inte))
     return  output
 
 

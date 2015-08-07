@@ -13,9 +13,9 @@ def perform_filter(inits=None, p=6.5, n0=400, sigmap=np.sqrt(0.1), delta=0.16, s
         inits = np.array([int(Normal().sample(np.array([1000], dtype=np.float64), np.array([10], dtype=np.float64))[0])], dtype=np.float64)
 
     if observations is None:
-        Map_blowfly = BlowflyMap(p, n0, sigmap, delta, sigmad, tau, m, length=NOS, initial=inits)
+        Map_blowfly = BlowflyMap(p, n0, sigmap, delta, sigmad, tau, length=NOS, initial=inits)
     else:
-        Map_blowfly = BlowflyMap(p, n0, sigmap, delta, sigmad, tau, m, length=NOS, initial=inits, observations=observations)
+        Map_blowfly = BlowflyMap(p, n0, sigmap, delta, sigmad, tau, length=NOS, initial=inits, observations=observations)
 
     observations = Map_blowfly.observations
     initial = {
@@ -28,14 +28,20 @@ def perform_filter(inits=None, p=6.5, n0=400, sigmap=np.sqrt(0.1), delta=0.16, s
 
     output = {
         'observations': observations,
-        #'estim': estim,
-        #'likeli': likeli,
-        #'ESS': ESS
+        'estim': estim,
+        'likeli': likeli,
+        'ESS': ESS
     }
 
     return output
 
 if __name__ == "__main__":
     output = perform_filter()
-    plt.plot([i for i in range(200)], output['observations'])
-    plt.show()
+
+    NOS = len(output['observations'])
+
+    ess_lik = zip(output['ESS'], output['likeli'])
+    with open("/home/raphael/abc.txt", "w") as g:
+        for elem in ess_lik:
+            g.write(" ".join(map(str, elem)))
+            g.write("\n")
