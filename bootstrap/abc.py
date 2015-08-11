@@ -21,20 +21,19 @@ class ABCFilter(object):
         if not self.likeli:
             particles_all = []
 
-        likelihoods = np.zeros(self.end-self.start)
+        likelihoods = np.zeros(self.end-self.start-1)
         ESS = np.zeros(self.end-self.start)
         likelihood = 0
         weights = np.array([1.0/N]*N, dtype=np.float64)
 
         for i in range(self.start+1, self.end):
-            print(i)
             weights = self.normalize(weights)
 
             ESS[i-self.start-1] = (1/sum(np.multiply(weights, weights)))
 
             particles = self.Map.proposal.sample(self.observations, i, N)
             denom = self.Map.proposal.density(particles, self.observations, i)
-            kernel = denom #self.Map.kernel.density(particles, self.observations, i)
+            kernel = self.Map.kernel.density(particles, self.observations, i)
 
             num = [0]*len(particles)
             for j in range(self.rep):

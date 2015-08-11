@@ -5,13 +5,14 @@
 #cython: profile=False
 
 import numpy as np
-from rpy2 import robjects
 
 cimport numpy as np
 from cython.parallel import prange
 
 from libc.math cimport lgamma, log, exp
 from collections import Iterable
+from scipy.special import beta
+from scipy.misc import comb
 
 cdef double PI = 3.14159265358979323846
 
@@ -69,7 +70,7 @@ cdef double[::1] density_binomial_array(double[::1] x, double[::1] n, double[::1
         output[i] = exp(ldensity[i])
     return output
 
-cdef double[::1] density_negativebinomial_array(double[::1] x, double[::1] n, double[::1] p):
+cdef double[::1] density_negativebinomial_array(long[::1] x, double[::1] n, double[::1] p):
     cdef int dim = x.shape[0]
     cdef double[::1] ldensity = np.empty(dim)
     cdef double[::1] output = np.empty(dim)
@@ -221,40 +222,38 @@ class BetaBinomial(object):
     def __init__(self, size=None, tweaked=False):
         self.size = size
         self.tweaked = tweaked
-        self.r = robjects
-        self.r.r('''
-        library(VGAM)
-        sample = function(dim, shape1, shape2, size) return(rbetabinom.ab(dim, size=size, shape1=shape1, shape2=shape2))
-        density = function(particles, shape1, shape2, size) return(dbetabinom.ab(particles, size=size, shape1=shape1, shape2=shape2))
-        ''')
 
-    def sample(self, double[::1] n, double[::1] shape1, double[::1] shape2, double[::1] next=None):
+    def sample(self, int[::1] n, double[::1] shape1, double[::1] shape2, double[::1] next=None):
         cdef int dim, i
-        cdef double[::1] output
-        cdef double[::1] samples
-        cdef double samp
+        cdef long[::1] output
+        cdef long[::1] samples
+        cdef double[::1] betas
+        cdef long samp
         dim = n.shape[0]
-        output  = np.empty(dim)
+        output = np.zeros(dim, dtype=np.int64)
         i = 0
-        nR = self.r.FloatVector(n)
-        shape1R = self.r.FloatVector(shape1)
-        shape2R = self.r.FloatVector(shape2)
-        samples = self.r.globalenv['sample'](dim=dim, size=nR, shape1=shape1R, shape2=shape2R)
+        betas = np.random.beta(a=shape1, b=shape2)
+        samples = np.random.binomial(n=n, p=betas)
         for samp in samples:
             if self.tweaked:
                 while samp > next[i]:
-                    samp = self.r.globalenv['sample'](dim=1, size=n[i], shape1=shape1[i], shape2=shape2[i])[0]
+                    beta = np.random.beta(a=shape1[0], b=shape2[0], size=None)
+                    samp = np.random.binomial(n=n[i], p=beta, size=None)
             output[i] = samp
             i += 1
         return output
 
-    def density(self, double[::1] x, double[::1] n, double[::1] shape1, double[::1] shape2):
+    def density(self, long[::1] x, int[::1] n, double[::1] shape1, double[::1] shape2):
         cdef int dim, i
-        cdef double[::1] output
+        cdef double[::1] output, coeff1, coeff2
         dim = n.shape[0]
-        output  = np.empty(dim)
+        output = np.empty(dim)
+        coeff1 = np.empty(dim)
+        coeff2 = np.empty(dim)
         for i in range(dim):
-            output[i] = self.r.globalenv['density'](x[i], size=n[i], shape1=shape1[i], shape2=shape2[i])[0]
+            coeff1[i] = x[i] + shape1[i]
+            coeff2[i] = n[i] - x[i] + shape2[i]
+        output  = comb(n, x)*beta(coeff1, coeff2)/beta(shape1, shape2)
         return output
 
 
@@ -266,10 +265,10 @@ class  NegativeBinomial(object):
 
     def sample(self, double[::1] n, double[::1] p, double next=0):
         cdef int dim, i
-        cdef double[::1] output
-        cdef double samp
+        cdef long[::1] output
+        cdef long samp
         dim = n.shape[0]
-        output  = np.empty(dim)
+        output  = np.empty(dim, dtype=np.int64)
         for i in range(dim):
             samp = np.random.negative_binomial(n=n[i], p=p[i], size=self.size)
             if self.tweaked:
@@ -278,7 +277,7 @@ class  NegativeBinomial(object):
             output[i] = samp
         return output
 
-    def density(self, double[::1] x, double[::1] n, double[::1] p):
+    def density(self, long[::1] x, double[::1] n, double[::1] p):
         return  density_negativebinomial_array(x, n, p)
 
 class MultivariateUniform(object):

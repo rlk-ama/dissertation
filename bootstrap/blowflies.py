@@ -1,7 +1,7 @@
 import numpy as np
 
 from distributions.distributions2 import Normal, BetaBinomial, NegativeBinomial, Poisson, Gamma, Binomial, BetaBinomial
-from bootstrap.utils_blowflies import transi_s, coeff_r, coeff_beta, proba_r
+from bootstrap.utils_blowflies import transi_s, coeff_r, coeff_beta, proba_r, calc_delta
 from scipy.special import gamma, psi
 from scipy.optimize import fsolve
 from scipy.integrate import quad
@@ -56,21 +56,21 @@ class BlowflyMap(object):
             self.coeff_beta = coeff_beta
             self.proba_r = proba_r
             self.proposal_r = NegativeBinomial(tweaked=True)
-
+        #@profile
         def density(self, particles, observations, index):
             ancestor = observations[index-self.tau]
-            next_obs = observations[index]
+            next_obs = int(observations[index])
             coeff_beta = self.coeff_beta(ancestor, self.p, self.n0, len(particles))
             proba_r = self.proba_r(coeff_beta, self.shape_r, len(particles))
 
-            if self.shape_r_arr is None:
+            if self.shape_r_arr is None or len(self.shape_r_arr) != len(particles):
                 self.shape_r_arr = np.array([self.shape_r]*len(particles), dtype=np.float64)
 
             rs = self.proposal_r.sample(n=self.shape_r_arr, p=proba_r, next=next_obs)
             dens_rs = self.distribution_r.density(rs, n=self.shape_r_arr, p=proba_r)
             prop_rs = self.proposal_r.density(rs, n=self.shape_r_arr, p=proba_r)
             weights = np.divide(dens_rs, prop_rs)
-            deltas =  [0 if rs[i] + particles[i] != next_obs else 1 for i in range(len(rs))]
+            deltas =  calc_delta(rs, particles, next_obs, len(rs)) #[0 if rs[i] + particles[i] != next_obs else 1 for i in range(len(rs))]
             np.multiply(weights, deltas, out=weights)
             return weights
 
@@ -84,21 +84,21 @@ class BlowflyMap(object):
             self.particles_nb = None
 
         def sample(self, observations, index, length):
-            if self.particles_nb == None:
+            if self.particles_nb is None or self.particles_nb != length:
                 self.particles_nb = length
                 self.shape1 = np.array([self.coeff_betabinom[0]]*self.particles_nb, dtype=np.float64)
                 self.shape2 = np.array([self.coeff_betabinom[1]]*self.particles_nb, dtype=np.float64)
-            ancestor = np.array([observations[index-1]]*length, dtype=np.float64)
+            ancestor = np.array([observations[index-1]]*length, dtype=np.int32)
             next_obs = np.array([observations[index]]*length, dtype=np.float64)
             return self.distribution.sample(n=ancestor, shape1=self.shape1, shape2=self.shape2, next=next_obs)
 
         #@profile
         def density(self, particles, observations, index):
-            if self.particles_nb == None:
+            if self.particles_nb is None or self.particles_nb != len(particles):
                 self.particles_nb = len(particles)
                 self.shape1 = np.array([self.coeff_betabinom[0]]*self.particles_nb, dtype=np.float64)
                 self.shape2 = np.array([self.coeff_betabinom[1]]*self.particles_nb, dtype=np.float64)
-            ancestor = np.array([observations[index-1]]*len(particles), dtype=np.float64)
+            ancestor = np.array([observations[index-1]]*len(particles), dtype=np.int32)
             return self.distribution.density(particles, n=ancestor, shape1=self.shape1, shape2=self.shape2)
 
     def observ_gen(self, length):
