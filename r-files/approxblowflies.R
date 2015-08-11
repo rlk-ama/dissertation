@@ -19,13 +19,36 @@ hist(approx, breaks=40)
 qqplot(var, approx)
 abline(0,1)
 
-func = function(x) {
-  return(log(1-x)*10^10/gamma(10)*(-log(x))^9*x^9)
+binom.ori = c()
+for (v in var) binom.ori = c(binom.ori, rbinom(1, size=300, p=v))
+
+binom.beta = c()
+for (app in approx) binom.beta = c(binom.beta, rbinom(1, size=300, p=app))
+
+hist(binom.ori, breaks=40)
+hist(binom.beta, breaks=40)
+
+qqplot(binom.beta, binom.ori)
+abline(0,1)
+
+gams = rgamma(10000, shape=10, rate=10)
+var = exp(-0.16*gams)
+approx = rbeta(10000, shape1=58.23357, shape2=10.01770)
+hist(var, breaks=40)
+hist(approx, breaks=40)
+qqplot(var, approx)
+abline(0,1)
+
+func = function(x, alpha, beta) {
+  return(log(1-x)*beta^alpha/gamma(alpha)*(-log(x))^(alpha-1)*x^(beta-1))
 }
-integrate(func, 0, 1)
+integrate(func, 0, 1, alpha=10, beta=10)
 
-model <- function(x) c(F1 = -digamma(x[1]+x[2])+ digamma(x[1]) + 1, 
-                       F2 = -digamma(x[1]+x[2])+ digamma(x[2]) - integrate(func, 0, 1)$value)
+model <- function(x, parms) {
+  c(F1 = -digamma(x[1]+x[2])+ digamma(x[1]) + parms[1]/parms[2], 
+    F2 = -digamma(x[1]+x[2])+ digamma(x[2]) - integrate(func, 0, 1, alpha=parms[1], beta=parms[2])$value)
+}
 
-ss <- multiroot(f = model, start = c(1, 1))
+ss <- multiroot(f = model, parms=c(10, 10), start = c(1, 1))
+ss2 = multiroot(f=model, parms=c(10, 10/0.16), start=c(0.01,0.01))
 
