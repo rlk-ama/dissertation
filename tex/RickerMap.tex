@@ -1,4 +1,4 @@
-\documentclass{report}
+\documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage[fleqn]{amsmath}
 \usepackage[T1]{fontenc}
@@ -18,7 +18,9 @@
 \usepackage{graphicx}
 
 \begin{document}
-	\section*{The Ricker map}
+	\section{Introduction}
+	\subsection{The Ricker Map}
+	\subsubsection{The Deterministic Ricker Map}
 	The Ricker map is a difference equation used to describe the population dynamics of a wide range of ecological populations. It was first described in a seminal paper by Ricker (1954)~\cite{Ricker1954} to account for fish population sizes in fisheries. \\
 	If we denote by $N_t$ the size of a population a time $t$, Ricker established that if:
 	\begin{itemize}
@@ -34,39 +36,79 @@
 	The fact that generations do no overlap, which is generally a strong assumption in biology, is acceptable in the case of seasonally breeding populations, which are widespread in ecology. \\
 	This model has very complex dynamics depending on the values of the parameter $r$. It has become a classic discrete population model, and although not taking into account any of the exterior factors which influence greatly ecological populations (such as destruction of natural ecosystems, pervading pollution, etc ...), it provides an accurate description of many experimental population dynamics. \\
 	To understand why estimating the parameters of this model given experimental data is non trivial, we first describe its chaotic behaviour. Equation~\ref{eq:ricker} has two equilibria, $N_{eq, 1} = 0$ and $N_{eq, 2} = K\log r$, which are the solutions of  $N_{eq} = r N_{eq} e^{-\frac{N_{eq}}{K}}$. Linearisation around these two equilibria, give $N_{t+1} - N_{eq, 1} = r(N_{t} - N_{eq, 1})$ and $N_{t+1} - N_{eq, 2} = (1-\log r)(N_{t} - N_{eq, 1})$. Therefore $N_{eq, 1}$ is stable when $0 < r < 1$ and unstable when $r > 1$ and $N_{eq, 2}$ is stable when $1 < r < e^2$ and unstable when $r < 1$ or $r > e^2$. The corresponding bifurcation diagram, with $K$ fixed and equal to 1, is shown in Figure~\ref{fig:stability}. Figure~\ref{fig:stab} shows the convergence towards these two equilibria for respectively $r=0.5$ and $r=3$ and $K=10$. It can be noticed that the non zero equilibrium value is close to its theoretical value $10 \log 3 = 10.9$. \\
+	Another interesting characteristic of this map, from an ecological point of view, and the reason why it was so widely adopted, resides in the fact that it accounts for scenarii where populations oscillates before reaching an equilibrium. Figure~\ref{fig:oscill} shows such a scenario.\\
 	
-	When $r$ exceeds $e^2$ there are no stable equilibrium consisting of a single value and solutions start oscillating. When, after a transient period, this oscillation occurs among a fixed and finite number of distinct values, the set of these values is called the \emph{orbit}. These values are the fixed points of the equation $f^n(N_t) = N_t$. When $r=e^2$ oscillation the orbit consists of 2 values, then of 4 then of 8 and so on until a critical value above which solutions follow an aperiodic pattern. $e^2$ is called a \emph{bifurcation value}, and this geometric progression in the length of the cycles is called a \emph{period doubling cascade}. Figure~\ref{fig:stability} represents the orbit as $r$ grows ($K$ is fixed and equal to 1) and was obtained experimentally. It can be seen that when $r=e^2$ the orbit consists of 2 values and of 8 when $r=2e^2$.
+	Furthermore, the Ricker Map exhibits another remarkable feature. Indeed, when $r$ exceeds $e^2$ there are no stable equilibrium consisting of a single value. After a transient period, they start oscillating among a fixed and finite number of distinct values. The set of these values is called the \emph{orbit}. These values are the fixed points of the equation $f^n(N_t) = N_t$ with $n \in \mathbb{N^*}$. When $r=e^2$ oscillation the orbit consists of 2 values, then of 4 then of 8 and so on until a critical value above which solutions follow an aperiodic pattern. $e^2$ is called a \emph{bifurcation value}, and this geometric progression in the length of the cycles is called a \emph{period doubling cascade}. Figure~\ref{fig:stability} represents the orbit as $r$ grows ($K$ is fixed and equal to 1) and was obtained experimentally. It can be seen that when $r=e^2$ the orbit consists of 2 values and of 8 when $r=2e^2$. Figure~\ref{fig:oscill} shows such an orbit of four values.
 	
-	This is characteristic of chaos, where a small change in the value of r leads to very different solutions	
+	As $r$ continues growing, we rapidly reach a situation where population size does not enter any stable orbit any more. This leads to a behaviour characteristic of chaos, where a small change in the value of the parameters or the initial conditions leads to very different solutions. Figure~\ref{fig:chaos} shows the evolution of two populations when either parameter $r$ or initial conditions present a very minor change. It can be noted that populations sizes, in both cases, diverges rapidly from one another.
 	
-\begin{figure}[htb]
-	\centering
-	\begin{minipage}{0.4\textwidth}
+	\subsubsection{The Noisily Observed Ricker Map}
+	In order to allow for external factors and to take into account the observational process (for example a counting process), extensions to the deterministic case has been suggested. We chose to proceed with the following model, suggested by Wood (2010)~\cite{Wood2010}.
+	\begin{equation}
+	N_t = r N_t e^{-\frac{N_t}{K}+Z_t} \hspace{1cm} Z_t \sim \mathrm{N}(0, \sigma^2)
+	\end{equation}
+	\begin{equation}
+	Y_t = \mathrm{Poisson}(\phi N_t)
+	\end{equation}
+	Therefore, $N_t \sim \log\mathcal{N} (\log{(rN_{t-1}e^{-N_{t-1}})},\sigma^2)$, i.e $N_t$ is log-normally distributed with parameters depending on $r$, $K$ and $\sigma$. \\
+	The statistical problem at hand is thus to estimate the joint probability of $(r, K, sigma, phi, N_{1:T})$ where $T$ is the number of generations. Due to the chaotic dynamics of the Ricker map, estimating the coefficients $r$ and $K$ with precision is important if one wants to obtain simulations exhibiting the same properties as experimental data. Moreover, such an erratic behaviour leads to a highly multimodal likelihood and traditional approaches, such as maximum likelihood estimation, do not suit this parameter estimation problem.
+	
+	\begin{figure}[htb]
 		\centering
-		\includegraphics[scale=0.3]{/home/raphael/dissertation/figures/stability.pdf}
-	\end{minipage}
-	\begin{minipage}{0.4\textwidth}
-		\centering
-		\includegraphics[scale=0.3]{/home/raphael/dissertation/figures/bifucdiagram.pdf}
-	\end{minipage}
-	\caption{\textbf{(left)}Bifurcation diagram of the Ricker map. \textbf{Dotted} lines correspond to unstable equilibria and \textbf{solid} lines to stable ones. \textbf{(right)} Bifurcation diagram of the Ricker Map.}
-	\label{fig:stability}
-\end{figure}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/stability.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/bifucdiagram.pdf}
+		\end{minipage}
+		\caption{\textbf{(left)}Bifurcation diagram of the Ricker map. \textbf{Dotted} lines correspond to unstable equilibria and \textbf{solid} lines to stable ones. \textbf{(right)} Bifurcation diagram of the Ricker Map.}
+		\label{fig:stability}
+	\end{figure}
 
-\begin{figure}[htb]
-	\centering
-	\begin{minipage}{0.4\textwidth}
+	\begin{figure}[htb]
 		\centering
-		\includegraphics[scale=0.3]{/home/raphael/dissertation/figures/0value_ricker.pdf}
-	\end{minipage}
-	\begin{minipage}{0.4\textwidth}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/0value_ricker.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/stable_ricker.pdf}
+		\end{minipage}
+		\caption{Convergence towards the equilibria of the Ricker map}
+		\label{fig:stab}
+	\end{figure}
+
+	\begin{figure}[htb]
 		\centering
-		\includegraphics[scale=0.3]{/home/raphael/dissertation/figures/stable_ricker.pdf}
-	\end{minipage}
-	\caption{Convergence towards the equilibria of the Ricker map}
-	\label{fig:stab}
-\end{figure}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/oscill_ricker.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/4values_ricker.pdf}
+		\end{minipage}
+		\caption{\textbf{(left)} The population size oscillates before converging towards equilibrium. \textbf{(right)} The population sizes describes an orbit of length four.}
+		\label{fig:oscill}
+	\end{figure}
 	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/rchange.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/initchange.pdf}
+		\end{minipage}
+		\caption{\textbf{(left)} Evolution of the population size when \textbf{(black)}$r=50$ and \textbf{(red)}$r=50.1$ with initial value $N_0=7$. \textbf{(right)} Evolution of the population size when \textbf{(black)}$N_0=7$ and \textbf{(red)}$N_0=7.1$ with $r=50$.}
+		\label{fig:chaos}
+	\end{figure}
+
 	\bibliographystyle{plain}
 	\bibliography{mybib}{}
 \end{document}
