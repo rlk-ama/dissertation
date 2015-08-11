@@ -224,22 +224,28 @@ class BetaBinomial(object):
         self.r = robjects
         self.r.r('''
         library(VGAM)
-        sample = function(shape1, shape2, size) return(rbetabinom.ab(1, size=size, shape1=shape1, shape2=shape2))
+        sample = function(dim, shape1, shape2, size) return(rbetabinom.ab(dim, size=size, shape1=shape1, shape2=shape2))
         density = function(particles, shape1, shape2, size) return(dbetabinom.ab(particles, size=size, shape1=shape1, shape2=shape2))
         ''')
 
     def sample(self, double[::1] n, double[::1] shape1, double[::1] shape2, double[::1] next=None):
         cdef int dim, i
         cdef double[::1] output
+        cdef double[::1] samples
         cdef double samp
         dim = n.shape[0]
         output  = np.empty(dim)
-        for i in range(dim):
-            samp = self.r.globalenv['sample'](size=n[i], shape1=shape1[i], shape2=shape2[i])[0]
+        i = 0
+        nR = self.r.FloatVector(n)
+        shape1R = self.r.FloatVector(shape1)
+        shape2R = self.r.FloatVector(shape2)
+        samples = self.r.globalenv['sample'](dim=dim, size=nR, shape1=shape1R, shape2=shape2R)
+        for samp in samples:
             if self.tweaked:
                 while samp > next[i]:
-                    samp = self.r.globalenv['sample'](size=n[i], shape1=shape1[i], shape2=shape2[i])[0]
+                    samp = self.r.globalenv['sample'](dim=1, size=n[i], shape1=shape1[i], shape2=shape2[i])[0]
             output[i] = samp
+            i += 1
         return output
 
     def density(self, double[::1] x, double[::1] n, double[::1] shape1, double[::1] shape2):
