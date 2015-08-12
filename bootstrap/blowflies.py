@@ -8,14 +8,17 @@ from scipy.integrate import quad
 
 class BlowflyMap(object):
 
-    def __init__(self, p, n0, sigmap, delta, sigmad, tau, initial=None, observations=None, length=None):
+    def __init__(self, p, n0, sigmap, delta, sigmad, tau=14, initial=None, observations=None, length=None, start=0.1):
         self.p = p
         self.n0 = n0
         self.sigmap = sigmap
         self.delta = delta
         self.sigmad = sigmad
         self.tau = tau
-        self.coeff = self.coeff_betabinom(1/self.sigmad**2, 1/(self.sigmad**2*self.delta))
+        self.start = start
+        self.coeff = self.coeff_betabinom(1/self.sigmad**2, 1/(self.sigmad**2*self.delta), self.start)
+        if self.coeff[0] <= 0 or self.coeff[1] <=0:
+            raise Exception
 
         if initial:
             self.initial = initial
@@ -121,9 +124,9 @@ class BlowflyMap(object):
 
         return observ, state
 
-    def coeff_betabinom(self, alpha, beta):
+    def coeff_betabinom(self, alpha, beta, start):
         def func(x): return np.log(1-x)*(beta**alpha)/gamma(alpha)*(-np.log(x))**(alpha-1)*(x**(beta-1))
 
         def equations(p): return (-psi(p[0]+p[1])+psi(p[0])+alpha/beta, -psi(p[0]+p[1])+psi(p[1])-quad(func, 0, 1)[0])
 
-        return fsolve(equations, (alpha, alpha))
+        return fsolve(equations, (start, start))
