@@ -5,7 +5,7 @@ DTYPE = np.float64
 
 class ABCFilter(object):
 
-    def __init__(self, start, end, Ns, Map, rep, likeli=False):
+    def __init__(self, start, end, Ns, Map, rep=100, likeli=False, proposal=None, initial=None):
         self.start = start
         self.end = end
         self.Ns = Ns if isinstance(Ns, list) else [Ns]
@@ -14,9 +14,10 @@ class ABCFilter(object):
         self.observations = self.Map.observations
         self.likeli = likeli
         self.rep = rep
+        self.proposal = proposal
 
     #@profile
-    def sub_filter(self, N, prior, likeli=False):
+    def sub_filter(self, N, proposal, likeli=False):
 
         if not self.likeli:
             particles_all = []
@@ -33,7 +34,10 @@ class ABCFilter(object):
 
             particles = self.Map.proposal.sample(self.observations, i, N)
             denom = self.Map.proposal.density(particles, self.observations, i)
-            kernel = self.Map.kernel.density(particles, self.observations, i)
+            if proposal == "prior":
+                kernel = denom
+            else:
+                kernel = self.Map.kernel.density(particles, self.observations, i)
 
             num = [0]*len(particles)
             for j in range(self.rep):
@@ -75,4 +79,7 @@ class ABCFilter(object):
 
     def filter(self):
         for N in self.Ns:
-            yield self.sub_filter(N, self.likeli)
+            if self.proposal.get("prior", None):
+                yield 'prior', self.sub_filter(N, likeli=self.likeli, proposal="prior")
+            else:
+                yield 'optimal', self.sub_filter(N, likeli=self.likeli, proposal="optimal")
