@@ -1,4 +1,5 @@
 import numpy as np
+from time import time
 from proposals.proposals import RandomWalkProposal
 
 class PMMH(object):
@@ -35,7 +36,10 @@ class PMMH(object):
         return self.routine(theta)
 
     def routine(self, parameters):
-        Map = self.map(*parameters, initial=self.initial, observations=self.observations)
+        try:
+            Map = self.map(*parameters, initial=self.initial, observations=self.observations)
+        except:
+            return -np.inf
         filter = self.filter(self.start, self.end, self.Ns, Map, proposal={self.filter_proposal: True}, initial=self.initial_filter,
                              likeli=True)
         _, likeli= next(filter.filter())
@@ -51,8 +55,8 @@ class PMMH(object):
             if self.support(theta_star):
                 likeli_star = self.routine(theta_star)
                 zipped = list(zip(theta, theta_star))
-                numerator =  likeli_star + np.prod([self.proposals[i].density(zipped[i][0], zipped[i][1]) for i in range(len(zipped))]) + self.prior.density(theta_star)
-                denominator = likeli + np.prod([self.proposals[i].density(zipped[i][1], zipped[i][0]) for i in range(len(zipped))])+ self.prior.density(theta)
+                numerator =  likeli_star + np.sum([np.log(self.proposals[i].density(zipped[i][0], zipped[i][1])) for i in range(len(zipped))]) + np.log(self.prior.density(np.array(theta_star)))
+                denominator = likeli + np.sum([np.log(self.proposals[i].density(zipped[i][1], zipped[i][0])) for i in range(len(zipped))]) + np.log(self.prior.density(np.array(theta)))
                 if self.accept_reject(numerator-denominator):
                     theta = theta_star
                     likeli = likeli_star
@@ -70,11 +74,11 @@ class PMMH(object):
             theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
             thetas.append(theta)
             accepts.append(accept)
-            #print(iteration)
+            print(iteration)
 
         start = self.burnin
         acceptance_rate = np.sum(accepts[start-self.split:start])/self.split
-        #print(acceptance_rate)
+        print(acceptance_rate)
         k = 1
         while start < self.burnin + self.adaptation:
             self.rescale(acceptance_rate, k)
@@ -83,9 +87,9 @@ class PMMH(object):
                 theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
                 thetas.append(theta)
                 accepts.append(accept)
-                #print(iteration)
+                print(iteration)
             acceptance_rate = np.sum(accepts[start:end])/self.split
-            #print(acceptance_rate)
+            print(acceptance_rate)
             start = start + self.split
             k += 1
 
@@ -93,7 +97,7 @@ class PMMH(object):
             theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
             thetas.append(theta)
             accepts.append(accept)
-            #print(iteration)
+            print(iteration)
 
         return thetas, accepts
 
@@ -101,4 +105,4 @@ class PMMH(object):
         coeff = (acceptance_rate - self.target)/k
         news = [self.proposals[i].sigma*np.exp(coeff) for i in range(len(self.proposals))]
         self.proposals = [RandomWalkProposal(sigma=new) for new in news]
-        #print(news)
+        print(news)
