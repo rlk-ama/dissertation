@@ -6,8 +6,8 @@ from bootstrap.blowflies import BlowflyMap
 from bootstrap.abc import ABCFilter
 from distributions.distributions2 import Normal
 
-def perform_filter(inits=None, p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, sigmad=np.sqrt(0.1), tau=14, m=100, NOS=200, NBS=500, observations=None,
-                   particle_init=50, low=35, high=45, discretization=0.5, variable='n0'):
+def perform_filter(inits=None, p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, sigmad=np.sqrt(0.1), tau=14, m=100, NOS=100, NBS=500, observations=None,
+                   particle_init=50, low=35, high=45, discretization=0.5, variable='n0', proposal="optimal"):
 
     if inits == None:
         inits = np.array([int(Normal().sample(np.array([particle_init], dtype=np.float64), np.array([10], dtype=np.float64))[0])], dtype=np.float64)
@@ -33,8 +33,8 @@ def perform_filter(inits=None, p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, si
         else:
             raise Exception("Parameter does not exist")
 
-        filter = ABCFilter(tau, NOS, NBS, Map_blowfly, m, likeli=True)
-        likeli = next(filter.filter())
+        filter = ABCFilter(tau, NOS, NBS, Map_blowfly, m, likeli=True, proposal={proposal: True})
+        _, likeli = next(filter.filter())
         likelis.append(likeli[-1])
         print(variable_)
 
@@ -57,6 +57,7 @@ if __name__ == "__main__":
     parser.add_argument("--low", type=float, help="Start value for the variable in the state or observation equation")
     parser.add_argument("--high", type=float, help="End value for the variable in the state or observation equation")
     parser.add_argument("--discretization", type=float, help="Step in discretization of range of values for the parameter")
+    parser.add_argument("--proposal", type=str, help="Proposal distribution: prior or optimal ?")
 
     args = parser.parse_args()
     arguments = {k:v for k,v in args.__dict__.items() if v}
