@@ -11,7 +11,7 @@ from cython.parallel import prange
 
 from libc.math cimport lgamma, log, exp
 from collections import Iterable
-from scipy.special import beta
+from scipy.special import betaln, beta
 from scipy.misc import comb
 
 cdef double PI = 3.14159265358979323846
@@ -253,7 +253,7 @@ class BetaBinomial(object):
         for i in range(dim):
             coeff1[i] = x[i] + shape1[i]
             coeff2[i] = n[i] - x[i] + shape2[i]
-        output  = comb(n, x)*beta(coeff1, coeff2)/beta(shape1, shape2)
+        output  = comb(n, x)*np.exp(betaln(coeff1, coeff2)-betaln(shape1, shape2))
         return output
 
 
@@ -265,50 +265,40 @@ class  NegativeBinomial(object):
 
     def sample(self, double[::1] n, double[::1] p, double next=0):
         cdef int dim, i
-        cdef long[::1] output
-        cdef long samp
+        cdef long[::1] samples
         dim = n.shape[0]
-        output  = np.empty(dim, dtype=np.int64)
+        samples = np.random.negative_binomial(n=n, p=p)
         for i in range(dim):
-            samp = np.random.negative_binomial(n=n[i], p=p[i], size=self.size)
             if self.tweaked:
-                while samp > next:
-                    samp = np.random.negative_binomial(n=n[i], p=p[i], size=self.size)
-            output[i] = samp
-        return output
+                while samples[i] > next:
+                    samples[i] = np.random.negative_binomial(n=n[i], p=p[i], size=self.size)
+        return samples
 
     def density(self, long[::1] x, double[::1] n, double[::1] p):
         return  density_negativebinomial_array(x, n, p)
 
 class MultivariateUniform(object):
 
-    def __init__(self, ndims=1, size=None, func_lows=[lambda args: args], func_highs=[lambda args: args]):
-        self.ndims = ndims
+    def __init__(self, size=None):
         self.size = size
-        self.lows = func_lows
-        self.highs = func_highs
 
-    def sample(self, args_lows=[0], args_highs=[1], multi=False):
-        cdef int dims = self.ndims
-        cdef double[::1] samples = np.empty(dims)
+    def sample(self, double[::1] lows, double[::1] highs):
+        cdef int dim
+        dim = lows.shape[0]
+        cdef double[::1] samples = np.empty(dim)
         cdef int i
-        cdef double low, high
-        for i in range(dims):
-            low = wrapper(self.lows[i], args_lows[i])
-            high = wrapper(self.highs[i], args_highs[i])
-            samples[i] = np.random.uniform(low=low, high=high, size=self.size)
+        for i in range(dim):
+            samples[i] = np.random.uniform(low=lows[i], high=highs[i], size=self.size)
         return samples
 
-    def density(self, xs, args_lows=[0], args_highs=[1], multi=False):
-        cdef double low, high, density
+    def density(self, double[::1] xs, double[::1] lows, double[::1] highs):
+        cdef double density
         cdef int i, dim
         density = 1
-        dim = self.ndims
+        dim = xs.shape[0]
         for i in range(dim):
-            low = wrapper(self.lows[i], args_lows[i])
-            high = wrapper(self.highs[i], args_highs[i])
-            if xs[i] > high or xs[i] < low:
+            if xs[i] > highs[i] or xs[i] < lows[i]:
                 density *= 0
             else:
-                density *= 1/(high-low)
+                density *= 1/(highs[i]-lows[i])
         return density
