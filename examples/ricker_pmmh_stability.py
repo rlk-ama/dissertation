@@ -38,8 +38,7 @@ def simulation(r=44.7, phi=10, sigma=0.3, scaling=1, NOS=50, NBS=500, iter=17500
     }
 
     proposals = [RandomWalkProposal(sigma=sigma_proposal) for sigma_proposal in sigma_proposals]
-    prior = MultivariateUniformProposal(ndims=len(initial_params), func_lows=[lambda args: param/2 for param in initial_params],
-                                        func_highs=[lambda args: 1.5*param for param in initial_params])
+    prior = MultivariateUniformProposal(lows=np.array([param/2 for param in initial_params]), highs=np.array([1.5*param for param in initial_params]))
     support = lambda x: all([x[i] > initial_params[i]/2 and x[i] < 1.5*initial_params[i] for i in range(len(initial_params))])
 
     for i in range(chains):

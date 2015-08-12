@@ -28,19 +28,16 @@ class RandomWalkProposal(object):
 
 class MultivariateUniformProposal(object):
 
-    def __init__(self, ndims=1, func_lows=[lambda args: args], func_highs=[lambda args: args]):
-        self.ndims = ndims
-        self.distribution = MultivariateUniform(ndims=ndims, func_lows=func_lows, func_highs=func_highs)
+    def __init__(self, lows, highs):
+        self.lows = lows
+        self.highs = highs
+        self.distribution = MultivariateUniform()
 
-    def sample(self, lows=[0], highs=[1]):
-        lows = lows*self.ndims
-        highs = highs*self.ndims
-        return self.distribution.sample(args_lows=lows, args_highs=highs)
+    def sample(self):
+        return self.distribution.sample(lows=self.lows, highs=self.highs)
 
-    def density(self, xs, lows=[0], highs=[1]):
-        lows = lows*self.ndims
-        highs = highs*self.ndims
-        return self.distribution.density(xs, args_lows=lows, args_highs=highs)
+    def density(self, xs):
+        return self.distribution.density(xs, lows=self.lows, highs=self.highs)
 
 def _iterable(item):
     return np.array([item], dtype=DTYPE)
