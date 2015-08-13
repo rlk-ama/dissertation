@@ -1,0 +1,73 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[fleqn]{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{mathtools}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{natbib}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{array}
+\usepackage{bbold}
+\usepackage{amssymb}
+\usepackage[procnames]{listings}
+\usepackage{color}
+\usepackage{graphicx}
+
+\makeatletter
+\newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
+\newsavebox{\mybox}\newsavebox{\mysim}
+\newcommand{\distras}[1]{%
+	\savebox{\mybox}{\hbox{\kern3pt$\scriptstyle#1$\kern3pt}}%
+	\savebox{\mysim}{\hbox{$\sim$}}%
+	\mathbin{\overset{#1}{\kern\z@\resizebox{\wd\mybox}{\ht\mysim}{$\sim$}}}%
+}
+\makeatother
+
+\begin{document}
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/acfOptiR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/acfPriorR.pdf}
+		\end{minipage}
+		\caption{Autocorrelation function of r samples obtained using \textbf{(top)} the gamma approximation to the optimal proposal and \textbf{(bottom)} the prior proposal in the particle filter used to estimate the marginal likelihood. 37\% increase in ESS}
+		\label{fig:acfR}
+	\end{figure}
+
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/acfOptiPhi.pdf}
+		\end{minipage}
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/acfPriorPhi.pdf}
+		\end{minipage}
+		\caption{Autocorrelation function of $\phi$ samples obtained using \textbf{(top)} the gamma approximation to the optimal proposal and \textbf{(bottom)} the prior proposal in the particle filter used to estimate the marginal likelihood. 22\% increase in ESS}
+		\label{fig:acfPhi}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/acfOptiSigma.pdf}
+		\end{minipage}
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/acfPriorSigma.pdf}
+		\end{minipage}
+		\caption{Autocorrelation function of $\sigma$ samples obtained using \textbf{(top)} the gamma approximation to the optimal proposal and \textbf{(bottom)} the prior proposal in the particle filter used to estimate the marginal likelihood. 24\% increase in ESS}
+		\label{fig:acfSigma}
+	\end{figure}
+\end{document}
