@@ -224,7 +224,7 @@ class BetaBinomial(object):
         self.tweaked = tweaked
 
     def sample(self, int[::1] n, double[::1] shape1, double[::1] shape2, double[::1] next=None):
-        cdef int dim, i
+        cdef int dim, i, count
         cdef long[::1] output
         cdef long[::1] samples
         cdef double[::1] betas
@@ -236,9 +236,13 @@ class BetaBinomial(object):
         samples = np.random.binomial(n=n, p=betas)
         for samp in samples:
             if self.tweaked:
+                count = 0
                 while samp > next[i]:
+                    if count > 100:
+                        break
                     beta = np.random.beta(a=shape1[0], b=shape2[0], size=None)
                     samp = np.random.binomial(n=n[i], p=beta, size=None)
+                    count += 1
             output[i] = samp
             i += 1
         return output
@@ -264,14 +268,18 @@ class  NegativeBinomial(object):
         self.tweaked = tweaked
 
     def sample(self, double[::1] n, double[::1] p, double next=0):
-        cdef int dim, i
+        cdef int dim, i, count
         cdef long[::1] samples
         dim = n.shape[0]
         samples = np.random.negative_binomial(n=n, p=p)
         for i in range(dim):
             if self.tweaked:
+                count = 0
                 while samples[i] > next:
+                    if count > 100:
+                        break
                     samples[i] = np.random.negative_binomial(n=n[i], p=p[i], size=self.size)
+                    count += 1
         return samples
 
     def density(self, long[::1] x, double[::1] n, double[::1] p):
