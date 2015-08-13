@@ -70,21 +70,36 @@
 	
 	\subsection{Statistical Methods}
 	\subsubsection{State Space Model}
-	The noisily observed Ricker Map belongs to the framework of state space models. This framework describes sets of processes which can be decomposed into the following form where $\{x_t ; t \in \mathbb{N}\}$ is a discrete time unobserved process called \emph{states} with $x_t \in \Omega_s$ and $\{y_t ; t \in \mathbb{N^*}\}$ is another discrete time process with $y_t \in \Omega_o$ called \emph{observations}, $\Omega_s$, $\Omega_o$ being samples spaces:
+	The noisily observed Ricker Map belongs to the framework of state space models. This framework describes sets of processes which can be decomposed into the following form where $\mathrm{X}=\{x_t ; t \in \mathbb{N}\}$ is a discrete time unobserved process called \emph{states} with $x_t \in \Omega_s$ and $\mathrm{Y}=\{y_t ; t \in \mathbb{N^*}\}$ is another discrete time process with $y_t \in \Omega_o$ called \emph{observations}, $\Omega_s$, $\Omega_o$ being samples spaces and $\Theta$ is a vector of parameters on which both the distribution of $\mathrm{X}$ and $\mathrm{Y}$ depend:
 	\begin{align}
-		& p(x_0) \\
-		& p(x_t | x_{t-1}) \hspace{1cm} t \ge 1\\
-		& p(y_t | x_t) \hspace{1cm} t \ge 1
+		& p(x_0, \theta) \\
+		& p(x_t | x_{t-1}, \theta) \hspace{1cm} t \ge 1\\
+		& p(y_t | x_t, \theta) \hspace{1cm} t \ge 1
 	\end{align}
 	Note that we denote by $p(x_t)$ both the probability density of $X_t$ and its distribution if it exists, with respect to an underlying measure $\lambda$. This set of equations means that $X_t$ is a Markov process of initial distribution $p(x_0)$ and transition distribution $p(x_t | x_{t-1})$ and that the observations $y_t$ are assumed to be independent conditionally on $\{x_t ; t \in \mathbb{N}\}$, i.e $p(y_1, \cdots, y_t | x_0, \cdots, x_t) =p(x_0)\Pi_{k=1}^t p(y_k | x_k)$ where $p(y_k | x_k)$ is the marginal distribution of $y_k$. \\
 	
-	The problems that are usually addressed with state space models are the calculation of the /emph{posterior distribution} $p(x_{1:t}|y_{1:t})$ and of the \emph{filtering distribution} $p(x_t|y_{1:t})$,  where $p(x_{1:}) \coloneqq p(x_1, \cdots, x_t)$ for ease of notation. 
-	Even though we have $p(x_{1:t}|y_{1:t}) = \frac{p(y_{1:t}|x_{1:t})p(x_{1:t})}{p(y_{1:t})}$ the denominator is again a highly dimensional, almost always intractable, integral. \\
+	\subsubsection{Inference on State Space Models}
+	The problems that one usually try to addressed with state space models are the calculation of the \emph{posterior distribution} $p(x_{1:t}, \theta|y_{1:t})$, where $y_{1:t}$ is a realization of $\mathrm{Y}$ and of the \emph{filtering distribution} $p(x_t|y_{1:t}, \theta)$, where $\theta$ and $y_{1:t}$ are realization of $\Theta$ and $Y$. The former problem is called \emph{parameter estimation} whereas the latter is called \emph{state estimation}. For ease of notation we denote $p(x_{1:}) \coloneqq p(x_1, \cdots, x_t)$. \\
+	
+	Even though we have $p(x_{1:t}, \theta|y_{1:t}) = \frac{p(y_{1:t}|\theta, x_{1:t})p(x_{1:t}), \theta}{p(y_{1:t})}$ the denominator is again a highly dimensional, almost always intractable, integral. \\
 	One approach is to approximate the distribution $p(x_{1:t}|y_{1:t})$ with the following empirical distribution:
 	\begin{equation}
 		\hat{p}(x_{0:t}|y_{1:t}) = \sum_{i=1}^{N}\tilde{w}_t^{(i)} \delta_{x_{0:t}^{(i)}}(x_{0:t})
 	\end{equation}
-	where $\tilde{w}_t^{(i)} = \frac{W(x_{0:t}^{(i)})}{\sum_{j=1}^{N} W(x_{0:t}^{(j)})}$ and $W(x_{0:t}) = \frac{p(x_{1:t}|y_{1:t})}{q(x_{1:t}|y_{1:t})}$ where $x_{0:t}^{(i)}$ are iid draws from $q(x_{1:t}|y_{1:t})$, which is an easy to sample from distribution. If we take any bounded measurable function $\phi$ Geweke (1989)~\cite{Geweke1989} showed that $\mathbb{E}\phi(x_{0:t}) = \sum_{i=1}^{N} \tilde{w}_t^{(i)} \phi(x_{0:t}^{(i)}) \xrightarrow{\mathrm{a.s}} \int_{\Omega^n} \phi({x_{1:t}})p(x_{1:t}|y_{1:t})\mathrm{d}x_{0:t}$.
+	where $\tilde{w}_t^{(i)} = \frac{W(x_{0:t}^{(i)})}{\sum_{j=1}^{N} W(x_{0:t}^{(j)})}$ and $W(x_{0:t}) = \frac{p(x_{1:t}|y_{1:t})}{q(x_{1:t}|y_{1:t})}$ where $x_{0:t}^{(i)}$ are iid draws from $q(x_{1:t}|y_{1:t})$, which is an easy to sample from distribution. If we take any bounded measurable function $\phi$ Geweke (1989)~\cite{Geweke1989} showed that $\mathbb{E}\phi(x_{0:t}) = \sum_{i=1}^{N} \tilde{w}_t^{(i)} \phi(x_{0:t}^{(i)}) \xrightarrow{\mathrm{a.s}} \int_{\Omega^n} \phi({x_{0:t}})p(x_{0:t}|y_{1:t})\mathrm{d}x_{0:t}$. \\
+	
+	However, this method is both expensive in computational terms, as each time a new observations arrives one need to evaluate the densities used to calculate the weights at the whole time series, and not well suited for streams of data, where new observations arrive one at a time and fast calculation are required at each time step (one application of such a situation are tracking systems). \\
+	Another particularly fruitful approach to sample from $p(x_{0:t}|y_{1:t}$ is to use Monte Carlo Markov Chain algorithms, either Gibbs or Metropolis Hasting samplings, but both require to evaluate densities, the marginals of each parameter or the joint marginal $p(x_{0:t}, \theta | y_{1:t})$  which are intractable. \\
+	
+	However, when the relationship between states and states and observations are linear and gaussian, Kalman (1960)~\cite{Kalman1960} designed a method which allows to sequentially calculates the exact posterior and filtering distribution. Although variants of this original filter, which deal with non-linear and non-gaussian state space miodels, have been designed, such as the extended~\cite{McElhoe1966} and unscented~\cite{Julier1997} Kalman filters, they give biased estimates of $X_{0:t}|Y_{1:t}$ and $X_{t}|Y_{1:t}$. 
+	
+	\subsubsection{Particle Filter}
+	Particle filters~\cite{Gordon1993} are part of the more general framework of sequential Monte Carlo (SMC) algorithms which leverage both important sampling and the dependency structure of state space model. SMC algorithms relies on the fact that the weights used in importance sampling $W(x_{0:t}|y_{1:t})$ can be expressed sequentially using the fact that the $y_t$ are conditionally independent given $x_{0:t}$, that the $x_t$ have the Markov property and a judicious choice of proposal distribution $q$. Indeed in the scenario, and if $q(x_{1:t})=q(x_{1:t-1})q(x_t| x_{t-1})$ we have:
+	\begin{align}
+		$W(x_{0:t}|y_{1:t})$ & = \frac{p(x_{0:t}|y_{1:t})}{q((x_{0:t}|y_{1:t})} \\
+		& = 
+	\end{align}
+	The most simple form of particle filter, also called \emph{bootstrap filter} relies on the 
 	\begin{figure}[htb]
 		\centering
 		\begin{minipage}{0.4\textwidth}
@@ -141,6 +156,8 @@
 		\label{fig:chaos}
 	\end{figure}
 
+\clearpage
+	\section{Bibliography}
 	\bibliographystyle{plain}
 	\bibliography{mybib}{}
 \end{document}

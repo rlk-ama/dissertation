@@ -1,18 +1,91 @@
-@article{Andrieu2008,
-year={2008},
-issn={0960-3174},
-journal={Statistics and Computing},
-volume={18},
-number={4},
-doi={10.1007/s11222-008-9110-y},
-title={A tutorial on adaptive MCMC},
-url={http://dx.doi.org/10.1007/s11222-008-9110-y},
-publisher={Springer US},
-keywords={MCMC; Adaptive MCMC; Controlled Markov chain; Stochastic approximation},
-author={Andrieu, Christophe and Thoms, Johannes},
-pages={343-373},
-language={English}
+@ARTICLE{Gordon1993,
+author={Gordon, N.J. and Salmond, D.J. and Smith, A.F.M.},
+journal={Radar and Signal Processing, IEE Proceedings F},
+title={Novel approach to nonlinear/non-Gaussian Bayesian state estimation},
+year={1993},
+month={Apr},
+volume={140},
+number={2},
+pages={107-113},
+keywords={Bayes methods;Kalman filters;filtering and prediction theory;state estimation;tracking;Gaussian noise;algorithm;bearings only tracking problem;bootstrap filter;extended Kalman filter;measurement model;nonGaussian Bayesian state estimation;nonlinear Bayesian state estimation;random samples;recursive Bayesian filters;simulation;state transition model;state vector density},
+ISSN={0956-375X},}
+
+
+@article{Julier1997,
+
+author = {Julier, Simon J. and Uhlmann, Jeffrey K.},
+
+title = {New extension of the Kalman filter to nonlinear systems},
+
+journal = {Proc. SPIE},
+
+volume = {3068},
+
+number = {},
+
+pages = {182-193},
+
+abstract = {The Kalman Filter (KF) is one of the most widely used methods for tracking and estimation due to its simplicity, optimality, tractability and robustness. However, the application of the KF to nonlinear systems can be difficult. The most common approach is to use the Extended Kalman Filter (EKF) which simply linearizes all nonlinear models so that the traditional linear Kalman filter can be applied. Although the EKF (in its many forms) is a widely used filtering strategy, over thirty years of experience with it has led to a general consensus within the tracking and control community that it is difficult to implement, difficult to tune, and only reliable for systems which are almost linear on the time scale of the update intervals. In this paper a new linear estimator is developed and demonstrated. Using the principle that a set of discretely sampled points can be used to parameterize mean and covariance, the estimator yields performance equivalent to the KF for linear systems yet generalizes elegantly to nonlinear systems without the linearization steps required by the EKF. We show analytically that the expected performance of the new approach is superior to that of the EKF and, in fact, is directly comparable to that of the second order Gauss filter. The method is not restricted to assuming that the distributions of noise sources are Gaussian. We argue that the ease of implementation and more accurate estimation features of the new filter recommend its use over the EKF in virtually all applications.},
+
+year = {1997},
+
+doi = {10.1117/12.280797},
+
+URL = { http://dx.doi.org/10.1117/12.280797},
+
+eprint = {}
+
 }
+
+
+
+@ARTICLE{McElhoe1966,
+author={McElhoe, Bruce A.},
+journal={Aerospace and Electronic Systems, IEEE Transactions on},
+title={An Assessment of the Navigation and Course Corrections for a Manned Flyby of Mars or Venus},
+year={1966},
+month={July},
+volume={AES-2},
+number={4},
+pages={613-623},
+keywords={Course correction;Earth;Extraterrestrial measurements;Information systems;Leg;Mars;Navigation;Planets;Space vehicles;Venus},
+doi={10.1109/TAES.1966.4501892},
+ISSN={0018-9251},}
+
+@Article{Kalman1960,
+author={Kalman, R. E.},
+title={A New Approach to Linear Filtering and Prediction Problems},
+journal={Journal of Basic Engineering},
+year={1960},
+month={Mar},
+day={01},
+publisher={ASME},
+volume={82},
+number={1},
+pages={35-45},
+issn={0098-2202},
+doi={10.1115/1.3662552},
+url={http://dx.doi.org/10.1115/1.3662552}
+}
+
+@article{Geweke1989,
+     jstor_articletype = {research-article},
+     title = {Bayesian Inference in Econometric Models Using Monte Carlo Integration},
+     author = {Geweke, John},
+     journal = {Econometrica},
+     jstor_issuetitle = {},
+     volume = {57},
+     number = {6},
+     jstor_formatteddate = {Nov., 1989},
+     pages = {pp. 1317-1339},
+     url = {http://www.jstor.org/stable/1913710},
+     ISSN = {00129682},
+     abstract = {Methods for the systematic application of Monte Carlo integration with importance sampling to Bayesian inference in econometric models are developed. Conditions under which the numerical approximation of a posterior moment converges almost surely to the true value as the number of Monte Carlo replications increases, and the numerical accuracy of this approximation may be assessed reliably, are set forth. Methods for the analytical verification of these conditions are discussed. Importance sampling densities are derived from multivariate normal of Student t approximations to local behavior of the posterior density at its mode. These densities are modified by automatic rescaling along each axis. The concept of relative numerical efficiency is introduced to evaluate the adequacy of a chosen importance sampling density. The practical procedures based on these innovations are illustrated in two different models.},
+     language = {English},
+     year = {1989},
+     publisher = {The Econometric Society},
+     copyright = {Copyright © 1989 The Econometric Society},
+    }
 
 @article{Ricker1954,
 author = {W. E. Ricker},
@@ -43,22 +116,18 @@ doi={10.1038/nature09319},
 url={http://dx.doi.org/10.1038/nature09319}
 }
 
-@article{Geweke1989,
-     jstor_articletype = {research-article},
-     title = {Bayesian Inference in Econometric Models Using Monte Carlo Integration},
-     author = {Geweke, John},
-     journal = {Econometrica},
-     jstor_issuetitle = {},
-     volume = {57},
-     number = {6},
-     jstor_formatteddate = {Nov., 1989},
-     pages = {pp. 1317-1339},
-     url = {http://www.jstor.org/stable/1913710},
-     ISSN = {00129682},
-     abstract = {Methods for the systematic application of Monte Carlo integration with importance sampling to Bayesian inference in econometric models are developed. Conditions under which the numerical approximation of a posterior moment converges almost surely to the true value as the number of Monte Carlo replications increases, and the numerical accuracy of this approximation may be assessed reliably, are set forth. Methods for the analytical verification of these conditions are discussed. Importance sampling densities are derived from multivariate normal of Student t approximations to local behavior of the posterior density at its mode. These densities are modified by automatic rescaling along each axis. The concept of relative numerical efficiency is introduced to evaluate the adequacy of a chosen importance sampling density. The practical procedures based on these innovations are illustrated in two different models.},
-     language = {English},
-     year = {1989},
-     publisher = {The Econometric Society},
-     copyright = {Copyright © 1989 The Econometric Society},
-    }
-
+@article{Andrieu2008,
+year={2008},
+issn={0960-3174},
+journal={Statistics and Computing},
+volume={18},
+number={4},
+doi={10.1007/s11222-008-9110-y},
+title={A tutorial on adaptive MCMC},
+url={http://dx.doi.org/10.1007/s11222-008-9110-y},
+publisher={Springer US},
+keywords={MCMC; Adaptive MCMC; Controlled Markov chain; Stochastic approximation},
+author={Andrieu, Christophe and Thoms, Johannes},
+pages={343-373},
+language={English}
+}
