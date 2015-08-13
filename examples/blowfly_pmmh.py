@@ -8,8 +8,8 @@ import argparse
 import numpy as np
 
 def simulation(p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, sigmad=np.sqrt(0.1), tau=14, m=100, NOS=100, NBS=500,
-               iter=1000, chains=1, burnin=0, adaptation=0, p_init=6.5, n0_init=40, delta_init=0.2, sigmap_init=np.sqrt(0.1),
-               sigmad_init=np.sqrt(0.1), target=0.2, target_low=0.15, observations=None, inits=None, sigma_proposal_p=0.01,
+               iter=1000, chains=1, burnin=0, adaptation=0, p_init=5.5, n0_init=45, delta_init=0.2, sigmap_init=np.sqrt(0.15),
+               sigmad_init=np.sqrt(0.15), target=0.2, target_low=0.15, observations=None, inits=None, sigma_proposal_p=0.5,
                sigma_proposal_n0=1, sigma_proposal_delta=0.01, sigma_proposal_sigmap=0.01, sigma_proposal_sigmad=0.01,
                particle_init=50):
 
@@ -47,7 +47,7 @@ def simulation(p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, sigmad=np.sqrt(0.1
             inits_sampler = [Normal().sample(np.array([initial_params[i]], dtype=np.float64),
                                          np.array([sigma_proposals[i]], dtype=np.float64))[0] for i in range(len(initial_params))]
 
-        mcmc = PMMH(filter, map_, iter, proposals, prior, inits_sampler, inits, tau, NOS, NBS, observations=observations,
+        mcmc = PMMH(filter, map_, iter, proposals, prior, inits_sampler, inits, NOS, NBS, observations=observations,
                     support=support, adaptation=adaptation, burnin=burnin, target=target, target_low=target_low,
                     initial_filter=initial_filter, filter_proposal="prior")
         samples, acceptance = mcmc.sample()

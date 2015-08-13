@@ -19,13 +19,7 @@ def perform_filter(inits=None, p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, si
 
     observations = Map_blowfly.observations
 
-    initial = {
-        'distribution': Normal,
-        'shape': particle_init,
-        'scale': 10,
-    }
-
-    filter = ABCFilter(tau, NOS, NBS, Map_blowfly, m, proposal={proposal: True})
+    filter = ABCFilter(NOS, NBS, Map_blowfly, m, proposal={proposal: True})
     _, res = next(filter.filter())
     estim, likeli, ESS = res
     output = {
@@ -42,6 +36,10 @@ if __name__ == "__main__":
     parser.add_argument("--observations", type=argparse.FileType('r'), help="Observations, in a file, space separated")
     parser.add_argument("--proposal", type=str, help="Proposal distribution: prior or optimal ?")
     parser.add_argument("--n0", type=float, help="Value for n0")
+    parser.add_argument("--repetitions", dest="m", type=int, help="Number of repetitions in inner loop")
+    parser.add_argument("--steps", dest="NOS", type=int, help="Number of generations to take into account")
+    parser.add_argument("--particles", dest="NBS", type=int, help="Number of particles")
+
 
     args = parser.parse_args()
     arguments = {k:v for k,v in args.__dict__.items() if v}
@@ -55,7 +53,8 @@ if __name__ == "__main__":
     NOS = len(output['observations'])
 
     obs_ess_lik = zip(output['observations'], output['ESS'], output['likeli'])
-    with open("/home/raphael/abc.txt", "w") as g:
+    with open("/home/raphael/abc_{}_{}.txt".format(arguments['m'] if 'm' in arguments else 100,
+                                                   arguments['NBS'] if 'NBS' in arguments else 500), "w") as g:
         for elem in obs_ess_lik:
             g.write(" ".join(map(str, elem)))
             g.write("\n")

@@ -6,8 +6,8 @@ DTYPE = np.float64
 
 class BootstrapFilter(object):
 
-    def __init__(self, start, end, Ns, Map, initial=None, proposal=None, likeli=False):
-        self.start = start
+    def __init__(self, end, Ns, Map, initial=None, proposal=None, likeli=False):
+        self.start = 0
         self.end = end
         self.Ns = Ns if isinstance(Ns, list) else [Ns]
         self.multiple = True if isinstance(Ns, list) else False
@@ -21,7 +21,7 @@ class BootstrapFilter(object):
         else:
             self.initial = {'distribution': Normal, 'loc': 0, 'scale': 1}
 
-    @profile
+    #@profile
     def sub_filter(self, N, prior):
         particles_all = np.zeros(shape=(self.end-self.start, N))
         likelihoods = np.zeros(self.end-self.start)

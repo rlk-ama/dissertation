@@ -19,7 +19,7 @@ def perform_filter(inits=None, r=44.7, phi=10, sigma=0.5, NOS=50, NBS=1000):
         'shape': 3,
         'scale': 1,
     }
-    filter = BootstrapFilter(0, NOS, NBS, Map_ricker, proposal={'optimal': True, 'prior': True}, initial=initial)
+    filter = BootstrapFilter(NOS, NBS, Map_ricker, proposal={'optimal': True, 'prior': True}, initial=initial)
 
     output_filter = {}
     for proposal, estim, likeli, ESS in filter.filter():

@@ -22,8 +22,8 @@ def perform_filter(inits=None, r_obs=44.7, phi_obs=10, sigma_obs=0.5, r_esti=46,
         'scale': 1,
     }
 
-    filter_obs = BootstrapFilter(0, NOS, NBS, Map_obs, proposal={'optimal': True}, initial=initial)
-    filter = BootstrapFilter(0, NOS, NBS, Map_ricker, proposal={'optimal': True}, initial=initial)
+    filter_obs = BootstrapFilter(NOS, NBS, Map_obs, proposal={'optimal': True}, initial=initial)
+    filter = BootstrapFilter(NOS, NBS, Map_ricker, proposal={'optimal': True}, initial=initial)
     proposal_obs, estim_obs, likeli_obs, ESS_obs = next(filter_obs.filter())
     proposal, estim, likeli, ESS = next(filter.filter())
 

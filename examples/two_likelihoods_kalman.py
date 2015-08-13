@@ -17,8 +17,8 @@ def perform_filter(inits=None, phi_obs=0.95, scale_state_obs=0.6, scale_obs_obs=
     state = Map_obs.state
     observations = Map_obs.observations
 
-    filter_obs = BootstrapFilter(0, NOS, NBS, Map_obs, proposal={'optimal': True})
-    filter = BootstrapFilter(0, NOS, NBS, Map_kalman, proposal={'optimal': True})
+    filter_obs = BootstrapFilter(NOS, NBS, Map_obs, proposal={'optimal': True})
+    filter = BootstrapFilter(NOS, NBS, Map_kalman, proposal={'optimal': True})
     proposal_obs, estim_obs, likeli_obs, ESS_obs = next(filter_obs.filter())
     proposal, estim, likeli, ESS = next(filter.filter())
 

@@ -29,14 +29,8 @@ def simulation(r=44.7, phi=10, theta=1, sigma=0.3, NOS=50, NBS=500, iter=17500, 
 
     proposals = [RandomWalkProposal(sigma=sigma_proposal) for sigma_proposal in sigma_proposals]
 
-    if generalized:
-        prior = MultivariateUniformProposal(ndims=4, func_lows=[lambda args: np.exp(3.2), lambda args: 5, lambda args: 0.8, lambda args: 0.15],
-                                            func_highs=[lambda args: np.exp(4.17), lambda args: 15, lambda args: 1.2, lambda args: 0.45])
-        support = lambda x: x[0] > np.exp(3.2)  and x[0] < np.exp(4.17) and x[1] > 5 and x[1] < 15 and  x[2] > 0.8 and x[2] < 1.2 and x[3] > 0.15 and x[3] < 0.45
-    else:
-        prior = MultivariateUniformProposal(ndims=3, func_lows=[lambda args: np.exp(3.2), lambda args: 5, lambda args: 0.15],
-                                            func_highs=[lambda args: np.exp(4.17), lambda args: 15, lambda args: 0.45])
-        support = lambda x: x[0] > np.exp(3.2)  and x[0] < np.exp(4.17) and x[1] > 5 and x[1] < 15 and x[2] > 0.15 and x[2] < 0.45
+    prior = MultivariateUniformProposal(lows=np.array([param/2 for param in initial_values]), highs=np.array([1.5*param for param in initial_values]))
+    support = lambda x: all([x[i] > initial_values[i]/2 and x[i] < 1.5*initial_values[i] for i in range(len(initial_values))])
 
     for i in range(runs):
         initial_ricker = Gamma().sample(np.array([3], dtype=np.float64), np.array([1], dtype=np.float64))
@@ -46,7 +40,7 @@ def simulation(r=44.7, phi=10, theta=1, sigma=0.3, NOS=50, NBS=500, iter=17500, 
         else:
             Map = RickerMap(r, phi, sigma, length=NOS, initial=initial_ricker, approx='simple')
 
-        mcmc = PMMH(filter, map_, iter, proposals, prior, initial_values, initial_ricker, 0, NOS, NBS, observations=Map.observations,
+        mcmc = PMMH(filter, map_, iter, proposals, prior, initial_values, initial_ricker, NOS, NBS, observations=Map.observations,
                     support=support, adaptation=adaptation, burnin=burnin, target=target, target_low=target_low, initial_filter=initial_filter,
                     filter_proposal=filter_proposal)
 

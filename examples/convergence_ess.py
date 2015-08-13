@@ -21,7 +21,7 @@ def perform_filter(inits=None, r=44.7, phi=10, sigma=0.5, NOS=50, mini=10, maxi=
         'shape': 3,
         'scale': 1,
     }
-    filter = BootstrapFilter(0, NOS, NBS, Map_ricker, proposal={'optimal': True}, initial=initial)
+    filter = BootstrapFilter(NOS, NBS, Map_ricker, proposal={'optimal': True}, initial=initial)
 
     estim_all = []
     likeli_all = []

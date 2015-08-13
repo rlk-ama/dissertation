@@ -23,7 +23,7 @@ def perform_filter(inits=None, p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, si
         'scale': 10,
     }
 
-    filter = ABCFilter(tau, NOS, NBS, Map_blowfly, m)
+    filter = ABCFilter(NOS, NBS, Map_blowfly, m)
 
     estim_all = []
     likeli_all = []

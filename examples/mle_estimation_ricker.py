@@ -39,7 +39,7 @@ def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, NOS=50, NBS=1000, low=
         else:
             raise Exception("Parameter does not exist")
 
-        filter = BootstrapFilter(0, NOS, NBS, Map_ricker, proposal={'optimal': True}, initial=initial, likeli=True)
+        filter = BootstrapFilter(NOS, NBS, Map_ricker, proposal={'optimal': True}, initial=initial, likeli=True)
         proposal, likeli = next(filter.filter())
         likelis.append(likeli[-1])
         print(variable_)

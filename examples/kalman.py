@@ -21,7 +21,7 @@ def perform_filter(inits=None, phi=0.95, scale_state=1, scale_obs=1, NOS=100, NB
     observations = Map_kalman.observations
 
     observations_kalman = observations[:, np.newaxis]
-    filter = BootstrapFilter(0, NOS, NBS, Map_kalman, proposal={'optimal': True, 'prior': True})
+    filter = BootstrapFilter(NOS, NBS, Map_kalman, proposal={'optimal': True, 'prior': True})
     filter_kalman = pk.KalmanFilter(transition_matrices=phi, observation_matrices=1, transition_covariance=scale_state**2,
                                     observation_covariance=scale_obs**2, initial_state_mean=state[0] if state is not None else 0,
                                     initial_state_covariance=scale_state)

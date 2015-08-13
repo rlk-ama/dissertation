@@ -25,7 +25,7 @@ def perform_filter(inits=None, phi=0.95, scale_state=1, scale_obs=1, NOS=100, NB
 
     for phi_ in phis:
         Map_kalman = KalmanMap(phi_, scale_state, scale_obs, length=NOS, initial=inits, observations=observations)
-        filter = BootstrapFilter(0, NOS, NBS, Map_kalman, proposal={'optimal': True}, likeli=True)
+        filter = BootstrapFilter(NOS, NBS, Map_kalman, proposal={'optimal': True}, likeli=True)
         proposal, likeli = next(filter.filter())
         likelis.append(likeli[-1])
 

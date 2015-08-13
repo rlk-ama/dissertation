@@ -5,8 +5,7 @@ DTYPE = np.float64
 
 class ABCFilter(object):
 
-    def __init__(self, start, end, Ns, Map, rep=100, likeli=False, proposal=None, initial=None):
-        self.start = start
+    def __init__(self, end, Ns, Map, rep=100, likeli=False, proposal=None, initial=None):
         self.end = end
         self.Ns = Ns if isinstance(Ns, list) else [Ns]
         self.multiple = True if isinstance(Ns, list) else False
@@ -15,6 +14,7 @@ class ABCFilter(object):
         self.likeli = likeli
         self.rep = rep
         self.proposal = proposal
+        self.start = self.Map.tau
 
     #@profile
     def sub_filter(self, N, proposal, likeli=False):

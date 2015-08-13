@@ -50,7 +50,7 @@ def simulation(r=44.7, phi=10, sigma=0.3, scaling=1, NOS=50, NBS=500, iter=17500
             inits_sampler = [Normal().sample(np.array([initial_params[i]], dtype=np.float64),
                                          np.array([sigma_proposals[i]], dtype=np.float64))[0] for i in range(len(initial_params))]
 
-        mcmc = PMMH(filter, map_, iter, proposals, prior, inits_sampler, inits, 0, NOS, NBS, observations=observations,
+        mcmc = PMMH(filter, map_, iter, proposals, prior, inits_sampler, inits, NOS, NBS, observations=observations,
                     support=support, adaptation=adaptation, burnin=burnin, target=target, target_low=target_low, initial_filter=initial_filter,
                     filter_proposal=filter_proposal)
         samples, acceptance = mcmc.sample()

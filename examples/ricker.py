@@ -30,7 +30,7 @@ def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, scaling=1, theta=1, NO
         'shape': particle_init,
         'scale': 1,
     }
-    filter = BootstrapFilter(0, NOS, NBS, Map_ricker, proposal={filter_proposal: True}, initial=initial)
+    filter = BootstrapFilter(NOS, NBS, Map_ricker, proposal={filter_proposal: True}, initial=initial)
     proposal, estim, likeli, ESS = next(filter.filter())
 
     output = {
@@ -91,10 +91,11 @@ if __name__ == "__main__":
     if args.graphics:
         plt.plot([i for i in range(NOS)], mean_esti if output['state'] is not None else [np.random.poisson(output['phi']*esti) for esti in mean_esti])
         plt.plot([i for i in range(NOS)], output['state'] if output['state'] is not None else output['observations'])
-        plt.title("Simulated state (green) and filtered state (blue)")
+        plt.title("Simulated state (green) and filtered state (blue)" if output['state'] is not None else "Original observations (green) and observations from filtered states (blue")
         plt.show()
 
         plt.plot([i for i in range(NOS)], output['ESS'])
+        plt.ylim(0, arguments['NBS'] + 10 if 'NBS' in arguments else 1010)
         plt.title("Effective sample sizes")
         plt.show()
 
