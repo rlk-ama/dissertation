@@ -66,3 +66,41 @@ ggplot(data=data, aes(x=x, y=y)) + geom_point(size=0.1) +
   theme(axis.text.x=element_text(face="bold", size=16), axis.title=element_text(size=16))+
   ylab("Values in the orbit") + xlab("Value of bifurcation parameter r")
 
+suite = c(7)
+for (i in 2:50) suite = c(suite, func(suite[i-1], r=exp(2.5)))
+suite2= c(7.1)
+for (i in 2:50) suite2 = c(suite2, func(suite2[i-1], r=exp(2.5)))
+
+data = data.frame(x=1:50, y=suite)
+data2 = data.frame(x=1:50, y=suite2)
+
+ggplot(data=data, aes(x=x, y=y)) + geom_line() +
+  geom_line(data=data2, aes(x=x, y=y), colour="red") +
+  ylab("Population Size") + xlab("Generations")
+
+suite = c(7)
+for (i in 2:50) suite = c(suite, func(suite[i-1], r=exp(0.3), K=922))
+suite2= c(7.1)
+for (i in 2:50) suite2 = c(suite2, func(suite2[i-1], r=exp(0.3), K=922))
+
+data = data.frame(x=1:50, y=suite)
+data2 = data.frame(x=1:50, y=suite2)
+
+ggplot(data=data, aes(x=x, y=y)) + geom_line() +
+  geom_line(data=data2, aes(x=x, y=y), colour="red") +
+  ylab("Population Size") + xlab("Generations")
+
+rs = seq(from=exp(2), to=exp(4), length.out=1000)
+ns = c(7)
+ys = c(rpois(1, lambda=10*ns[1]))
+for (i in 2:50) {
+  ns = c(ns, func(ns[i-1], r=exp(3.8)))
+  ys = c(ys, rpois(1, lambda=10*ns[i]))
+}
+loglik = c()
+for (r in rs) {
+  lik = function(y, n, phi=10) return(-phi*n + y*log(phi*n) - lgamma(y+1))  
+  loglik = c(loglik, sum(lik(ys, ns)))
+}
+plot(log(rs), loglik, type="l")
+

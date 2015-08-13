@@ -50,5 +50,15 @@ model <- function(x, parms) {
 }
 
 ss <- multiroot(f = model, parms=c(10, 10), start = c(1, 1))
-ss2 = multiroot(f=model, parms=c(10, 10/0.16), start=c(0.01,0.01))
+alpha = 1/0.29^2
+beta = alpha/0.11037166036917101
+ss2 = multiroot(f=model, parms=c(alpha, beta), start=c(0.1, 0.1))
+
+model2 <- function(x, parms) {
+  c(F1 = -log(x[1]+x[2]) + 1/(2*(x[1]+x[2])) + log(x[1]) - 1/(2*x[1]) + parms[1]/parms[2], 
+    F2 = -log(x[1]+x[2]) + 1/(2*(x[1]+x[2])) + log(x[2]) - 1/(2*x[2]) - integrate(func, 0, 1, alpha=parms[1], beta=parms[2])$value)
+}
+
+ss3 <- multiroot(f = model2, parms=c(10, 10), start = c(1, 1))
+ss4 = multiroot(f=model2, parms=c(10, 10/0.01), start=c(0.01,0.01))
 
