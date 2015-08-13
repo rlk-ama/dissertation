@@ -1,0 +1,102 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[fleqn]{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{mathtools}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{natbib}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{array}
+\usepackage{bbold}
+\usepackage{amssymb}
+\usepackage[procnames]{listings}
+\usepackage{color}
+\usepackage{graphicx}
+
+\makeatletter
+\newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
+\newsavebox{\mybox}\newsavebox{\mysim}
+\newcommand{\distras}[1]{%
+	\savebox{\mybox}{\hbox{\kern3pt$\scriptstyle#1$\kern3pt}}%
+	\savebox{\mysim}{\hbox{$\sim$}}%
+	\mathbin{\overset{#1}{\kern\z@\resizebox{\wd\mybox}{\ht\mysim}{$\sim$}}}%
+}
+\makeatother
+
+\begin{document}
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/lagopusSimulObs.pdf}
+		\end{minipage}
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/lagopusEss.pdf}
+		\end{minipage}
+		\caption{\textbf{(top)} Original observations and observations obtained using filtered states. \textbf{(bottom)} Effective sample size of the filter}
+		\label{fig:simulObs}
+	\end{figure}
+	
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/traceLagopusR.pdf}
+		\end{minipage}
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/acfLagopusR.pdf}
+		\end{minipage}
+		\caption{\textbf{(top)} Traceplot and \textbf{(bottom)} autocorrelation function of the PMMH samples for r.}
+		\label{fig:lagopusR}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/traceLagopusPhi.pdf}
+		\end{minipage}
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/acfLagopusPhi.pdf}
+		\end{minipage}
+		\caption{\textbf{(top)} Traceplot and \textbf{(bottom)} autocorrelation function of the PMMH samples for $\phi$.}
+		\label{fig:lagopusPhi}
+	\end{figure}
+
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/traceLagopusSigma.pdf}
+		\end{minipage}
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/acfLagopusSigma.pdf}
+		\end{minipage}
+		\caption{\textbf{(top)} Traceplot and \textbf{(bottom)} autocorrelation function of the PMMH samples for $\sigma$.}
+		\label{fig:lagopusSigma}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/traceLagopusScaling.pdf}
+		\end{minipage}
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth,height=0.4\textheight]{/home/raphael/dissertation/figures/acfLagopusScaling.pdf}
+		\end{minipage}
+		\caption{\textbf{(top)} Traceplot and \textbf{(bottom)} autocorrelation function of the PMMH samples for the scaling factor $K$.}
+		\label{fig:lagopusScaling}
+	\end{figure}
+\end{document}
