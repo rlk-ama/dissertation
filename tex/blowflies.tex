@@ -53,10 +53,10 @@
 	
 	To this effect we are going to use the following particle filter algorithm:
 	\begin{itemize}
-		\item sample $S_t^{(i)} \sim q_s(\ \cdot \ ; N_{t-1}^{(i)}, N_t)$
-		\item sample $R_t^{(i,j)} \sim q_r(\ \cdot \ ; N_{t-\tau}^{(i)}, N_t)$
-		\item set $W_t^{(i)} \propto \hat{p}(N_t |S_t^{(i)})\frac{g_s(S_t^{(i)} | N_{t-1}^{(i)})}{q_s(S_t^{(i)} | N_{t-1}^{(i)}, N_t)}$
-		where $\hat{p}(N_t |S_t^{(i)}) = \frac{1}{M}\sum_{j=1}^{M}\delta_{N_t}(S_t^{(i)}+R_t^{(i,j)})\frac{g_r(R_t^{(i,j)} | N_{t-\tau}^{(i)})}{q_r( R_t^{(i,j)}| N_{t-\tau}^{(i)}, N_t)}$
+		\item sample $S_t^{(i)} \sim q_s(\ \cdot \ ; N_{t-1}, N_t)$
+		\item sample $R_t^{(i,j)} \sim q_r(\ \cdot \ ; N_{t-\tau}, N_t)$
+		\item set $W_t^{(i)} \propto \hat{p}(N_t |S_t^{(i)})\frac{g_s(S_t^{(i)} | N_{t-1})}{q_s(S_t^{(i)} | N_{t-1}, N_t)}$
+		where $\hat{p}(N_t |S_t^{(i)}) = \frac{1}{M}\sum_{j=1}^{M}\delta_{N_t}(S_t^{(i)}+R_t^{(i,j)})\frac{g_r(R_t^{(i,j)} | N_{t-\tau})}{q_r( R_t^{(i,j)}| N_{t-\tau}, N_t)}$
 	\end{itemize}
 	
 	$R_t$ and $S_t$ are compounded distributions.
