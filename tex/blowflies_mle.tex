@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[fleqn]{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{mathtools}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{natbib}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{array}
+\usepackage{bbold}
+\usepackage{amssymb}
+\usepackage[procnames]{listings}
+\usepackage{color}
+\usepackage{graphicx}
+
+\makeatletter
+\newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
+\newsavebox{\mybox}\newsavebox{\mysim}
+\newcommand{\distras}[1]{%
+	\savebox{\mybox}{\hbox{\kern3pt$\scriptstyle#1$\kern3pt}}%
+	\savebox{\mysim}{\hbox{$\sim$}}%
+	\mathbin{\overset{#1}{\kern\z@\resizebox{\wd\mybox}{\ht\mysim}{$\sim$}}}%
+}
+\makeatother
+
+\begin{document}
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/mle_01_n0.pdf}
+		\end{minipage}
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/mle_005_p.pdf}
+		\end{minipage}
+		\caption{Transect of the of the likelihood when \textbf{(left)} n0, \textbf{(right)} p vary. The true values of the parameters are denoted by a blue line, whereas the maximum likelihood estimates by a red one}
+		\label{fig:mle}
+	\end{figure}
+
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/essEvolBlowfly.pdf}
+		\end{minipage}
+		\caption{\textbf{red} Evolution of the population size overlaid on the effective sample size of the particle filter for an increasing number of samples in the calculation of each weight}
+		\label{fig:essEvol}
+	\end{figure}
+	
+\end{document}
