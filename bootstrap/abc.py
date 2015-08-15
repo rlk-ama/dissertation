@@ -5,7 +5,7 @@ DTYPE = np.float64
 
 class ABCFilter(object):
 
-    def __init__(self, end, Ns, Map, rep=100, likeli=False, proposal=None, initial=None):
+    def __init__(self, end, Ns, Map, rep=100, likeli=False, proposal=None, initial=None, adaptation=False):
         self.end = end
         self.Ns = Ns if isinstance(Ns, list) else [Ns]
         self.multiple = True if isinstance(Ns, list) else False
@@ -15,6 +15,7 @@ class ABCFilter(object):
         self.rep = rep
         self.proposal = proposal
         self.start = self.Map.tau
+        self.adaptation = adaptation
 
     #@profile
     def sub_filter(self, N, proposal, likeli=False):
@@ -26,6 +27,7 @@ class ABCFilter(object):
         ESS = np.zeros(self.end-self.start)
         likelihood = 0
         weights = np.array([1.0/N]*N, dtype=np.float64)
+        first_val = self.observations[self.start]
 
         for i in range(self.start+1, self.end):
             weights = self.normalize(weights)
@@ -39,8 +41,12 @@ class ABCFilter(object):
             else:
                 kernel = self.Map.kernel.density(particles, self.observations, i)
 
+            if self.adaptation:
+                m = int(self.rep*self.observations[i]/first_val)
+            else:
+                m = self.rep
             num = [0]*len(particles)
-            for j in range(self.rep):
+            for j in range(m):
                 cond = self.Map.conditional.density(particles, self.observations, i)
                 num = num + cond
             num = np.divide(num, self.rep)
