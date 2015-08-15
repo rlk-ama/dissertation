@@ -30,8 +30,18 @@
 
 \begin{document}
 	\section{Introduction}
-	\subsection{The Ricker Map}
-	\subsubsection{The Deterministic Ricker Map}
+	The study of population dynamics, either by ecologists or epidemiologists, often requires the use of elaborate methods. For example, King et al.~\cite{king2008inapparent} and Bhadra et al.~\cite{bhadra2011malaria} studied the spread of epidemics, cholera and malaria, both using iterated filtering for parameter inference of state space models~\cite{ionides2006inference}. The necessity to design such complex inference strategies arises as a consequence of the fact that most of the time population dynamics models are chaotic, or nearly chaotic resulting in multidimensional and multimodal likelihoods. Therefore traditional inference based on numerical methods to find maximum likelihood estimates do not yield satisfactory results. Chaotic behaviour in ecological and epidemiological system is not only of theoretical interest as practical examples abound (see Kausrud et al.~\cite{kausrud2008linking} on lemmings and Anderson et al.~\cite{anderson2008fishing} on fish). \\
+	
+	Bayesian approaches to inference have become increasingly popular with the recent improvements in computing power. Particle Markov Chain Monte Carlo Methods (PMCMC)~\cite{andrieu2010particle}, which combine a standard Markov Chain Monte Carlo (MCMC) and Sequential Monte Carlo (SMC) algorithms has become a method of choice for inference on such difficult models (see Losa et al.~\cite{losa2003sequential}, Dowd~\cite{dowd2006sequential} and Jones et al.~\cite{jones2010bayesian} for examples in marine ecology). \\
+	
+	Another recent type of approach, termed likelihood-free or Approximate Bayesian Computation (ABC), and first described by Rubin~\cite{rubin1984bayesianly} has also become popular (see Butler et al.~\cite{butler57latent} for an example in ecology, Tanaka et al.~\cite{tanaka2006using} in epidemiology and Thornton et al.~\cite{thornton2006approximate} in biology). This method consists in simulation from the likelihood when it is impossible to evaluate it, even point wise, as is required in PMCMC. Techniques combining MCMC and ABC (ABC-MCMC) or SMC and ABC (ABC-SMC) to sample from the posterior distribution of the parameters of such models are described respectively in Marjoram et al.~\cite{marjoram2003markov} and Toni et al.~\cite{toni2009approximate}. For a complete review see Marin et al.~\cite{marin2012approximate}. \\
+	
+	We studied two very famous examples of chaotic population dynamics models from ecology and performed bayesian inference on the parameters of these models using respectively a Particle Marginal Metropolis Hastings (PMMH) sampler as described in Adrieu et al.~\cite{andrieu2010particle}, which is one of the PMCMC algorithms, and a ABC-MCMC sampler. The first model is a noisily observed version of the Ricker map described by Wood~\cite{wood2010statistical} whereas the second one is a solution to the stochastic differential equation suggested by Gurney et al.~\cite{gurney1980nicholson} and Nisbet et al.~\cite{nisbet1982modelling} to describe the last three replicates of the four runs of Nicholson’s classic experiments on sheep blowfly~\cite{nicholson1954outline}~\cite{nicholson1957self}.
+	
+	In section 1 of this dissertation a overview of the mathematical background needed to understand the difficulties intrinsic to these two population dynamics models will be given. Section 2 describes the statistical methods used to perform bayesian inference on these two models along with the theoretical reasons, advantages and disadvantages of doing so. Section 3 is dedicated to the actual algorithms that were implemented. Section 4 presents the results attained and contrast them with those obtained by Wood~\cite{wood2010statistical}. Finally a conclusion and a discussion on the merits and limitations of the methods presented is given in the last section.
+	
+	\section{The Ricker Map} 
+	\subsection{The Deterministic Ricker Map}
 	The Ricker map is a difference equation used to describe the population dynamics of a wide range of ecological populations. It was first described in a seminal paper by Ricker (1954)~\cite{Ricker1954} to account for fish population sizes in fisheries. \\
 	If we denote by $N_t$ the size of a population a time $t$, Ricker established that if:
 	\begin{itemize}
@@ -96,7 +106,7 @@
 	\subsubsection{Particle Filter}
 	Particle filters~\cite{Gordon1993} are part of the more general framework of sequential Monte Carlo (SMC) algorithms which leverage both important sampling and the dependency structure of state space model. SMC algorithms relies on the fact that the weights used in importance sampling $W(x_{0:t}|y_{1:t})$ can be expressed sequentially using the fact that the $y_t$ are conditionally independent given $x_{0:t}$, that the $x_t$ have the Markov property and a judicious choice of proposal distribution $q$. Indeed in the scenario, and if $q(x_{1:t})=q(x_{1:t-1})q(x_t| x_{t-1})$ we have:
 	\begin{align}
-		$W(x_{0:t}|y_{1:t})$ & = \frac{p(x_{0:t}|y_{1:t})}{q((x_{0:t}|y_{1:t})} \\
+		W(x_{0:t}|y_{1:t}) & = \frac{p(x_{0:t}|y_{1:t})}{q((x_{0:t}|y_{1:t})} \\
 		& = 
 	\end{align}
 	The most simple form of particle filter, also called \emph{bootstrap filter} relies on the 
