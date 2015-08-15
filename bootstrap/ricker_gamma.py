@@ -7,13 +7,14 @@ from functools import partial
 
 class RickerMap(object):
 
-    def __init__(self, r, phi, sigma, scaling=1, initial=None, observations=None, length=None, approx='simple'):
+    def __init__(self, r, phi, sigma, scaling=1, initial=None, observations=None, length=None, approx='simple',
+                 *args, **kwargs):
         self.r = r
         self.phi = phi
         self.sigma = sigma
         self.scaling = scaling
 
-        if initial:
+        if initial is not None:
             self.initial = initial
         else:
             self.initial = Normal().sample(loc=np.array([0], dtype=np.float64), scale=np.array([1], dtype=np.float64))
@@ -103,7 +104,7 @@ class RickerMap(object):
             x = self.kernel.sample(x)
         return observ, state
 
-    #TO DO: CHANGE
+    #TODO: CHANGE
     def param_gamma2(self, n_prev):
 
         coeff = self.r*n_prev*np.exp(-n_prev)

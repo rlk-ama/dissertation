@@ -42,12 +42,12 @@ cpdef double[:: 1] proba_r(double[:: 1] coeff,  double shape, int dim):
         output[i] = shape/(coeff[i] + shape)
     return output
 
-cpdef calc_delta(long[::1] rs, long[::1] particles, int next_obs, int dim):
+cpdef calc_delta(long[::1] rs, long[::1] particles, int next_obs, int dim, double tol):
     cdef int[::1] output
     cdef int i
     output = np.empty(dim, dtype=np.int32)
     for i in range(dim):
-        if rs[i] + particles[i] == next_obs:
+        if (0 <= (rs[i] + particles[i] - next_obs) <= tol*next_obs) or (0<= -(rs[i] + particles[i] - next_obs) <= tol*next_obs):
             output[i] = 1
         else:
             output[i] = 0

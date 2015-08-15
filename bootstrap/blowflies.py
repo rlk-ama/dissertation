@@ -8,7 +8,8 @@ from scipy.integrate import quad
 
 class BlowflyMap(object):
 
-    def __init__(self, p, n0, sigmap, delta, sigmad, tau=14, initial=None, observations=None, length=None, start=0.1):
+    def __init__(self, p, n0, sigmap, delta, sigmad, tau=14, initial=None, observations=None, length=None, start=0.1, tol=0,
+                 *args, **kwargs):
         self.p = p
         self.n0 = n0
         self.sigmap = sigmap
@@ -16,6 +17,7 @@ class BlowflyMap(object):
         self.sigmad = sigmad
         self.tau = tau
         self.start = start
+        self.tol = tol
         self.coeff = self.coeff_betabinom(1/self.sigmad**2, 1/(self.sigmad**2*self.delta), self.start)
         if self.coeff[0] <= 0 or self.coeff[1] <=0:
             raise Exception
@@ -27,7 +29,7 @@ class BlowflyMap(object):
 
         self.kernel = self.Kernel(delta=self.delta, sigmad=self.sigmad)
         self.proposal = self.Proposal(delta=self.delta, sigmad=self.sigmad, coeff_betabinom=self.coeff)
-        self.conditional = self.Conditional(p=self.p, n0=self.n0, sigmap=self.sigmap, tau=self.tau)
+        self.conditional = self.Conditional(p=self.p, n0=self.n0, sigmap=self.sigmap, tau=self.tau, tol=self.tol)
 
         if observations is not None:
             self.observations = observations
@@ -48,13 +50,14 @@ class BlowflyMap(object):
 
     class Conditional(object):
 
-        def __init__(self, p, n0, sigmap, tau):
+        def __init__(self, p, n0, sigmap, tau, tol):
             self.distribution_r = NegativeBinomial()
             self.p = p
             self.n0 = n0
             self.shape_r = 1/sigmap**2
             self.shape_r_arr = None
             self.tau = tau
+            self.tol = tol
             self.coeff_r = coeff_r
             self.coeff_beta = coeff_beta
             self.proba_r = proba_r
@@ -73,7 +76,7 @@ class BlowflyMap(object):
             dens_rs = self.distribution_r.density(rs, n=self.shape_r_arr, p=proba_r)
             prop_rs = self.proposal_r.density(rs, n=self.shape_r_arr, p=proba_r)
             weights = np.divide(dens_rs, prop_rs)
-            deltas =  calc_delta(rs, particles, next_obs, len(rs)) #[0 if rs[i] + particles[i] != next_obs else 1 for i in range(len(rs))]
+            deltas =  calc_delta(rs, particles, next_obs, len(rs), tol=self.tol) #[0 if rs[i] + particles[i] != next_obs else 1 for i in range(len(rs))]
             np.multiply(weights, deltas, out=weights)
             return weights
 

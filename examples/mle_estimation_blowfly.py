@@ -7,13 +7,13 @@ from bootstrap.abc import ABCFilter
 from distributions.distributions2 import Normal
 
 def perform_filter(inits=None, p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, sigmad=np.sqrt(0.1), tau=14, m=100, NOS=100, NBS=500, observations=None,
-                   particle_init=50, low=35, high=45, discretization=0.5, variable='n0', proposal="optimal"):
+                   particle_init=50, low=35, high=45, discretization=0.5, variable='n0', proposal="optimal", tol=0):
 
     if inits == None:
         inits = np.array([int(Normal().sample(np.array([particle_init], dtype=np.float64), np.array([10], dtype=np.float64))[0])], dtype=np.float64)
 
     if observations is None:
-        Map_ref = BlowflyMap(p, n0, sigmap, delta, sigmad, tau, length=NOS, initial=inits)
+        Map_ref = BlowflyMap(p, n0, sigmap, delta, sigmad, tau, length=NOS, initial=inits, tol=tol)
         observations = Map_ref.observations
     else:
         observations = observations
@@ -25,11 +25,17 @@ def perform_filter(inits=None, p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, si
     for variable_ in variables:
 
         if variable == 'p':
-            Map_blowfly = BlowflyMap(variable_, n0, sigmap, delta, sigmad, tau, length=NOS, initial=inits, observations=observations)
+            Map_blowfly = BlowflyMap(variable_, n0, sigmap, delta, sigmad, tau, length=NOS, initial=inits, observations=observations, tol=tol)
         elif variable == 'n0':
-            Map_blowfly = BlowflyMap(p, variable_, sigmap, delta, sigmad, tau, length=NOS, initial=inits, observations=observations)
+            Map_blowfly = BlowflyMap(p, variable_, sigmap, delta, sigmad, tau, length=NOS, initial=inits, observations=observations, tol=tol)
         elif variable == 'delta':
-            Map_blowfly = BlowflyMap(p, n0, sigmap, variable_, sigmad, tau, length=NOS, initial=inits, observations=observations)
+            Map_blowfly = BlowflyMap(p, n0, sigmap, variable_, sigmad, tau, length=NOS, initial=inits, observations=observations, tol=tol)
+        elif variable == 'tau':
+            Map_blowfly = BlowflyMap(p, n0, sigmap, delta, sigmad, int(variable_), length=NOS, initial=inits, observations=observations, tol=tol)
+        elif variable == 'sigmap':
+            Map_blowfly = BlowflyMap(p, n0, variable_, delta, sigmad, tau, length=NOS, initial=inits, observations=observations, tol=tol)
+        elif variable == 'sigmad':
+            Map_blowfly = BlowflyMap(p, n0, sigmap, delta, variable_, tau, length=NOS, initial=inits, observations=observations, tol=tol)
         else:
             raise Exception("Parameter does not exist")
 
@@ -39,7 +45,7 @@ def perform_filter(inits=None, p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, si
         print(variable_)
 
     output = {
-        'variable': p if variable == 'p' else (n0 if variable == 'n0' else delta),
+        'variable': eval(variable),
         'variables': variables,
         'observations': observations,
         'likeli': likelis
@@ -58,6 +64,8 @@ if __name__ == "__main__":
     parser.add_argument("--high", type=float, help="End value for the variable in the state or observation equation")
     parser.add_argument("--discretization", type=float, help="Step in discretization of range of values for the parameter")
     parser.add_argument("--proposal", type=str, help="Proposal distribution: prior or optimal ?")
+    parser.add_argument("--tolerance", dest="tol", type=float, help="Tolerance in the bridge")
+    parser.add_argument("--repetitions", dest="m", type=int, help="Number of repetitions in inner loop")
 
     args = parser.parse_args()
     arguments = {k:v for k,v in args.__dict__.items() if v}
@@ -71,17 +79,14 @@ if __name__ == "__main__":
 
     maxi_variable = max(output['likeli'])
     maxi_idx = output['likeli'].index(maxi_variable)
-    maxi  = output['variables'][maxi_idx]
+    maxi = output['variables'][maxi_idx]
+
+    with open("/home/raphael/mle_{}_ricker.txt".format(arguments['variable']), "w") as f:
+        f.write(" ".join(map(str, output['likeli'])))
+        f.write(" {} {}\n".format(str(output['variable']), str(maxi)))
 
     plt.plot(output['variables'], output['likeli'])
     plt.axvline(x=output['variable'])
     plt.axvline(x=maxi, color='red')
     plt.title("Likelihood")
-    plt.show()
-
-    plt.plot(output['variables'], output['likeli'])
-    plt.axvline(x=output['variable'])
-    plt.axvline(x=maxi, color='red')
-    plt.title("Likelihood on log scale")
-    plt.xscale('log')
     plt.show()

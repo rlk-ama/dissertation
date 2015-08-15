@@ -6,7 +6,7 @@ class PMMH(object):
 
     def __init__(self, filter, map, iterations, proposals, prior, init, initial, end, Ns, adaptation=1000,
                  burnin=1500, target=0.15, target_low=0.10, observations=None, support=None, initial_filter=None,
-                 filter_proposal='optimal'):
+                 filter_proposal='optimal', *args, **kwargs):
         self.filter = filter
         self.map = map
         self.iterations = iterations
@@ -28,7 +28,8 @@ class PMMH(object):
             self.support = support
         else:
             self.support = lambda x: True
-
+        if 'tol' in kwargs:
+            self.tol = kwargs['tol']
 
     def initalize(self):
         theta = self.init
@@ -36,7 +37,7 @@ class PMMH(object):
 
     def routine(self, parameters):
         try:
-            Map = self.map(*parameters, initial=self.initial, observations=self.observations)
+            Map = self.map(*parameters, initial=self.initial, observations=self.observations, tol=self.tol)
         except:
             return -np.inf
         filter = self.filter(self.end, self.Ns, Map, proposal={self.filter_proposal: True}, initial=self.initial_filter,

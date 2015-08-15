@@ -7,19 +7,19 @@ from bootstrap.abc import ABCFilter
 from distributions.distributions2 import Normal
 
 def perform_filter(inits=None, p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, sigmad=np.sqrt(0.1), tau=14, m=100, NOS=100, NBS=500, observations=None,
-                   particle_init=50, proposal="optimal"):
+                   particle_init=50, proposal="optimal", tol=0, adaptation=False):
 
     if inits is None:
         inits = np.array([int(Normal().sample(np.array([particle_init], dtype=np.float64), np.array([10], dtype=np.float64))[0])], dtype=np.float64)
 
     if observations is None:
-        Map_blowfly = BlowflyMap(p, n0, sigmap, delta, sigmad, tau, length=NOS, initial=inits)
+        Map_blowfly = BlowflyMap(p, n0, sigmap, delta, sigmad, tau, length=NOS, initial=inits, tol=tol)
     else:
-        Map_blowfly = BlowflyMap(p, n0, sigmap, delta, sigmad, tau, length=NOS, initial=inits, observations=observations)
+        Map_blowfly = BlowflyMap(p, n0, sigmap, delta, sigmad, tau, length=NOS, initial=inits, observations=observations, tol=tol)
 
     observations = Map_blowfly.observations
 
-    filter = ABCFilter(NOS, NBS, Map_blowfly, m, proposal={proposal: True})
+    filter = ABCFilter(NOS, NBS, Map_blowfly, m, proposal={proposal: True}, adaptation=adaptation)
     _, res = next(filter.filter())
     estim, likeli, ESS = res
     output = {
@@ -36,9 +36,14 @@ if __name__ == "__main__":
     parser.add_argument("--observations", type=argparse.FileType('r'), help="Observations, in a file, space separated")
     parser.add_argument("--proposal", type=str, help="Proposal distribution: prior or optimal ?")
     parser.add_argument("--n0", type=float, help="Value for n0")
+    parser.add_argument("--delta", type=float, help="Value for delta")
+    parser.add_argument("--p", type=float, help="Value for p")
+    parser.add_argument("--tau", type=int, help="Value for tau")
     parser.add_argument("--repetitions", dest="m", type=int, help="Number of repetitions in inner loop")
     parser.add_argument("--steps", dest="NOS", type=int, help="Number of generations to take into account")
     parser.add_argument("--particles", dest="NBS", type=int, help="Number of particles")
+    parser.add_argument("--tolerance", dest="tol", type=float, help="Tolerance in the bridge")
+    parser.add_argument("--adaptation", type=bool, help="Use adaptation for number of inner samples ?")
 
 
     args = parser.parse_args()

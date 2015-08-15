@@ -8,10 +8,10 @@ import argparse
 import numpy as np
 
 def simulation(p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, sigmad=np.sqrt(0.1), tau=14, m=100, NOS=100, NBS=500,
-               iter=1000, chains=1, burnin=0, adaptation=0, p_init=5.5, n0_init=45, delta_init=0.2, sigmap_init=np.sqrt(0.15),
+               iter=1000, chains=1, burnin=0, adaptation=0, p_init=6, n0_init=45, delta_init=0.1, sigmap_init=np.sqrt(0.15),
                sigmad_init=np.sqrt(0.15), target=0.2, target_low=0.15, observations=None, inits=None, sigma_proposal_p=0.5,
-               sigma_proposal_n0=1, sigma_proposal_delta=0.01, sigma_proposal_sigmap=0.01, sigma_proposal_sigmad=0.01,
-               particle_init=50):
+               sigma_proposal_n0=1.8, sigma_proposal_delta=0.02, sigma_proposal_sigmap=0.1, sigma_proposal_sigmad=0.1,
+               particle_init=50, tol=0.05):
 
     sigma_proposals = [sigma_proposal_p, sigma_proposal_n0, sigma_proposal_sigmap, sigma_proposal_delta, sigma_proposal_sigmad]
     initial_params = [p_init, n0_init, sigmap_init, delta_init, sigmad_init ]
@@ -49,7 +49,7 @@ def simulation(p=6.5, n0=40, sigmap=np.sqrt(0.1), delta=0.16, sigmad=np.sqrt(0.1
 
         mcmc = PMMH(filter, map_, iter, proposals, prior, inits_sampler, inits, NOS, NBS, observations=observations,
                     support=support, adaptation=adaptation, burnin=burnin, target=target, target_low=target_low,
-                    initial_filter=initial_filter, filter_proposal="prior")
+                    initial_filter=initial_filter, filter_proposal="prior", tol=tol)
         samples, acceptance = mcmc.sample()
         acceptance_rate = np.sum(acceptance[burnin+adaptation:])/len(acceptance[burnin+adaptation:])
 
