@@ -18,6 +18,10 @@ ext_modules=[
         Extension("bootstrap.utils_kalman",
           sources=["bootstrap/utils_kalman.pyx"],
           libraries=["m"] # Unix-like specific
+    ),
+        Extension("bootstrap.utils_blowflies",
+          sources=["bootstrap/utils_blowflies.pyx"],
+          libraries=["m"] # Unix-like specific
     )
 ]
 
