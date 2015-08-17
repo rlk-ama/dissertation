@@ -133,23 +133,29 @@
 	
 	It can be noted that the terminology comes from the fact that the ratio seems to be targeting $p(\theta | y_{1:T})$.
 	
- 	When the relationship between states and states and observations are linear and gaussian, Kalman (1960)~\cite{Kalman1960} designed a method which allows to sequentially calculates the \emph{filtering distribution}, i.e $p(x_{t}| y_{1:t}, \theta)$, which in this particular case has a closed form. From there, it is easy to recover the likelihood marginalised over $x_{0:T}$ and to sample from $p(x_{0:t}| y_{1:t}, \theta)$. In this case the proposal $q(x_{0:t}| y_{1:t}, \theta)$ Although variants of this original filter, which deal with non-linear and non-gaussian state space miodels, have been designed, such as the extended~\cite{McElhoe1966} and unscented~\cite{Julier1997} Kalman filters, they give biased estimates of $p(x_t|y_{1:t}, \theta)$. \\
+ 	When the relationship between states and the one between states and observations are linear and gaussian, Kalman (1960)~\cite{Kalman1960} designed a method which allows to sequentially calculates the \emph{filtering distribution}, i.e $p(x_{t}| y_{1:t}, \theta)$, which in this particular case has a closed form. From there, it is easy to recover the likelihood marginalised over $x_{0:T}$ and to sample from $p(x_{0:t}| y_{1:t}, \theta)$. In this case the proposal $q(x_{0:t}| y_{1:t}, \theta)$ Although variants of this original filter, which deal with non-linear and non-gaussian state space miodels, have been designed, such as the extended~\cite{McElhoe1966} and unscented~\cite{Julier1997} Kalman filters, they give biased estimates of $p(x_t|y_{1:t}, \theta)$. \\
  	
- 	In these non-linear, non-gaussian cases, the \emph{particle filter}, which is of the family of Sequential Monte Carlo (SMC) methods, provides estimates of $p(y_{1:T}, \theta)$ and of $p(x_{0:T}|y_{1:T}, \theta)$ which, when used as the proposal distribution, leaves invariant $p(x_{0:T}, \theta|y_{1:T})$ and ensures that the marginal Metropolis Hastings sampler is ergodic. This version of the algorithm is commonly referred to as the Particle Marginal Metropolis Hastings (PMMH) sampler and is described, along with the proof that it is indeed ergodic under mild assumptions in Andrieu et al.~\cite{andrieu2010particle}.
+ 	In these non-linear, non-gaussian cases, the \emph{particle filter}~\cite{Gordon1993}, which is of the family of Sequential Monte Carlo (SMC) methods, provides estimates of $p(y_{1:T}, \theta)$ and of $p(x_{0:T}|y_{1:T}, \theta)$ which, when used as the proposal distribution, leaves invariant $p(x_{0:T}, \theta|y_{1:T})$ and ensures that the marginal Metropolis Hastings sampler is ergodic. This version of the algorithm is commonly referred to as the Particle Marginal Metropolis Hastings (PMMH) sampler and is described, along with the proof that it is indeed ergodic under mild assumptions in Andrieu et al.~\cite{andrieu2010particle}.
 	
 	\subsubsection{Particle Filter}
-	One approach is to approximate the distribution $p(x_{1:t}|y_{1:t})$ with the following empirical distribution:
+	We describe a little further the particle filter as it is the method we applied in order to estimate the likelihood and sample from $p(x_{0:T}|y_{1:T}, \theta)$ to carry out parameter inference in the case of the noisily observed Ricker map. \\
+	This method is based on sequential importance sampling.
+	The idea behind importance sampling is to approximate $p(x_{1:t}|y_{1:t}, \theta)$ with the empirical distribution
 	\begin{equation}
-	\hat{p}(x_{0:t}|y_{1:t}) = \sum_{i=1}^{N}\tilde{w}_t^{(i)} \delta_{x_{0:t}^{(i)}}(x_{0:t})
+	\hat{p}(x_{0:t}|y_{1:t}, \theta) = \sum_{i=1}^{N}\tilde{w}_t^{(i)} \delta_{x_{0:t}^{(i)}}(x_{0:t})
 	\end{equation}
-	where $\tilde{w}_t^{(i)} = \frac{W(x_{0:t}^{(i)})}{\sum_{j=1}^{N} W(x_{0:t}^{(j)})}$ and $W(x_{0:t}) = \frac{p(x_{1:t}|y_{1:t})}{q(x_{1:t}|y_{1:t})}$ where $x_{0:t}^{(i)}$ are iid draws from $q(x_{1:t}|y_{1:t})$, which is an easy to sample from distribution. If we take any bounded measurable function $\phi$ Geweke (1989)~\cite{Geweke1989} showed that $\mathbb{E}\phi(x_{0:t}) = \sum_{i=1}^{N} \tilde{w}_t^{(i)} \phi(x_{0:t}^{(i)}) \xrightarrow{\mathrm{a.s}} \int_{\Omega^n} \phi({x_{0:t}})p(x_{0:t}|y_{1:t})\mathrm{d}x_{0:t}$. \\
+	where $\tilde{w}_t^{(i)} = \frac{W(x_{0:t}^{(i)})}{\sum_{j=1}^{N} W(x_{0:t}^{(j)})}$ and $W(x_{0:t}) = \frac{p(x_{1:t},y_{1:t}, \theta)}{q(x_{1:t})}$ where $x_{0:t}^{(i)}$ are iid draws from $q(x_{1:t})$, which is an easy to sample from distribution.
 	
-	However, this method is both expensive in computational terms, as each time a new observations arrives one need to evaluate the densities used to calculate the weights at the whole time series, and not well suited for streams of data, where new observations arrive one at a time and fast calculation are required at each time step (one application of such a situation are tracking systems).
-	Particle filters~\cite{Gordon1993} are part of the more general framework of sequential Monte Carlo (SMC) algorithms which leverage both important sampling and the dependency structure of state space model. SMC algorithms relies on the fact that the weights used in importance sampling $W(x_{0:t}|y_{1:t})$ can be expressed sequentially using the fact that the $y_t$ are conditionally independent given $x_{0:t}$, that the $x_t$ have the Markov property and a judicious choice of proposal distribution $q$. Indeed in the scenario, and if $q(x_{1:t})=q(x_{1:t-1})q(x_t| x_{t-1})$ we have:
+	However, this method does not take advantage of dependency structure of the state space model. Indeed, the weights $W(x_{0:t})$ can be expressed sequentially using the fact that the $y_t$ are conditionally independent given $x_{0:t}$ and that the $x_t$ have the Markov property. Moreover a choice of proposal distribution which also has the Markov property (i.e $q(x_{1:t})=q(x_{1:t-1})q(x_t| x_{t-1})$) allows us to write:
 	\begin{align}
-		W(x_{0:t}|y_{1:t}) & = \frac{p(x_{0:t}|y_{1:t})}{q((x_{0:t}|y_{1:t})} \\
-		& = 
+		W(x_{0:t}) & = \frac{p(x_{0:t},y_{1:t}, \theta)}{q(x_{0:t},y_{1:t}, \theta)} \\
+		& = p(y_t|x_t)p(x_t|x_{t-1})
 	\end{align}
+	
+	 If we take any bounded measurable function $\phi$ Geweke (1989)~\cite{Geweke1989} showed, under certain conditions, that $\mathrm{I_N^{IS}}=\mathbb{E_{\hat{p}}}\phi(x_{0:t}) = \sum_{i=1}^{N} \tilde{w}_t^{(i)} \phi(x_{0:t}^{(i)}) \xrightarrow{\mathrm{a.s}} \int_{\Omega^n} \phi({x_{0:t}})p(x_{0:t}|y_{1:t})\mathrm{d}x_{0:t}=\mathbb{E_{{p}}}\phi(x_{0:t})$, and moreover that the bias and the variance are $\mathcal{O}(\frac{1}{N})$.\\
+	 
+	 However, as shown in ~\cite{kong1994sequential}, the variance of the weights is exponential in the number $n$ of time steps. Moreover, the effective sample size (ESS), as defined in ~\cite{liu2008monte} pp 35-36, which measures the ratio between the variance of $\mathrm{I_N^{IS}}$ and of the same quantity if the samples were independently drawn from the true distribution, vanishes quickly.
+	 
 	The most simple form of particle filter, also called \emph{bootstrap filter} relies on the 
 	\begin{figure}[htb]
 		\centering
