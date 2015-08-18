@@ -20,6 +20,9 @@
 \graphicspath{ {figures/} }
 \usepackage{titlesec}
 
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
 \makeatletter
 \newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
 \newsavebox{\mybox}\newsavebox{\mysim}
@@ -30,7 +33,9 @@
 }
 \makeatother
 
-
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
 
 \setcounter{secnumdepth}{4}
 
@@ -39,10 +44,48 @@
 \titlespacing*{\paragraph}
 {0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
 
+\title{Monte Carlo Methods for Bayesian Inference on Two Population
+	Dynamics Models: The Ricker Map and Nicholson's Sheep Blowfly Experiments}
+\date{}
 
 \begin{document}
+	\maketitle 
+	\thispagestyle{empty}
+	\begin{center}
+		\vspace{-5mm}
+		\includegraphics[scale=1]{logo.png} \\
+		\vspace{20mm}
+		{\large Raphaël Lopez-Kaufman} \\
+		\vspace{2mm}
+		{\large Oriel College, University of Oxford} \\
+		\vspace{40mm}
+		A dissertation submitted in partial fulfilment of the requirements for the degree of \\
+		\vspace{1mm}
+		\textit{Master of Science in Applied Statistics} \\
+		\vspace{1mm}
+		Trinity 2015
+	\end{center}
+	
+	\vspace{25 mm}
+	\definecolor{keywords}{RGB}{255,0,90}
+	\definecolor{comments}{RGB}{0,0,113}
+	\definecolor{red}{RGB}{160,0,0}
+	\definecolor{green}{RGB}{0,150,0}
+	
+	\begin{abstract}
+		In this paper, I study and modelise the time series dynamics of the Chicago Board Options Exchange Volatility Index (VIX) through Bayesian estimation of one-factor and stochastic volatility models. Markov Chain Monte Carlo techniques including Metropolis-within-Gibbs are adopted to surmount computational hurdles typical of high-dimensional diffusion model estimation and to enable the use of the Deviance Information Criterion (DIC) in model comparison. Further, High Frequency Augmentation (HFA) -- a form of Data Augmentation -- is adopted, with diffusion bridges formed between all observations in order to decrease the discretisation bias inherent in diffusion model estimation. For model assessment, I utilise posterior predictive p-values simulations and DIC tests to assess and compare the estimated non-affine one-factor and stochastic volatility models, both of which include mean reversion and price-dependent jump components. The techniques utilised and models tested are relatively new to the field of implied volatility research -- the model specifications considered in this paper and the use of DIC are unprecedented, while HFA and posterior predictive p-value simulations have been employed only once prior to this study. Applying the above-mentioned techniques, I find strong support for the inclusion of stochastic volatility, mean reversion and price-dependent jump components in a non-affine framework to ensure accurate model specification when modelising implied volatility time series.
+	\end{abstract}
+	
+	\newpage
+	\vspace*{80mm}
+		\textit{I would like to express my gratitude to my academic supervisors Professor Arnaud Doucet and Doctor Lawrence Murray from University of Oxford for their time and guidance}
+	
+	\newpage
+	
 	\listoffigures
+	\clearpage
 	\listoftables
+	\clearpage
 	\tableofcontents
 	
 	\clearpage
@@ -83,6 +126,7 @@
 	As $r$ continues growing, we rapidly reach a situation where population size does not enter any stable orbit any more. This leads to a behaviour characteristic of chaos, where a small change in the value of the parameters or the initial conditions leads to very different solutions. Figure~\ref{fig:chaos} shows the evolution of two populations when either parameter $r$ or initial conditions present a very minor change. It can be noted that populations sizes, in both cases, diverges rapidly from one another.
 	
 	\subsubsection{The Noisily Observed Ricker Map}
+	\label{NRM}
 	In order to allow for external and internal stochasticity~\cite{wang2007latent} and to take into account the observational process~\cite{calder2003incorporating} (for example a counting process of salmons in fisheries), extensions to the deterministic case have been suggested. We chose to proceed with the following model, suggested by Wood (2010)~\cite{Wood2010}.
 	\begin{align}
 	& N_t = r N_t e^{-N_t+Z_t} \hspace{1cm} Z_t \distas{\mathrm{iid}} \mathrm{N}(0, \sigma^2) \label{noisyRickerState}\\
@@ -168,6 +212,75 @@
 	Using the fact that $p(y_{1:T}| \theta) = p(y_1|\theta)\prod_{k=2}^{T}p(y_k|y_{1:k-1}, \theta)$ and that \\
 	$p(y_k|y_{1:k-1}, \theta) = \frac{1}{N}\sum_{i=1}^{N}W_k^{(i)}$ we have $\hat{p}(y_{1:T}| \theta)=\frac{1}{N}\prod_{k=1}^{T}\sum_{i=1}^{N}W_k^{(i)}$. It can be shown (see~\cite{del2004feynman}) that $\hat{p}(y_{1:T}| \theta$ is an unbiased estimate of the likelihood and we saw earlier that the particle filter allows to draw from an also unbiased estimate of $p(x_{0:T}|y_{1:T}, \theta)$, which are the quantities needed to make us of the PMMH sampler. For more details on SMC methods and the particle filter see~\cite{doucet2009tutorial} and for more details on resampling and its complexity see~\cite{murray2013parallel}.
 	
+	\section{Inference on the noisily observed Ricker Map}
+	\subsection{Algorithm}
+	In order to perform inference on the noisily observed Ricker Map, we used a PMMH sampler along with particle filter. \\
+	We restate here the state space model, given in~\ref{NRM}, which is used to describe this population dynamics model.
+	\begin{align}
+	& N_t = r N_t e^{-N_t+Z_t} \hspace{1cm} Z_t \distas{\mathrm{iid}} \mathrm{N}(0, \sigma^2)\\
+	& Y_t = \mathrm{Poisson}(\phi N_t)
+	\end{align}
+	
+	Theoretical results indicate that the proposal density to use in order to minimize the variance of the likelihood estimate is $p(n_t | y_t, n_{t-1})$. However we have $p(n_t | y_t, n_{t-1}) \propto p(y_t|n_t)p(n_t|n_{t-1})$ where $p(y_t|n_t)$ is a Poisson distribution and $p(n_t|n_{t-1})$ a log normal distribution. This does not yield a known distribution from which we could sample. However, the conjugate distribution of a Poisson is a Gamma distribution. Therefore approximating the transition density with a Gamma distribution yields a Gamma proposal which is, hopefully, close enough from the true optimal proposal distribution. \\
+	
+	In order to approximate a Lognormal distribution with the closest Gamma distribution, we chose to minimize the Kullback-Liebler (KL) divergence~\cite{kullback1951information} between these two distributions. Indeed, the KL divergence measure the information for discrimination between two hypothesis regarding the population from which as sample is drawn. In a nutshell it means that the smaller is this divergence, the closer two probability measures are. Here we aim to minimize:
+	\begin{equation}
+	D_{KL}(P||Q)(\alpha, \theta) = \int_{0}^{\infty}{p(z|\mu, \sigma^2)\log(\frac{p(z|\mu, \sigma^2)}{q(z|\alpha, \theta)})\mathrm{d}z}
+	\end{equation}
+	where $p$ is the probability density function of a $\log\mathcal{N}(\mu, \sigma^2)$ and $q$ of a Gamma with shape $\alpha$ and scale $\theta$. Minimization finding critical points of the divergence give, $\alpha =\frac{1}{\sigma^2}$ and $\theta=\frac{1}{\alpha}e^{\mu+\frac{\sigma^2}{2}}$, and in the specific case of our state space model $\alpha(n_{t-1})= \frac{1}{\sigma^2}$ and $\theta(n_{t-1})=\sigma^2e^{\log(rn_{t-1}e^{-n_{t-1}})+\frac{\sigma^2}{2}}$. See~\ref{KLRicker} for details. \\
+	We thus approximate the transition density at each time step $t$ with:
+	\begin{equation*}
+	q(n_t|\alpha(n_{t-1}), \theta(n_{t-1})) = \mathrm{Gamma}(\ \cdot \ ; \alpha(n_{t-1}), \theta(n_{t-1}) )
+	\end{equation*}
+	This leads us to the following proposal for the particle filter:
+	\begin{equation*}
+	\begin{split}
+	q(n_t|n_{t-1}, y_t) & \propto  p(y_t|n_t)q(n_t|n_{t-1}) \\
+	& \propto e^{-\phi n_t}(\phi n_t)^{y_t}n_t^{\alpha(n_{t-1})-1}e^{-\frac{n_t}{\theta(n_{t-1})}}
+	\end{split}
+	\end{equation*}
+	i.e:
+	\begin{equation*}
+	q(n_t|n_{t-1}, y_t) = \mathrm{Gamma}(\ \cdot \ ; y_t+\alpha(n_{t-1}), \frac{\theta(n_{t-1})}{\theta(n_{t-1})\phi + 1})\end{equation*} \\
+	
+	We chose to use a multinomial resampler in our particle filter and to resample at each time step. The pseudo-code of the algorithm we used for the particle filter is given in Algorithm~\ref{pf}.
+	\begin{algorithm}
+		\caption{Particle filter}\label{pf}
+		\begin{algorithmic}[1]
+			\Function{PARTICLE-FILTER}{N, T, $\theta$}
+			\BState t=0: // initialization
+			\ForAll{$i \in \{1, \cdots, N\}$} 
+			\State Sample $N_0^{(i)} \sim q_0(n_0|\theta)$
+			\State Set $w_0^{(i)} \gets \frac{1}{N}$
+			\State Set $\hat{l_0} \gets 0$ // initialize log-likelihood
+			\State Set $\mathrm{ESS}_0 \gets N$ // initialize ESS
+			\State Set $\hat{n}_0 \gets n_0$ // initialize state
+			\State Set $t \gets 1$
+			\EndFor
+			\item[]
+			\BState $1 \le t \le T$:
+			\While{$t \le T$}
+			\State Sample $(a_t^{(1)}, \cdots, a_t^{(N)} \sim \mathrm{Multinomial}(w_{t-1}^{(1)}, \cdots, w_{t-1}^{(N)})$ // ancestors 
+			\ForAll{$i \in \{1, \cdots, N\}$}
+			\item[]
+			\State Sample $n_t^{(i)} \sim q(n_t| n_{t-1}^{a_t^{(i)}}, y_t, \theta)$ // propagate particle
+			\item[]
+			\State Set $w_t^{(i)} \gets \frac{\strut p(n_t|n_{t-1}^{a_t^{(i)}}, \theta)}{\strut p(y_t|n_t^{(i)}, \theta)q(n_t|n_{t-1}^{a_t^{(i)}}, y_t)}$ // weight particle
+			\EndFor
+			\item[]
+			\State $\hat{l}_t \gets \hat{l}_{t-1} - \log N + \log\sum_{i=1}^{N}w_t^{(i)}$
+			\State Normalize $(w_t^{(0)}, \cdots, w_t^{(N)})$
+			\State Set $\mathrm{ESS_t} \gets (\sum_{i=1}^{N}(\mathrm{W}_t^{(i)})^2)^{-1}$ // W denotes a normalized weight
+			\State Set $\hat{n}_t \gets \sum_{i=1}^{N}\mathrm{W}_t^{(i)}n_t^{(i)}$
+			\EndWhile
+			\item[]
+			\Return $\hat{l}_T$, $(\hat{n}_0, \cdots, \hat{n}_T)$,  $(\mathrm{ESS}_0, \cdots, \mathrm{ESS}_T)$
+			\EndFunction
+		\end{algorithmic}
+	\end{algorithm}
+	
+	
+	
 	
 	\begin{figure}[htb]
 		\centering
@@ -226,7 +339,49 @@
 	\end{figure}
 
 \clearpage
-	\section{Bibliography}
 	\bibliographystyle{plain}
 	\bibliography{mybib}{}
+	
+	\section{Appendix}
+	\subsection{Appendix I} \label{KLRicker}
+	In this section we present the minimization of the KL divergence between a Lognormal a Gamma distributions.
+	We have
+	\begin{equation*}
+	D_{KL}(P||Q)(\alpha, \theta) = \int_{0}^{\infty}{p(z|\mu, \sigma^2)\log(\frac{p(z|\mu, \sigma^2)}{q(z|\alpha, \theta)})\mathrm{d}z}
+	\end{equation*}
+	where $p$ is the probability density function of a $\log\mathcal{N}(\mu, \sigma^2)$ and $q$ of a Gamma with shape $\alpha$ and scale $\theta$. \\
+	Expanding we obtain:
+	\begin{equation*}
+	D_{KL}(P||Q)(\alpha, \theta) = C + \alpha\log\theta + \log\Gamma(\alpha) - (\alpha-1)\mathbb{E}_p[\log(Z)] + \frac{1}{\theta}\mathbb{E}_p[Z]
+	\end{equation*}
+	where $\mathbb{E}_p$ is the expectation with respect to the probability measure $p$.\\
+	Therefore:
+	\begin{equation*}
+	\frac{\partial }{\partial \alpha}(D_{KL}(P||Q)) = \log(\theta) + \psi^{(0)}(\alpha)-\mathbb{E}_p[\log(Z)]
+	\end{equation*}
+	\begin{equation*}
+	\frac{\partial }{\partial \theta}(D_{KL}(P||Q)) = \frac{\alpha}{\theta} - \frac{1}{\theta^2}\mathbb{E}_p[Z]
+	\end{equation*}
+	where $\psi^{(0)}$ is the digamma function.
+	
+	Since $\mathbb{E}_p[\log(Z)]=\mu$ and $\mathbb{E}_p[Z] = e^{\mu+\frac{\sigma^2}{2}}$, we finally have that, setting the partial derivatives to zero, the solutions satisfy:
+	\[	\begin{cases}
+	 & \alpha=e^{\psi^{(0)}(\alpha)+\frac{\sigma^2}{2}} \\
+	& \theta=\frac{1}{\alpha}e^{\mu+\frac{\sigma^2}{2}}
+	\end{cases}\]
+
+	If we use the first terms of the asymptotic expansion of the digamma function, i.e $\psi^{(0)}(\alpha) \approx \log(\alpha)-\frac{1}{2\alpha}$, we finally have $\alpha =\frac{1}{\sigma^2}$ and $\theta=\frac{1}{\alpha}e^{\mu+\frac{\sigma^2}{2}}$. \\
+	
+	In order to check if the solutions are indeed minima, we calculated the Hessian of $D_{KL}(P||Q)(\alpha, \theta)$ i.e
+	\begin{equation*}
+		\text{H} = \begin{pmatrix}
+		\frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \alpha^2} & \frac{\strut \partial^2 D_{KL}(P||Q) }{\strut \partial \theta \partial \alpha} \\
+		\frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \theta \partial \alpha} & \frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \theta^2} 
+		\end{pmatrix} =
+		\begin{pmatrix}
+		\psi^{(1)}(\alpha) & \frac{1}{\theta} \\
+		\frac{1}{\theta} & -\frac{\alpha}{\theta^2}+\frac{2e^{\mu +\frac{\sigma^2}{2}}}{\theta^3}
+		\end{pmatrix}
+	\end{equation*}
+	Straightforward calculations yield that the sign of the determinant of the above Hessian is such that $\text{sign}(\det{H}) = \psi^{(1)}(\alpha)(\frac{2}{\theta^3}e^{\mu +\frac{\sigma^2}{2}} - \alpha) - 1$.
 \end{document}
