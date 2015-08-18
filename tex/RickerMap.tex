@@ -152,11 +152,23 @@
 		& = p(y_t|x_t)p(x_t|x_{t-1})
 	\end{align}
 	
-	 If we take any bounded measurable function $\phi$ Geweke (1989)~\cite{Geweke1989} showed, under certain conditions, that $\mathrm{I_N^{IS}}=\mathbb{E_{\hat{p}}}\phi(x_{0:t}) = \sum_{i=1}^{N} \tilde{w}_t^{(i)} \phi(x_{0:t}^{(i)}) \xrightarrow{\mathrm{a.s}} \int_{\Omega^n} \phi({x_{0:t}})p(x_{0:t}|y_{1:t})\mathrm{d}x_{0:t}=\mathbb{E_{{p}}}\phi(x_{0:t})$, and moreover that the bias and the variance are $\mathcal{O}(\frac{1}{N})$.\\
+	If we take any bounded measurable function $\phi$ Geweke (1989)~\cite{Geweke1989} showed, under certain conditions, that \begin{equation*}
+		 \mathrm{I_N^{IS}}=\mathbb{E_{\hat{p}}}\phi(x_{0:t}) = \sum_{i=1}^{N} \tilde{w}_t^{(i)} \phi(x_{0:t}^{(i)}) \xrightarrow{\mathrm{a.s}} \int_{\Omega^n} \phi({x_{0:t}})p(x_{0:t}|y_{1:t})\mathrm{d}x_{0:t}=\mathbb{E_{{p}}}\phi(x_{0:t})
+	\end{equation*}
+	and moreover that the bias and the variance are $\mathcal{O}(\frac{1}{N})$.\\
+	
+	However, as shown in ~\cite{kong1994sequential}, the variance of the weights is exponential in the number $n$ of time steps. Moreover, the effective sample size (ESS), as defined in ~\cite{liu2008monte} pp 35-36, which measures the ratio between the variance of $\mathrm{I_N^{IS}}$ and of the same quantity if the samples were independently drawn from the true distribution, vanishes quickly.  
+	
+	The idea introduced by particle filters is to introduce resample moves. This consists in sampling, at each time step, from the importance sampling approximation $\hat{p(x_{0:t}|y_{1:t}, \theta)}$. This is achieved by selecting $x_{0:t}^{(i)}$ with probability $\tilde{w_n}^{(i)}$. Since sequential importance sampling propagates $N$ particles, this resample move is performed $N$ times at each time step. If $N_n^{(i)}$ is the number of offspring of each particle $x_{0:t}^{(i)}$, the final approximation of the target obtained is 
+	\begin{equation*}
+	 	\hat{p}(x_{0:t}|y_{1:t}, \theta) = \sum_{i=1}^{N}\frac{N_t^{(i)}}{N} \delta_{x_{0:t}^{(i)}}(x_{0:t})
+	\end{equation*}
+	Resampling has the beneficial effect to make the weights more balanced by removing samples far from regions of high density of the target distribution. Moreover, at each time step, the propagated particles are drawn from $\hat{p}(x_{0:t}|y_{1:t}, \theta)$ which leads to approximate the target by a series of closer and closer targets, from $\hat{p}(x_0|\theta)$ to $\hat{p}(x_{0:T}|y_{1:T}, \theta)$.
 	 
-	 However, as shown in ~\cite{kong1994sequential}, the variance of the weights is exponential in the number $n$ of time steps. Moreover, the effective sample size (ESS), as defined in ~\cite{liu2008monte} pp 35-36, which measures the ratio between the variance of $\mathrm{I_N^{IS}}$ and of the same quantity if the samples were independently drawn from the true distribution, vanishes quickly.
-	 
-	The most simple form of particle filter, also called \emph{bootstrap filter} relies on the 
+	Using the fact that $p(y_{1:T}| \theta) = p(y_1|\theta)\prod_{k=2}^{T}p(y_k|y_{1:k-1}, \theta)$ and that \\
+	$p(y_k|y_{1:k-1}, \theta) = \frac{1}{N}\sum_{i=1}^{N}W_k^{(i)}$ we have $\hat{p}(y_{1:T}| \theta)=\frac{1}{N}\prod_{k=1}^{T}\sum_{i=1}^{N}W_k^{(i)}$. It can be shown (see~\cite{del2004feynman}) that $\hat{p}(y_{1:T}| \theta$ is an unbiased estimate of the likelihood and we saw earlier that the particle filter allows to draw from an also unbiased estimate of $p(x_{0:T}|y_{1:T}, \theta)$, which are the quantities needed to make us of the PMMH sampler. For more details on SMC methods and the particle filter see~\cite{doucet2009tutorial} and for more details on resampling and its complexity see~\cite{murray2013parallel}.
+	
+	
 	\begin{figure}[htb]
 		\centering
 		\begin{minipage}{0.4\textwidth}
