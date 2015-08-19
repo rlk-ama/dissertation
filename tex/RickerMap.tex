@@ -36,7 +36,7 @@
 \makeatletter
 \def\BState{\State\hskip-\ALG@thistlm}
 \makeatother
-
+\newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}}
 \setcounter{secnumdepth}{4}
 
 \titleformat{\paragraph}
@@ -210,7 +210,7 @@
 	Resampling has the beneficial effect to make the weights more balanced by removing samples far from regions of high density of the target distribution. Moreover, at each time step, the propagated particles are drawn from $\hat{p}(x_{0:t}|y_{1:t}, \theta)$ which leads to approximate the target by a series of closer and closer targets, from $\hat{p}(x_0|\theta)$ to $\hat{p}(x_{0:T}|y_{1:T}, \theta)$.
 	 
 	Using the fact that $p(y_{1:T}| \theta) = p(y_1|\theta)\prod_{k=2}^{T}p(y_k|y_{1:k-1}, \theta)$ and that \\
-	$p(y_k|y_{1:k-1}, \theta) = \frac{1}{N}\sum_{i=1}^{N}W_k^{(i)}$ we have $\hat{p}(y_{1:T}| \theta)=\frac{1}{N}\prod_{k=1}^{T}\sum_{i=1}^{N}W_k^{(i)}$. It can be shown (see~\cite{del2004feynman}) that $\hat{p}(y_{1:T}| \theta$ is an unbiased estimate of the likelihood and we saw earlier that the particle filter allows to draw from an also unbiased estimate of $p(x_{0:T}|y_{1:T}, \theta)$, which are the quantities needed to make us of the PMMH sampler. For more details on SMC methods and the particle filter see~\cite{doucet2009tutorial} and for more details on resampling and its complexity see~\cite{murray2013parallel}.
+	$p(y_k|y_{1:k-1}, \theta) = \frac{1}{N}\sum_{i=1}^{N}W_k^{(i)}$ we have $\hat{p}(y_{1:T}| \theta)=\frac{1}{N}\prod_{k=1}^{T}\sum_{i=1}^{N}W_k^{(i)}$. It can be shown (see~\cite{del2004feynman}) that $\hat{p}(y_{1:T}| \theta$ is an unbiased estimate of the likelihood and we saw earlier that the particle filter allows to draw from an estimate (converging in distribution to) of $p(x_{0:T}|y_{1:T}, \theta)$, which are the quantities needed to make us of the PMMH sampler. For more details on SMC methods and the particle filter see~\cite{doucet2009tutorial} and for more details on resampling and its complexity see~\cite{murray2013parallel}.
 	
 	\section{Inference on the noisily observed Ricker Map}
 	\subsection{Algorithm}
@@ -221,29 +221,56 @@
 	& Y_t = \mathrm{Poisson}(\phi N_t)
 	\end{align}
 	
+	\subsubsection{Particle Filter} \label{pfRIcker}
 	Theoretical results indicate that the proposal density to use in order to minimize the variance of the likelihood estimate is $p(n_t | y_t, n_{t-1})$. However we have $p(n_t | y_t, n_{t-1}) \propto p(y_t|n_t)p(n_t|n_{t-1})$ where $p(y_t|n_t)$ is a Poisson distribution and $p(n_t|n_{t-1})$ a log normal distribution. This does not yield a known distribution from which we could sample. However, the conjugate distribution of a Poisson is a Gamma distribution. Therefore approximating the transition density with a Gamma distribution yields a Gamma proposal which is, hopefully, close enough from the true optimal proposal distribution. \\
 	
 	In order to approximate a Lognormal distribution with the closest Gamma distribution, we chose to minimize the Kullback-Liebler (KL) divergence~\cite{kullback1951information} between these two distributions. Indeed, the KL divergence measure the information for discrimination between two hypothesis regarding the population from which as sample is drawn. In a nutshell it means that the smaller is this divergence, the closer two probability measures are. Here we aim to minimize:
 	\begin{equation}
-	D_{KL}(P||Q)(\alpha, \theta) = \int_{0}^{\infty}{p(z|\mu, \sigma^2)\log(\frac{p(z|\mu, \sigma^2)}{q(z|\alpha, \theta)})\mathrm{d}z}
+	D_{KL}(P||Q)(\alpha, \beta) = \int_{0}^{\infty}{p(z|\mu, \sigma^2)\log(\frac{p(z|\mu, \sigma^2)}{q(z|\alpha, \beta)})\mathrm{d}z}
 	\end{equation}
-	where $p$ is the probability density function of a $\log\mathcal{N}(\mu, \sigma^2)$ and $q$ of a Gamma with shape $\alpha$ and scale $\theta$. Minimization finding critical points of the divergence give, $\alpha =\frac{1}{\sigma^2}$ and $\theta=\frac{1}{\alpha}e^{\mu+\frac{\sigma^2}{2}}$, and in the specific case of our state space model $\alpha(n_{t-1})= \frac{1}{\sigma^2}$ and $\theta(n_{t-1})=\sigma^2e^{\log(rn_{t-1}e^{-n_{t-1}})+\frac{\sigma^2}{2}}$. See~\ref{KLRicker} for details. \\
+	where $p$ is the probability density function of a $\log\mathcal{N}(\mu, \sigma^2)$ and $q$ of a Gamma with shape $\alpha$ and scale $\beta$. Minimization finding critical points of the divergence give, $\alpha =\frac{1}{\sigma^2}$ and $\beta=\frac{1}{\alpha}e^{\mu+\frac{\sigma^2}{2}}$, and in the specific case of our state space model $\alpha(n_{t-1})= \frac{1}{\sigma^2}$ and $\beta(n_{t-1})=\sigma^2e^{\log(rn_{t-1}e^{-n_{t-1}})+\frac{\sigma^2}{2}}$. See~\ref{KLRicker} for details. \\
 	We thus approximate the transition density at each time step $t$ with:
 	\begin{equation*}
-	q(n_t|\alpha(n_{t-1}), \theta(n_{t-1})) = \mathrm{Gamma}(\ \cdot \ ; \alpha(n_{t-1}), \theta(n_{t-1}) )
+	q(n_t|\alpha(n_{t-1}), \beta(n_{t-1}), \theta) = \mathrm{Gamma}(\ \cdot \ ; \alpha(n_{t-1}), \beta(n_{t-1}) )
 	\end{equation*}
 	This leads us to the following proposal for the particle filter:
 	\begin{equation*}
 	\begin{split}
-	q(n_t|n_{t-1}, y_t) & \propto  p(y_t|n_t)q(n_t|n_{t-1}) \\
+	q(n_t|n_{t-1}, y_t, \theta) & \propto  p(y_t|n_t, \theta)q(n_t|n_{t-1}, \theta) \\
 	& \propto e^{-\phi n_t}(\phi n_t)^{y_t}n_t^{\alpha(n_{t-1})-1}e^{-\frac{n_t}{\theta(n_{t-1})}}
 	\end{split}
 	\end{equation*}
 	i.e:
 	\begin{equation*}
-	q(n_t|n_{t-1}, y_t) = \mathrm{Gamma}(\ \cdot \ ; y_t+\alpha(n_{t-1}), \frac{\theta(n_{t-1})}{\theta(n_{t-1})\phi + 1})\end{equation*} \\
+	q(n_t|n_{t-1}, y_t, \theta) = \mathrm{Gamma}(\ \cdot \ ; y_t+\alpha(n_{t-1}), \frac{\beta(n_{t-1})}{\beta(n_{t-1})\phi + 1})\end{equation*} \\
 	
-	We chose to use a multinomial resampler in our particle filter and to resample at each time step. The pseudo-code of the algorithm we used for the particle filter is given in Algorithm~\ref{pf}.
+	We chose to use a multinomial resampler in our particle filter and chose to resample at each time step. The pseudo-code of the algorithm we used for the particle filter is given in Algorithm~\ref{pf}. It returns samples from $p(x_t | y_{1:t}, \theta)$, estimates of the log-likelihood $\hat{l}_t$ and the effective sample size $\mathrm{ESS}_t$ at each time step. \\
+	This algorithm was implemented in Python, using Numpy/Scipy to simulate from known random variables and Cython to speed up critical code~\cite{wilbers2009using, behnel2011cython} (such as density calculations). Simulation showed that Numpy implementation of multinomial and gamma sampling were linear in the number of particle $N$. The rests of the calculations (weight, ESS, likelihood, parameters of the proposal distribution) are also linear in the number of particle. As for space complexity, one estimate of the filtering distribution is stored and each time step, along with the likelihood estimate and the ESS. Therefore the space complexity is linear in the number of steps $T$. Experimental simulations, shown in Figure~\ref{runningRicker}, for a number of particle varying from 10 to 10000, of the running time of Algorithm~\ref{pf} averaged over 100 repetitions, confirms an average running time of $\mathcal{O}(N)$.
+	
+	\subsubsection{Particle Marginal Metropolis Hastings Sampler}
+	Algorithm~\ref{pmmh} shows the straightforward implementation of the PMMH sampler we used. At each time step a new set of parameter is proposed using a multivariate random walk whose components are independent. We chose independence as we did not have any information on the correlation structure of the vector of parameters. Following Wood~\cite{fasiolo2014statistical} we also chose independent uniform priors on the parameters. \\
+	
+	After a burnin period, we adapt the covariance matrix of the proposal using the Robbins-Monro update, as described in Andrieu and Thoms~\cite{Andrieu2008}. Indeed, as proved by Roberts et al.~\cite{roberts1997weak} for a certain class of target distribution (namely those of the form $\pi_n(x) = \prod_{i=1}^{n}f(x_i)$ where $x \in \mathbb{R}^n$ and certain regularity conditions on f, the same result for other form of $\pi$ has been proved, see~\cite{roberts2001optimal}), the optimal acceptance rate, when using a multivariate random walk proposal, in term of mixing, is close to 0.234. In the case of a PMMH sampler, where the likelihood is an approximation of the true one, this rate should be decreased to 0.1~0.15 (as suggested by Dr. Lawrence Murray). This adaptation period allows us not to worry too much about the initialisation of the covariance matrix of the random walk. When adapting during the whole chain, care should be exercised regarding the convergence towards the target distribution of the MCMC algorithm. However, we chose to adapt only for a brief (although long enough to reach the targeted acceptance rate) period of time, typically 10 to 15\% of the total length of the chain.\\
+	
+	More specifically the Robins-Monro update is used to rescale the covariance matrix of the random walk. In the case of a univariate proposal $q_\theta \sim \mathcal{N}(0, exp(\theta))$ and target distribution $\pi$,  what adaptation aims to do is to find the zeros of $h(\theta) = \mathbb{E}_{\pi\otimes q_\theta}\mathrm{H}(\theta, x, y)$ where $\mathrm{H}(\theta, x, y) = \min(1, \frac{\pi(y)}{\pi(x)}) - \alpha^*$ and $\alpha^*$ is the target average acceptance rate. Robins-Monro update proceed iteratively by setting $\theta_{i+1} = \theta_i + \frac{1}{i+1}(\hat{\alpha}_{\theta_i} - \alpha^*)$ where $\hat{\alpha}_{\theta_i} = \frac{1}{L}\sum_{k=1}^{L}\frac{\pi(y_{iL+k})}{\pi(x_{iL+k-1})}$. If $\hat{\alpha}_{\theta_i}$ is unbiased, Robbins and Monro~\cite{robbins1951stochastic} have shown that, under certain regularity conditions on H and and $\hat{\alpha}_\theta$, $\theta_i$ converges in probability to $\alpha^*$. Here, it can be simply understood noticing that if the acceptance rate $\hat{\alpha}_\theta$ is greater than the target $\theta$ and thus the variance of the random walk is increased, leading to greater moves in the parameter space and thus a reduced acceptance rate. The contrary happens when $\hat{\alpha}_\theta$ is smaller than the target. Principled statistical rules exists to determine when to stop the adaptation phase, but, since we were targeting a range rather than a specific value for the acceptance rate,  we relied on trial and error to determine its approximate duration to reach the range 0.1-0.15. Finally, since we used a multivariate random walk with a diagonal covariance matrix, we decided to simultaneously adapt its coefficient using the Robbins-Monro update. This very simple approach proved satisfactory as all the chains we ran attained average acceptance rate within the targeted range.
+	
+	
+	\subsection{Synthetic Data}
+	In order to obtain a first assessment of the efficiency of our PMMH algorithm, and to compare our results to Wood's~\cite{fasiolo2014statistical}, we used simulated datasets from the Ricker map model. It should be noted that Wood use a slightly different version of the more general one we gave, where $K$ is set to one and is not allowed to vary. However, even though we shall conform with this definition in this section, when we use real data later on, $K$ will be again allowed to vary. As in Wood's, we chose to set $r=log(3.8)$, $\sigma=0.3$, $\phi=10$ and $T=50$ (such a short path is chosen because real data on population size is seldom longer). This places us in the  chaotic regime of the Ricker map as $log(3.8) \approx 44.7 > e^2$. \\
+	
+	We first compared the evolution of the effective sample size using our proposal (as described in Section~\ref{pfRIcker}) and the transition density $p(n_t|n_{t-1})$ as proposal, called \emph{prior proposal} (this version of particle filter is called \emph{bootstrap filter}) used by Wood. Figure~\ref{fig:essRicker} shows this comparison. Note that we used 500 particles in each cases. It can be seen that the use of the prior proposal leads to an extremely irregular ESS, with very sharp dips, indicative of very imbalance weights. This is due to the fact that the transition density approximates badly the successive targeted distributions. On the contrary, our gamma approximation to the optimal proposal, because it incorporates knowledge from the actual observations, is less irregular, and shows very few dips below $\frac{N}{2}$. \\
+	
+	We also compared the stability of the maximum likelihood estimate for $r$ (keeping $\sigma$ and $\phi$ fixed and equal to their true value) when using the prior proposal and our gamma approximation to the optimal proposal. We calculated the likelihood for $r \in [12, 90]$ using a discretisation size equal to 0.5. We repeated the experiment 50 times. The variance of the maximum likelihood estimates and the mean squared errors obtained using different numbers of particles are displayed in Table~\ref{table:mleR} where the index 1 denotes the prior proposal and index 2 our gamma approximation. Figure~\ref{fig:comparisonR}, shows the MLE obtained across the iterations using 50, 100, 200, 500, 1000 and 1500 particles. \\
+	We used the same methodology for $\phi$ and $\sigma$, using respectively a discretisation path of 0.06 and 0.003 in the intervals $[5, 15]$ and $[0.15, 0.6]$. Table~\ref{fig:mlePhi}, Table~\ref{fig:mleSigma}, Figure~\ref{fig:comparisonPhi} and Figure~\ref{fig:comparisonSigma} respectively show the evolution of the variance and the mean square error of the maximum likelihood estimates and the MLE obtained across the iterations. Finally, Figure~\ref{fig:transect} shows transect of the log-likelihood with respect to $r$, $\phi$ and $\sigma$. 
+	
+	We performed parameter inference on this synthetic dataset using our implementation of a PMMH sampler and our gamma approximation for the particle filter responsible for the likelihood estimation. First, we sampled five chains from the same dataset, using initial values for the parameters sampled from normal distributions,  in order to perform the usual convergence and mixing diagnostic on an MCMC algorithm. Mixing is assessed via graphical inspection of the samples (traceplot). Figure~\ref{fig:traceplotDiag} shows the traceplots for each of the parameters. The parameter space seem to be satisfactorily explored and no strong correlation pattern can be seen. This is further confirmed by inspecting the autocorrelation function (ACF) of the samples, displayed in Figure~\ref{fig:acfDiag}. For each parameter the ACF decreases quickly under the significance threshold. Convergence is assessed using running means and the Gelman-Rubin diagnostic~\cite{gelman1992inference}. We denote $m_i$ such that $m_i=\frac{j=1}{i}\sum_{j=1}^{i}s_j$, where $s_i$ is the i\textsuperscript{th} sample of a chain, as the running mean of a chain. It can be seen in Figure~\ref{fig:rmDiag} that the running means converge to the same values for each parameters across the chain regardless of the initial values. This is a good indication that the samples obtained from the PMMH sampler are distributed according to the same stationary distribution. However, it is also visible that the posterior estimates are biased (for example, the posterior mean for $r$ is just below 40, whereas its true value is 44.7). Even though the likelihood estimate given by the particle filter is unbiased, it is a logic consequence of using a approximation instead of the true likelihood. \\
+	The Gelman-Rubin diagnostic plots the values of $R = \sqrt{\frac{\mathrm{Var}(\alpha)}{W}}$ where $W$ is the average of the within-chain variances, where the within-chain variance is the empirical variance of the chain, and $ \mathrm{Var}(\alpha) = \frac{n-1}{n}W + \frac{1}{n}B$ where $B$ is the between-chain variance, \emph{i.e} the empirical variance of the means of the chains. $R$ should converge to one as the length of the chains increases, if, regardless of the initialization, the chains converges to the same stationary distribution. It can be seen in Figure~\ref{fig:gelmanDiag} that $R$ converges towards 1 quickly for all parameters. \\
+	
+	However, the aim was again to compare our results to those presented by Wood in order to see the improvement brought by our gamma approximation. Following his algorithm we used uniform priors on the parameters, each time setting the lower bound to half the true value of the parameter and the upper bound to 1.5 that of the true value. We discarded, as Wood, 2500 samples as a burnin, and set, unlike Wood this time, 2500 iterations as an adaptation phase. We set the total length of the chain to 17500 iteration so as to have the same number of samples from which to estimate the posterior distribution of the parameters as Wood, that is to say 12500 iterations. In order to compare our results, we used the same two metrics as defined by Wood. These metrics are the median squared errors for each parameters and the median and inter-quartile range of the squared errors, averaged geometrically across the parameters, that is to say of the $e_j = ((\hat{\log r}_j-\log r)(\hat{\sigma}_j-\sigma)(\hat{\phi}_j-\phi))^\frac{1}{3}$ where $j$ denotes the number of the experiment and a hat denotes a posterior mean. Note the use of $\log r$ instead of $r$. Although not specified in Wood's, it seems that the values he reports for both metrics are for $\log r$. It is probably due to the fact that the parametrisation of the Ricker map makes more often presented as $N_t = N_{t-1}e^{r(1-\frac{N_{t-1}}{K})}$. We also performed inference using LibBi which is a software package for state-space modelling and Bayesian inference~\cite{murray2013bayesian}. This well established software, which implements a PMMH sampler, which uses a bootstrap filter, among other samplers, was used to represent a reliable baseline to which we compared both our and Wood's results. Wood used 250 synthetic dataset to calculate his metrics, whereas we used only 50 due to time restrictions. \\
+	Table~\ref{mse} reports the median squared errors obtained whereas Table~\ref{metric} reports Wood's custom metric. It can be seen that, apart for $\sigma$ where LibBi and our PMMH sampler give MSE an order of magnitude lower, the MSE are of the same order of magnitude across all methods. Similarly, Wood's custom metric are of the same order of magnitude across all methods.
+	
+	
+	
 	\begin{algorithm}
 		\caption{Particle filter}\label{pf}
 		\begin{algorithmic}[1]
@@ -262,10 +289,11 @@
 			\While{$t \le T$}
 			\State Sample $(a_t^{(1)}, \cdots, a_t^{(N)} \sim \mathrm{Multinomial}(w_{t-1}^{(1)}, \cdots, w_{t-1}^{(N)})$ // ancestors 
 			\ForAll{$i \in \{1, \cdots, N\}$}
+			\State Set $\alpha, \beta \gets \text{CALC-PARAM}(n_{t-1}, \theta)$ // proposal parameters
 			\item[]
 			\State Sample $n_t^{(i)} \sim q(n_t| n_{t-1}^{a_t^{(i)}}, y_t, \theta)$ // propagate particle
 			\item[]
-			\State Set $w_t^{(i)} \gets \frac{\strut p(n_t|n_{t-1}^{a_t^{(i)}}, \theta)}{\strut p(y_t|n_t^{(i)}, \theta)q(n_t|n_{t-1}^{a_t^{(i)}}, y_t)}$ // weight particle
+			\State Set $w_t^{(i)} \gets \frac{\strut p(n_t|n_{t-1}^{a_t^{(i)}}, \theta)}{\strut p(y_t|n_t^{(i)}, \theta)q(n_t|n_{t-1}^{a_t^{(i)}, \theta}, y_t)}$ // weight particle
 			\EndFor
 			\item[]
 			\State $\hat{l}_t \gets \hat{l}_{t-1} - \log N + \log\sum_{i=1}^{N}w_t^{(i)}$
@@ -279,7 +307,46 @@
 		\end{algorithmic}
 	\end{algorithm}
 	
+	\begin{algorithm}
+		\caption{Particle Marginal Metropolis Hastings Sampler}\label{pmmh}
+		\begin{algorithmic}[1]
+			\Function{PMMH}{N, T, $\theta_0$, filter, burnin, adaptation, samples, L}
+			\State $l_0 \gets \text{filter}(N, T, \theta_0)$
+			\ForAll{$i \in \{1, \cdots, \text{burnin}\}$}
+			\State $\theta_i, l_i, \alpha_i \gets \text{ROUTINE}(N, T, \theta_{i-1}, l_{i-1}, \text{filter})$
+			\EndFor
+			\ForAll{$i \in \{\text{burnin}, \cdots, \text{adaptation}\}$}
+			\State $\hat{\alpha}_\Sigma \gets 0$
+			\ForAll{$j \in \{1, \cdots, L\}$}
+			\State $\theta_i, l_i, \alpha_i \gets \text{ROUTINE}(N, T, \theta_{i-1}, l_{i-1}, \text{filter})$
+			\State $\hat{\alpha}_\Sigma \gets \hat{\alpha}_\Sigma + \frac{1}{L}\alpha_i$
+			\EndFor
+			\State $\Sigma \gets \text{RESCALE}(\hat{\alpha}_\Sigma, \Sigma)$
+			\EndFor
+			\ForAll{$i \in \{\text{adaptation}, \cdots, \text{samples}\}$}
+			\State $\theta_i, l_i, \alpha_i \gets \text{ROUTINE}(N, T, \theta_{i-1}, l_{i-1}, \text{filter})$
+			\EndFor
+			\Return $(\theta_{\text{adaptation}},\theta_{\text{adaptation}+1}, \cdots, \theta_{\text{samples}})$
+			\EndFunction
+		\end{algorithmic}
+	\end{algorithm}
 	
+	\begin{algorithm}
+		\caption{Routine for PMMH Sampler}\label{routine}
+		\begin{algorithmic}[1]
+			\Function{ROUTINE}{N, T, $\theta$, $l$, filter}
+			\State $\theta^* \gets q_{RW}(\theta, \Sigma)$
+			\State $l^* \gets \text{filter}(N, T, \theta^*)$
+			\State $\alpha(\theta, \theta^*) = l^*+\log q(\theta|\theta^*) + \log p(\theta) - l - \log q(\theta^*|\theta) - \log p(\theta^*)$
+			\State Sample $u \sim \text{U}([0, 1])$
+			\If{$\log u \le \alpha(\theta, \theta^*)$}
+			\State \Return $\theta^*$, $l^*$, $\alpha$
+			\Else
+			\State \Return $\theta$, $l$, $\alpha$
+			\EndIf
+			\EndFunction
+		\end{algorithmic}
+	\end{algorithm}
 	
 	
 	\begin{figure}[htb]
@@ -338,7 +405,190 @@
 		\label{fig:chaos}
 	\end{figure}
 
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/runningRicker.pdf}
+		\end{minipage}
+		\caption{Running time of Algorithm~\ref{pf}, averaged over 100 runs, for an increasing number of particles. In \textbf{red} is shown a linear intercept of the curve.}
+		\label{fig:runningRicker}
+	\end{figure}
+
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/ESSRickerPrior.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/ESSRickerGamma.pdf}
+		\end{minipage}
+		\caption{\textbf{(left)} Evolution of the effective sample size using \textbf{(left)} the prior proposal, \textbf{(right)} our gamma approximation to the optimal proposal.}
+		\label{fig:essRicker}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mleRickerr.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mleRickerphi.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mleRickersigma.pdf}
+		\end{minipage}
+		\caption{Transect of the log-likelihood with respect to \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\label{fig:transect}
+	\end{figure}
+	
+	\begin{table}[htb]
+		\centering
+		\ra{1.3}
+		\begin{tabular}{@{}ccccc@{}} \toprule
+			Number of particles & Variance1 &  Variance2 & MSE1 & MSE2 \\ \midrule
+			50 & 12.828163 &  9.675612 & 12.802 & 9.483\\ 
+			100 & 10.44 & 7.99 & 10.34 & 8.19\\ 
+			200 & 8.164184 & 5.214388 &  8.241 & 5.127\\ 
+			500 & 4.349490 & 2.206633 & 4.825 & 2.185\\ 
+			1000 & 3.490714 & 1.881224 & 3.661  & 2.228\\  \bottomrule
+		\end{tabular}
+		\caption{Variance and mean squared error of the maximum likelihood for r obtained using 50, 100, 200, 500, 1000 and 1500 particles}
+		\label{table:mleR}
+	\end{table}
+
+	\begin{table}[htb]
+		\centering
+		\ra{1.3}
+		\begin{tabular}{@{}ccccc@{}} \toprule
+			Number of particles & Variance1 &  Variance2 & MSE1 & MSE2 \\ \midrule
+			50 & 0.10 & 0.052 & 0.26 & 0.16\\
+			100 & 0.054 & 0.041 & 0.18 & 0.17\\ 
+			200 & 0.052 & 0.037 & 0.15 & 0.14\\ 
+			500 & 0.041 & 0.025 & 0.17 & 0.14\\
+			1000 & 0.021 & 0.018 & 0.17 & 0.14 \\ \bottomrule
+		\end{tabular}
+		\caption{Variance and mean squared error of the maximum likelihood for $\phi$ obtained using 50, 100, 200, 500, 1000 and 1500 particles}
+		\label{table:mlePhi}
+	\end{table}
+
+	\begin{table}[htb]
+		\centering
+		\ra{1.3}
+		\begin{tabular}{@{}ccccc@{}} \toprule
+			Number of particles & Variance1 &  Variance2 & MSE1 ($10^{-3}$)& MSE2\\ \midrule
+			50 & 2.61 & 2.32 & 2.58 & 2.51\\
+			100 & 2.09 & 1.47 & 2.13 & 1.81\\
+			200 & 2.04 & 1.41 &  2.3235  & 3.20\\ 
+			500 & 1.32 & 1.00 & 1.73 & 1.78\\
+			1000 & 0.83 & 0.74 & 1.33 & 1.71 \\  \bottomrule
+		\end{tabular}
+		\caption{Variance and mean squared error (MSE) of the maximum likelihood for $\sigma$ obtained using 50, 100, 200, 500 and 1000 particles. Values for variances and MSE are given in unit of $10^{-3}$}
+		\label{table:mleSigma}
+	\end{table}
+
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mleRicker_r_prior_500.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mleRicker_r_gamma_500.pdf}
+		\end{minipage}
+		\caption{}
+		\label{fig:comparisonR}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/traceRickerSameV1.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/traceRickerSameV2.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/traceRickerSameV3.pdf}
+		\end{minipage}
+		\caption{Traceplot of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\label{fig:traceplotDiag}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/acfRickerSameV1.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/acfRickerSameV2.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/acfRickerSameV3.pdf}
+		\end{minipage}
+		\caption{Autocorrelation function of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$. The \textbf{(red)} is the theoretical asymptotic 95\% significance threshold.}
+		\label{fig:acfDiag}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/runningRickerSame1.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/runningRickerSame2.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/runningRickerSame3.pdf}
+		\end{minipage}
+		\caption{Running means of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\label{fig:rmDiag}
+	\end{figure}
+	
+	\begin{table}[htb]
+		\centering
+		\ra{1.3}
+		\begin{tabular}{@{}cccc@{}} \toprule
+			Parameter & Wood's MSE & LibBi MSE & our MSE\\ \midrule 
+			$r$ & 0.0152 & 0.0080 &  0.0086 \\ 
+			$\phi$ & 0.012 & 0.096 &  0.079 \\ 
+			$\sigma$ & 0.0526 & 0.002 & 0.0023  \\ \bottomrule
+		\end{tabular}
+		\caption{Median squared errors of the posterior means obtained by Wood and in our study.}
+		\label{table:mse}
+	\end{table}
+
 \clearpage
+	\begin{table}[htb]
+		\centering
+		\ra{1.3}
+		\begin{tabular}{@{}ccccc@{}} \toprule
+			Method & Median &  Inter-quartile range & 1\textsuperscript{st} quartile & 3\textsuperscript{rd} quartile \\ \midrule 
+			Wood & 0.003 & 0.015 & 0.001 & 0.016\\ 
+			LibBi & 0.0089 & 0.011 & 0.00358 & 0.0144 \\ 
+			Our implementation & 0.0083 &  0.016 & 0.0043 & 0.020\\ \bottomrule
+		\end{tabular}
+		\caption{Values obtained for Wood's custom error measure with the four methods.}
+		\label{table:metric}
+	\end{table}
+
+\clearpage
+
 	\bibliographystyle{plain}
 	\bibliography{mybib}{}
 	
