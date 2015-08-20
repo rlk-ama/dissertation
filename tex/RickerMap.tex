@@ -1,6 +1,7 @@
-\documentclass{article}
+\documentclass[12pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[fleqn]{amsmath}
+\usepackage{setspace}
 \usepackage[T1]{fontenc}
 \usepackage{parskip}
 \usepackage{booktabs}
@@ -19,6 +20,7 @@
 \usepackage{graphicx}
 \graphicspath{ {figures/} }
 \usepackage{titlesec}
+\usepackage{titling}
 
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
@@ -43,6 +45,9 @@
 {\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
 \titlespacing*{\paragraph}
 {0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+\onehalfspacing
+
+\setlength{\droptitle}{-10em}
 
 \title{Monte Carlo Methods for Bayesian Inference on Two Population
 	Dynamics Models: The Ricker Map and Nicholson's Sheep Blowfly Experiments}
@@ -73,7 +78,7 @@
 	\definecolor{green}{RGB}{0,150,0}
 	
 	\begin{abstract}
-		In this paper, I study and modelise the time series dynamics of the Chicago Board Options Exchange Volatility Index (VIX) through Bayesian estimation of one-factor and stochastic volatility models. Markov Chain Monte Carlo techniques including Metropolis-within-Gibbs are adopted to surmount computational hurdles typical of high-dimensional diffusion model estimation and to enable the use of the Deviance Information Criterion (DIC) in model comparison. Further, High Frequency Augmentation (HFA) -- a form of Data Augmentation -- is adopted, with diffusion bridges formed between all observations in order to decrease the discretisation bias inherent in diffusion model estimation. For model assessment, I utilise posterior predictive p-values simulations and DIC tests to assess and compare the estimated non-affine one-factor and stochastic volatility models, both of which include mean reversion and price-dependent jump components. The techniques utilised and models tested are relatively new to the field of implied volatility research -- the model specifications considered in this paper and the use of DIC are unprecedented, while HFA and posterior predictive p-value simulations have been employed only once prior to this study. Applying the above-mentioned techniques, I find strong support for the inclusion of stochastic volatility, mean reversion and price-dependent jump components in a non-affine framework to ensure accurate model specification when modelising implied volatility time series.
+		We investigate in this dissertation the use of a class of Particle Markov Chain Monte Carlo (PMCMC) algorithm, the Particle Marginal Metropolis Hastings sampler (PMMH), to perform bayesian inference on ecological data, and more particularly on population dynamics. We focused more specifically on two famous models. The first one is the noisily observed Ricker map (NRM). It is a state space model built around the Ricker map (one of the first and more general model to describe complex population dynamics) to account for observational and process noise. The second one is a model proposed by Wood~\cite{wood2010statistical} to solve the stochastic version of the differential equation which describes Nicholson's sheep blowfly experiments data. These two models are challenging from the inference perspective since, depending on the values of the parameters, they can describe linear, periodic and chaotic population size evolutions. We expanded on the work of Fasiolo et al.\cite{fasiolo2014statistical} to develop PMMH algorithms based on specifically tailored proposal distributions to propagate particles in the particle filter used to approximate the true intractable likelihood. Our algorithm for the NRM model gave, on synthetic data, results similar to those of Fasiolo in term of accuracy, but for a much cheaper computational cost. We also tested our sampler on real data from the Global Population Dynamic Database (GPDD). 
 	\end{abstract}
 	
 	\newpage
@@ -101,7 +106,7 @@
 	In section 1 of this dissertation a overview of the mathematical background needed to understand the difficulties intrinsic to these two population dynamics models will be given. Section 2 describes the statistical methods used to perform bayesian inference on these two models along with the theoretical reasons, advantages and disadvantages of doing so. Section 3 is dedicated to the actual algorithms that were implemented. Section 4 presents the results attained and contrast them with those obtained by Wood~\cite{wood2010statistical}. Finally a conclusion and a discussion on the merits and limitations of the methods presented is given in the last section.
 	
 	\section{Two ecological models}
-	\subsection{The Ricker Map} 
+	\subsection{The Ricker Map}  \label{rickerGen}
 	\subsubsection{The Deterministic Ricker Map}
 	The Ricker map is a difference equation used to describe the population dynamics of a wide range of ecological populations. It was first described in a seminal paper by Ricker~\cite{Ricker1954} to account for fish population sizes in fisheries. \\
 	If we denote by $N_t$ the size of a population a time $t$, Ricker established that if:
@@ -145,6 +150,14 @@
 	and $T$ is ranges typically from 30 to several hundreds. Therefore classic numerical integration tools, or Markov Chain Monte Carlo algorithms which require calculation, up to a constant, of the likelihood, are not suited for this problem. Therefore a wealth of techniques have been designed solve this problem: iterated filtering~\cite{ionides2006inference}, data cloning~\cite{lele2007data} and adaptative PMCMC~\cite{peters2010ecological}.
 	
 	\subsection{Nicholson's experiment on Sheep Blowflies}
+	Nicholson performed in 1954 and 1957 several
+	laboratory experiments in order to better understand the population dynamics of \emph{Lucilia cuprina} (also known as sheep blowfly)
+	under resource limitation. Blowflies development occurs in four stages the eggs giving larvae which evolve into pupae before becoming adults. Two experiments  (E1 and E2) consisted in restricting the amount of resources available to the larvae while adults had unrestricted access to sugar and water but a limited one to protein (which are necessary to produce eggs). Two others (E3 and E4) consisted in restricting respectively moderately and severely resources to larvae whereas adult were granted unlimited food. Gurney et al.~\cite{gurney1980nicholson}, 30 years later, suggested the following differential equation to model this delayed recruitment process:
+	\begin{equation}
+		\frac{d N(t)}{d t} = PN(t-\tau)e^{-\frac{N(t-\tau)}{N_0}} -  \delta N(t) = B(N(t-\tau))) - D(N(t))
+	\end{equation} 
+	where $N_t$ is the population size at generation $t$, $B$ is the birth rate function and involves the maturation delay $\tau$, i.e the time taken for a blowfly until it becomes an adult, and $D$ the death rate function which depends on the current population. Note that here the birth process is in fact a delayed version of the Ricker map studied in section~\ref{rickerGen} and therefore the interpretation of $P$ is the same as that of $r$. Usually, $P > \delta$ \\
+	Following Berezantsky et al.~\cite{berezansky2010nicholson} we can derive several interesting properties. First the carrying capacity $K$, which is the maximal population which can survive in a certain environment, is such that $K=N_0\log\frac{P}{\delta}$
 	
 	\clearpage
 	\section{Inference Methods}
@@ -267,8 +280,15 @@
 	The Gelman-Rubin diagnostic plots the values of $R = \sqrt{\frac{\mathrm{Var}(\alpha)}{W}}$ where $W$ is the average of the within-chain variances, where the within-chain variance is the empirical variance of the chain, and $ \mathrm{Var}(\alpha) = \frac{n-1}{n}W + \frac{1}{n}B$ where $B$ is the between-chain variance, \emph{i.e} the empirical variance of the means of the chains. $R$ should converge to one as the length of the chains increases, if, regardless of the initialization, the chains converges to the same stationary distribution. It can be seen in Figure~\ref{fig:gelmanDiag} that $R$ converges towards 1 quickly for all parameters. \\
 	
 	However, the aim was again to compare our results to those presented by Wood in order to see the improvement brought by our gamma approximation. Following his algorithm we used uniform priors on the parameters, each time setting the lower bound to half the true value of the parameter and the upper bound to 1.5 that of the true value. We discarded, as Wood, 2500 samples as a burnin, and set, unlike Wood this time, 2500 iterations as an adaptation phase. We set the total length of the chain to 17500 iteration so as to have the same number of samples from which to estimate the posterior distribution of the parameters as Wood, that is to say 12500 iterations. In order to compare our results, we used the same two metrics as defined by Wood. These metrics are the median squared errors for each parameters and the median and inter-quartile range of the squared errors, averaged geometrically across the parameters, that is to say of the $e_j = ((\hat{\log r}_j-\log r)(\hat{\sigma}_j-\sigma)(\hat{\phi}_j-\phi))^\frac{1}{3}$ where $j$ denotes the number of the experiment and a hat denotes a posterior mean. Note the use of $\log r$ instead of $r$. Although not specified in Wood's, it seems that the values he reports for both metrics are for $\log r$. It is probably due to the fact that the parametrisation of the Ricker map makes more often presented as $N_t = N_{t-1}e^{r(1-\frac{N_{t-1}}{K})}$. We also performed inference using LibBi which is a software package for state-space modelling and Bayesian inference~\cite{murray2013bayesian}. This well established software, which implements a PMMH sampler, which uses a bootstrap filter, among other samplers, was used to represent a reliable baseline to which we compared both our and Wood's results. Wood used 250 synthetic dataset to calculate his metrics, whereas we used only 50 due to time restrictions. \\
-	Table~\ref{mse} reports the median squared errors obtained whereas Table~\ref{metric} reports Wood's custom metric. It can be seen that, apart for $\sigma$ where LibBi and our PMMH sampler give MSE an order of magnitude lower, the MSE are of the same order of magnitude across all methods. Similarly, Wood's custom metric are of the same order of magnitude across all methods.
+	Table~\ref{mse} reports the median squared errors obtained whereas Table~\ref{metric} reports Wood's custom metric. It can be seen that, apart for $\sigma$ where LibBi and our PMMH sampler give MSE an order of magnitude lower, the MSE are of the same order of magnitude across all methods. Similarly, Wood's custom metric are of the same order of magnitude across all methods. \\
 	
+	Having seen that our method is comparable in term of the two metrics used by Wood, and that it yields more stable maximum likelihood estimates, with lower mean squared errors, the significant improvement come from the autocorrelation of the samples. Indeed, our method is only 6.5\% more computationally expensive, as measured on particles filter with a number of particles ranging from 10 to 1000, averaged over a hundred runs.  
+	
+	\subsection{Global Population Dynamics Database Data}
+	The Global Population Dynamics Database (GPDD) is a joint effort by the British institution the NERC Centre for Population Biology, which was hosted by the Imperial College, and two American institutions, the National Center for Ecological Analysis and Synthesis and the Department of Ecology and Evolution, University of Tennessee. It is the largest collection of animal and plant population data in the world, which brings together close to five thousand time series. We chose the same datasets as Gao et al.~\cite{gao2012bayesian}. These datasets are chosen so that they represent all the different regimes of the Ricker map. There are therefore five categories of population size dynamics: increasing (CAT1), decreasing (CAT2), quasi-periodic with small variations (CAT3), quasi-periodic with large variations (CAT4) and irregular with outbreaks (CAT5). It is difficult to compare our results to those obtained by Gao et al. as they used a different state space model to fit the data. Indeed, if they used the same transition density for the space, they observational process is based on log transformed observations and is a simple normal distribution with mean equal to the log of the state (this model is however broadly used, see~\cite{de2002fitting, peters2010ecological, valpine2005state}). Nonetheless, we can use states estimates given by our particle filter using the posterior means of the parameters estimates given by the PMMH sampler to form an idea of how good these estimates are. \\
+	
+	We further describe one particular example among all the datasets on which inference was performed. This dataset comes from CAT4, a category on which Gao et al. sampler does not perform well. It describes the evolution of a population of \emph{Lagopus lagopus scoticus} (a Scottish bird) during 76 years every year, from 1866 to 1942. \\
+	We parametrised the PMMH sampler using the following priors: $r \sim \mathrm{U}([1, 60])$, $\phi \sim \mathrm{U}([1, 30])$, $\sigma \sim \mathrm{U}([0.1, 0.6])$, $K \sim \mathrm{U}([1, 10000])$. The range for $r$ covers all the regimes of the Ricker map, the one for $\phi$ allows a large enough multiplication effect between states and observations, and finally the one for $K$ accommodates all the type of population in the datasets we analysed. We set a burnin period of 2500 iterations and an adaptation period of the same length, with as previously a target acceptance rate between 0.15 and 0.1, and sampled during 12500 afterwards. We obtained posterior parameters which, once given as input to our particle filter, give simulated observations close the actual data. This example serves also to demonstrate that our PMMH sampler mixes well on real data and converges to a stationary distribution as shown respectively by the autocorrelation function (Figure~\ref{acfLagopus}), the running means (Figure~\ref{rmLagopus}) and the Gelman-Rubin factor (Figure~\ref{gelmanLagopus})
 	
 	
 	\begin{algorithm}
@@ -559,33 +579,107 @@
 		\caption{Running means of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
 		\label{fig:rmDiag}
 	\end{figure}
+
+\clearpage
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/gelmanRickerSame1.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/gelmanRickerSame2.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/gelmanRickerSame3.pdf}
+		\end{minipage}
+		\caption{Gelman-Rubin diagnostic for the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\label{fig:gelmanDiag}
+	\end{figure}
 	
 	\begin{table}[htb]
 		\centering
 		\ra{1.3}
 		\begin{tabular}{@{}cccc@{}} \toprule
 			Parameter & Wood's MSE & LibBi MSE & our MSE\\ \midrule 
-			$r$ & 0.0152 & 0.0080 &  0.0086 \\ 
-			$\phi$ & 0.012 & 0.096 &  0.079 \\ 
-			$\sigma$ & 0.0526 & 0.002 & 0.0023  \\ \bottomrule
+			$r$ & 0.0109 & 0.0080 &  0.0086 \\ 
+			$\phi$ & $4 \ 10^{-4}$ & $1.0 \ 10^{-3}$ &  $7.3 \ 10^{-4}$ \\ 
+			$\sigma$ & 0.0446 & 0.023 & 0.018  \\ \bottomrule
 		\end{tabular}
 		\caption{Median squared errors of the posterior means obtained by Wood and in our study.}
 		\label{table:mse}
 	\end{table}
 
-\clearpage
 	\begin{table}[htb]
 		\centering
 		\ra{1.3}
 		\begin{tabular}{@{}ccccc@{}} \toprule
 			Method & Median &  Inter-quartile range & 1\textsuperscript{st} quartile & 3\textsuperscript{rd} quartile \\ \midrule 
-			Wood & 0.003 & 0.015 & 0.001 & 0.016\\ 
-			LibBi & 0.0089 & 0.011 & 0.00358 & 0.0144 \\ 
-			Our implementation & 0.0083 &  0.016 & 0.0043 & 0.020\\ \bottomrule
+			Wood & 0.004 & 0.015 & 0.001 & 0.016\\ 
+			LibBi & 0.0037 & 0.0051 &0.0018 & 0.0069 \\ 
+			Our implementation & 0.0039 &  0.0063 & 0.0017 & 0.0080\\ \bottomrule
 		\end{tabular}
 		\caption{Values obtained for Wood's custom error measure with the four methods.}
 		\label{table:metric}
 	\end{table}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/acfLagopusV1.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/acfLagopusV2.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/acfLagopusV3.pdf}
+		\end{minipage}
+		\caption{Autocorrelation function of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$. The \textbf{(red)} is the theoretical asymptotic 95\% significance threshold.}
+		\label{fig:acfLagopus}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/runningLagopus1.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/runningLagopus2.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/runningLagopus3.pdf}
+		\end{minipage}
+		\caption{Running means of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\label{fig:rmLagopus}
+	\end{figure}
+	
+	\clearpage
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/gelmanLagopus1.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/gelmanLagopus2.pdf}
+		\end{minipage}
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/gelmanLagopus3.pdf}
+		\end{minipage}
+		\caption{Gelman-Rubin diagnostic for the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\label{fig:gelmanLagopus}
+	\end{figure}
+
 
 \clearpage
 
