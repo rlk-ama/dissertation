@@ -149,7 +149,7 @@
 	\end{equation}
 	and $T$ is ranges typically from 30 to several hundreds. Therefore classic numerical integration tools, or Markov Chain Monte Carlo algorithms which require calculation, up to a constant, of the likelihood, are not suited for this problem. Therefore a wealth of techniques have been designed solve this problem: iterated filtering~\cite{ionides2006inference}, data cloning~\cite{lele2007data} and adaptative PMCMC~\cite{peters2010ecological}.
 	
-	\subsection{Nicholson's experiment on Sheep Blowflies}
+	\subsection{Nicholson's experiment on Sheep Blowflies} \label{(Nicholson)}
 	Nicholson performed in 1954 and 1957 several
 	laboratory experiments in order to better understand the population dynamics of \emph{Lucilia cuprina} (also known as sheep blowfly)
 	under resource limitation. Blowflies development occurs in four stages the eggs giving larvae which evolve into pupae before becoming adults. Two experiments  (E1 and E2) consisted in restricting the amount of resources available to the larvae while adults had unrestricted access to sugar and water but a limited one to protein (which are necessary to produce eggs). Two others (E3 and E4) consisted in restricting respectively moderately and severely resources to larvae whereas adult were granted unlimited food. Gurney et al.~\cite{gurney1980nicholson}, 30 years later, suggested the following differential equation to model this delayed recruitment process:
@@ -300,6 +300,38 @@
 	
 	\section{Inference on Nicholson's experiments}
 	\subsection{Algorithm}
+		Once again, we used a PMMH sampler along with a tailored particle filter to perform bayesian inference on the model described in section~\ref{Nicholson}. We restate here the model to make it easier to follow the mathematical developments:
+		\begin{align*}
+		& N_t = R_t + S_t \\
+		& R_t \sim  \mathrm{Poisson}(PN_{t-\tau}e^{-\frac{N_{t-\tau}}{N_0}}u_t)  \hspace{1cm} u_t \sim \mathrm{Gamma}(\sigma_p^{-2}, \sigma_p^{-2})\\ 
+		& S_t \sim \mathrm{Binomial}(e^{-\delta N_{t-1}}v_t) \hspace{2cm}  v_t \sim \mathrm{Gamma}(\sigma_d^{-2}, \sigma_d^{-2}) 
+		\end{align*}
+	\subsubsection{Particle Filter}
+	Nicholson's blowfly model is not part of the state space model framework. Indeed, there is no observational process here and therefore no further uncertainty attached to it. However the global methodology of particle filter can still be applied. \\
+	Here we are only interested in an unbiased estimate of the likelihood $p(n_1:t|\theta)$, instead of targeting $p(n_{0:t}|y_{1:t}, \theta)$ in order to be able to use this unbiased estimate in the PMMH sampler described in Algorithm~\ref{pmmh}. \\
+	Once again, writing $p(n_{1:t}|\theta) = p(n_1|\theta)\prod_{k=2}^{t}p(n_k|n_{1:k-1}, \theta)$ as in the particle filter algorithm we want to find an unbiased estimate of $p(n_k|n_{1:k-1}, \theta)$. We can write that:
+	\begin{align*}
+	p(n_k|n_{1:k-1}, \theta) & = \int_{0}^{\infty}p(n_k, s_k |n_{1:k-1}, \theta)\mathrm{d}s_k \\
+	& = \int_{0}^{\infty}p(n_k |s_k, n_{1:k-1}, \theta)p(s_k|n_{1:k-1}, \theta)\mathrm{d}s_k \\
+	& = \int_{0}^{\infty}p(n_k |s_k, n_{1:k-1}, \theta)p(s_k|n_{k-\tau}, \theta)\mathrm{d}s_k
+	\end{align*}
+	since $S_k$ depends only on $n_{t-\tau}$.
+	Therefore, sampling $N$ times $S_k$ from a well chosen (i.e close to $p(s_k|n_{k-\tau}, \theta)$) importance distribution $q(s_k|n_{k-\tau}, n_k, \theta)$ leads to the following unbiased estimate $\hat{p}(n_k|n_{1:k-1}, \theta) = \frac{1}{N}\sum_{i=1}^{N}w_k^i(s_k^i)$ where $w_k^i =p(n_k |s_k^i, n_{1:k-1}, \theta)\frac{p(s_k^i|n_{1:k-1}, \theta)}{q(s_k^i|n_{k-\tau}, n_k, \theta)}$. \\
+	However, $p(n_k |s_k, n_{1:k-1}, \theta)$ is intractable in Nicholson's blowfly experiment model. Nonetheless we can applied the same technique as above a second time:
+	\begin{align*}
+	p(n_k |s_k, n_{1:k-1}, \theta) & = \int_{0}^{\infty}p(n_k, r_k|s_k, n_{1:k-1}, \theta)\mathrm{d}r_k \\
+	& = \int_{0}^{\infty}p(n_k| r_k, s_k, n_{1:k-1}, \theta)p( r_k|n_{1:k-1}, s_k \theta)\mathrm{d}r_k \\
+	& = \int_{0}^{\infty}\delta(n_k = r_k + s_k)p(r_k|n_{k-1} \theta)\mathrm{d}r_k
+	\end{align*}
+	since $p(n_k| r_k, s_k, n_{1:k-1}, \theta)=p(n_k| r_k, s_k)$ which is equal to 1 if $n_k = r_k + s_k$ and 0 otherwise (denoted by the use of Kronecker's delta symbol $\delta_x(y) = 1$ if $x=y$ and 0 otherwise) and $r_k$ conditional on $n_{k-1}$ is independent of $s_k$ and $n_{1:k-2}$. \\
+	Therefore, if we sample $M$ times $R_k$ from another well chose importance distribution, we obtain the following unbiased estimate of $p(n_k |s_k, n_{1:k-1}, \theta)$: $\hat{p}(n_k |s_k, n_{1:k-1}, \theta)=\frac{1}{M}\sum_{j=1}^{M}\tilde{w}_k^j(r_k^j)(s_k)$ where $\tilde{w}_k^j(s_k) =\delta(n_k = r_k^j + s_k)\frac{p(r_k^j|n_{k-1} \theta)}{q(r_k^j|n_{k-1}, n_k, \theta)}$. \\
+	Finally using iterated conditional expectation, it is easy to see that, combining the two previous unbiased estimates, we obtain another unbiased estimate of $p(n_k|n_{1:k-1},\theta)$ which is:
+	\begin{equation}
+	\hat{p}(n_k|n_{1:k-1},\theta) = \frac{1}{N}\sum_{i=1}^{N}\frac{1}{M}\sum_{j=1}^{M}\tilde{w}_k^j(s_k^i)\frac{p(s_k^i|n_{1:k-1}, \theta)}{q(s_k^i|n_{k-\tau}, n_k, \theta)}
+	\end{equation}
+	This method is called a \emph{random weights particle filter} and was first described by a contribution by Rousset and Doucet to the article by Beskos et al.~\cite{beskos2006exact} where the use of random weights was first introduced for discretely observed diffusion processes.\\
+	To summarise, the particle filter we used is described in Algorithm~\ref{RWPF}.
+	
 	
 	\begin{algorithm}
 		\caption{Particle filter}\label{pf}
@@ -689,7 +721,31 @@
 		\caption{Gelman-Rubin diagnostic for the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
 		\label{fig:gelmanLagopus}
 	\end{figure}
-
+	
+	\begin{algorithm}
+		\caption{Random Weights Particle filter (RWPF)}\label{RWPF}
+		\begin{algorithmic}[1]
+			\Function{PARTICLE-FILTER}{N, M, T, $\theta$}
+			\State $t \gets 1$
+			\State $\hat{l}_0 \gets 0$
+			\While{$t \le T$}
+			\ForAll{$i \in \{1, \cdots, N\}$}
+			\State Sample $s_t^{(i)} \sim q_s(s_t| n_{t-\tau} \theta)$
+			\ForAll{$j \in \{1, \cdots, M\}$}
+			\State Sample $r_t^{(j)} \sim q_r(r_t| n_{t-1} \theta)$
+			\State $w_t^{(j)}(s_t^{(i)}) \gets \delta(n_t=r_t^{(j)}+s_t^{(i)})\frac{p(r_t^{(j)}| n_{t-1} \theta)}{q_r(r_t^{(j)}| n_{t-1} \theta)}$
+			\EndFor
+			\State $w_t^{(i)} \gets \frac{1}{M}\sum_{j=1}^{M}w_t^{(j)}(s_t^{(i)}) \frac{p(s_t^{(i)}| n_{t-\tau} \theta)}{q_s(s_t^{(i)}| n_{t-\tau} \theta)}$
+			\EndFor
+			\State $\hat{l}_t \gets \hat{l}_{t-1} - \log N + \log\sum_{i=1}^{N}w_t^{(i)}$
+			\State Normalize $(w_t^{(0)}, \cdots, w_t^{(N)})$
+			\State Set $\mathrm{ESS_t} \gets (\sum_{i=1}^{N}(\mathrm{W}_t^{(i)})^2)^{-1}$ // W denotes a normalized weight
+			\EndWhile
+			\item[]
+			\Return $\hat{l}_T$,  $(\mathrm{ESS}_0, \cdots, \mathrm{ESS}_T)$
+			\EndFunction
+		\end{algorithmic}
+	\end{algorithm}
 
 \clearpage
 
