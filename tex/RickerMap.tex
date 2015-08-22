@@ -21,6 +21,8 @@
 \graphicspath{ {figures/} }
 \usepackage{titlesec}
 \usepackage{titling}
+\usepackage{cleveref}
+\usepackage[toc,page]{appendix}
 
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
@@ -329,8 +331,21 @@
 	\begin{equation}
 	\hat{p}(n_k|n_{1:k-1},\theta) = \frac{1}{N}\sum_{i=1}^{N}\frac{1}{M}\sum_{j=1}^{M}\tilde{w}_k^j(s_k^i)\frac{p(s_k^i|n_{1:k-1}, \theta)}{q(s_k^i|n_{k-\tau}, n_k, \theta)}
 	\end{equation}
-	This method is called a \emph{random weights particle filter} and was first described by a contribution by Rousset and Doucet to the article by Beskos et al.~\cite{beskos2006exact} where the use of random weights was first introduced for discretely observed diffusion processes.\\
-	To summarise, the particle filter we used is described in Algorithm~\ref{RWPF}.
+	This method is called a \emph{random weights particle filter} and was first described in a contribution by Rousset and Doucet to the article by Beskos et al.~\cite{beskos2006exact} where the use of random weights was first introduced for discretely observed diffusion processes.\\
+	To summarise, the particle filter we used is described in Algorithm~\ref{RWPF}. Its time complexity is $\mathcal{O}(MN)$, to contrast to the particle filter used in Algorithm~\ref{pmmh}, whereas its space complexity remains $\mathcal{O}(N)$. \\
+	
+	There remain to find closed for equations for $p_s(s_k|n_{k-\tau}, \theta)$ and $p_r(r_k|n_{k-1}, \theta)$ and to design importance proposal for both $r_k$ and $s_k$. Both $r_k$ and $s_k$ densities, conditional on $n_{1:{k-1}}$ are compounded distributions. $r_k$ density is a Poisson distribution with a Gamma distributed parameter. Since a Gamma distribution is the conjugate prior of a Poisson, the resulting distribution has a closed form and is know as Negative-Binomial. It is a discrete distribution, whose support is $\mathbb{R}$, parametrised by two coefficients $r$ and $p$, where $r$ can be seen as the number of failures, and $p$ the probability of success. $P(X=k)$, where $X\sim \operatorname{NB}(r, p)$, is thus the probability that $k$ successes occur before the r\textsuperscript{th} failure. Its density can be expressed as: 
+	\begin{equation*}
+	P(X=k) = \binom{r+k-1}{k}p^k(1-p)^r
+	\end{equation*}
+	Applied to our case it yields $p_r(r_k|n_{t-\tau}, \theta) = \operatorname{NB}(\alpha, \frac{\beta(n_{k-\tau})}{\beta(n_{k-\tau}) + \alpha})$ where  $\beta(n_{k-\tau}) = Pn_{k-\tau}e^{-\frac{n_{k-\tau}}{N_0}}$ and $\alpha = \sigma_p^{-2}$. Derivation can be found in Appendix~\cref{rDensity}.
+	As for $q_r(\ \cdot \ ; n_{k-\tau}, n_k)$ it is just the afore mentioned Negative-Binomial restricted to the interval $[0, n_t]$. \\
+	
+	The distribution of $s_k$ conditional on $n_{k-1}$ and $\theta$ is a Binomial whose probability of success is Gamma distributed. This compounded distribution does not yield any known distributions. However, using derivations presented in Appendix~\cref{sDensity}, a closed for can be found for $p(s_k|n_{k-1}, \theta)$ which is:
+	\begin{equation*}
+	p(s_k|n_{k-1}, \theta) = \binom{n_{k-1}}{s_k}\alpha^\alpha\sum_{l=0}^{n_{k-1}-s_k}\binom{n_{k-1}-s_k}{l}\frac{(-1)^l}{(\delta(s_k+l)+\alpha)^\alpha}
+	\end{equation*}
+	where $\alpha = \sigma_d^{-2}$
 	
 	
 	\begin{algorithm}
@@ -752,8 +767,8 @@
 	\bibliographystyle{plain}
 	\bibliography{mybib}{}
 	
-	\section{Appendix}
-	\subsection{Appendix I} \label{KLRicker}
+\begin{appendices}
+	\section{Derivations relative to the Noisily Observed Ricker Map} \label{KLRicker}
 	In this section we present the minimization of the KL divergence between a Lognormal a Gamma distributions.
 	We have
 	\begin{equation*}
@@ -776,22 +791,63 @@
 	
 	Since $\mathbb{E}_p[\log(Z)]=\mu$ and $\mathbb{E}_p[Z] = e^{\mu+\frac{\sigma^2}{2}}$, we finally have that, setting the partial derivatives to zero, the solutions satisfy:
 	\[	\begin{cases}
-	 & \alpha=e^{\psi^{(0)}(\alpha)+\frac{\sigma^2}{2}} \\
+	& \alpha=e^{\psi^{(0)}(\alpha)+\frac{\sigma^2}{2}} \\
 	& \theta=\frac{1}{\alpha}e^{\mu+\frac{\sigma^2}{2}}
 	\end{cases}\]
-
+	
 	If we use the first terms of the asymptotic expansion of the digamma function, i.e $\psi^{(0)}(\alpha) \approx \log(\alpha)-\frac{1}{2\alpha}$, we finally have $\alpha =\frac{1}{\sigma^2}$ and $\theta=\frac{1}{\alpha}e^{\mu+\frac{\sigma^2}{2}}$. \\
 	
 	In order to check if the solutions are indeed minima, we calculated the Hessian of $D_{KL}(P||Q)(\alpha, \theta)$ i.e
 	\begin{equation*}
-		\text{H} = \begin{pmatrix}
-		\frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \alpha^2} & \frac{\strut \partial^2 D_{KL}(P||Q) }{\strut \partial \theta \partial \alpha} \\
-		\frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \theta \partial \alpha} & \frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \theta^2} 
-		\end{pmatrix} =
-		\begin{pmatrix}
-		\psi^{(1)}(\alpha) & \frac{1}{\theta} \\
-		\frac{1}{\theta} & -\frac{\alpha}{\theta^2}+\frac{2e^{\mu +\frac{\sigma^2}{2}}}{\theta^3}
-		\end{pmatrix}
+	\text{H} = \begin{pmatrix}
+	\frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \alpha^2} & \frac{\strut \partial^2 D_{KL}(P||Q) }{\strut \partial \theta \partial \alpha} \\
+	\frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \theta \partial \alpha} & \frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \theta^2} 
+	\end{pmatrix} =
+	\begin{pmatrix}
+	\psi^{(1)}(\alpha) & \frac{1}{\theta} \\
+	\frac{1}{\theta} & -\frac{\alpha}{\theta^2}+\frac{2e^{\mu +\frac{\sigma^2}{2}}}{\theta^3}
+	\end{pmatrix}
 	\end{equation*}
 	Straightforward calculations yield that the sign of the determinant of the above Hessian is such that $\text{sign}(\det{H}) = \psi^{(1)}(\alpha)(\frac{2}{\theta^3}e^{\mu +\frac{\sigma^2}{2}} - \alpha) - 1$.
+	
+	\section{Derivations relative to Nicholson's Blowfly Experiments} \label{AppendBlowfly}
+	\subsection{Derivation of $p(r_t|n_{t-\tau}, \theta)$} \label{rDensity}
+	In this section we derive the density $p(r_t|n_{t-\tau}, \theta)$ which is required to calculate the importance weights in Algorithm~\ref{RWPF}.
+	We have:
+	\begin{align*}
+	p(r_t | n_{t-\tau}, \theta) & = \int_{0}^{\infty}p_r(r_t, u_t | n_{t-\tau}, \theta)\ \mathrm{d}u_t \\
+	& = \int_{0}^{\infty}p_r(r_t | e_t, n_{t-\tau}, \theta)p(u_t | n_{t-\tau}, \theta)\ \mathrm{d}e_t \\
+	& = \int_{0}^{\infty}p_r(r_t | u_t, n_{t-\tau}, \theta)p(u_t)\ \mathrm{d}u_t
+	\end{align*}
+	Since $u_t$ is independent of $n_{1:t}$
+	Replacing $p(r_t | u_t, n_{t-\tau}, \theta)$ and $p(u_t)$ by their analytical expression:
+	\begin{align*}
+	p(r_t | n_{t-\tau}, \theta) & = \int_{0}^{\infty}e^{-\beta(n_{t-\tau})e_t}\frac{(\beta(n_{t-\tau})u_t)^{r_t}}{\Gamma(r_t+1)}\frac{\alpha^\alpha}{\Gamma(\alpha)}u_t^{\alpha-1}e^{-\alpha u_t}\ \mathrm{d}u_t \\
+	& = \frac{\beta(n_{t-\tau})^{r_t}}{\Gamma(r_t+1)}\frac{\alpha^\alpha}{\Gamma(\alpha)}\int_{0}^{\infty}e^{-(\beta(n_{t-\tau})+\alpha)u_t}u_t^{r_t+\alpha-1}\ \mathrm{d}u_t \\
+	& = \frac{\beta(n_{t-\tau})^r_t}{\Gamma(r_t+1)}\frac{\alpha^\alpha}{\Gamma(\alpha)}\frac{\Gamma(r_t+\alpha)}{(\beta(n_{t-\tau})+\alpha)^{r_t+\alpha}} \\
+	& = \binom{r_t + \alpha - 1}{r_t}(\frac{\beta(n_{t-\tau})}{\beta(n_{t-\tau}) + \alpha})^{r_t}(\frac{\alpha}{\beta(n_{t-\tau}) + \alpha})^\alpha
+	\end{align*}
+	where $\beta(n_{t-\tau}) = Pn_{t-\tau}e^{-\frac{n_{t-\tau}}{N_0}}$ and $\alpha = \sigma_p^{-2}$. \\
+	The last equation is the density of a Negative-Binomial distribution with parameter $\frac{\alpha}{\beta(n_{t-\tau}) + \alpha}$ and $\alpha$.
+	
+	\subsection{Derivation of $p(s_t|n_{t-1}, \theta)$} \label{sDensity}
+	In this section we derive the density $p(s_t|n_{t-1}, \theta)$ which is required to calculate the importance weights in Algorithm~\ref{RWPF}.
+	We have:
+	\begin{align*}
+	p(s_t | n_{t-1}) & = \int_{0}^{\infty}p(s_t, v_t | n_{t-1})\ \mathrm{d}v_t \\
+	& = \int_{0}^{\infty}p(s_t | v_t, n_{t-1})p(v_t)\ \mathrm{d}v_t \\
+	\end{align*}
+	Since $v_t$ is independent of $n_{1:t}$
+	Replacing $p(s_t | v_t, n_{t-1}, \theta)$ and $p(v_t)$ by their analytical expression:
+	\begin{align*}
+	p(s_t | n_{t-1}) & = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)} \int_{0}^{\infty}e^{-\delta\epsilon_t s_t}(1-e^{-\delta\epsilon_t})^{n_{t-1}-s_t}\epsilon_t^{\alpha-1}e^{-\alpha\epsilon_t}\ \mathrm{d}\epsilon_t \\
+	& = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)}\int_{0}^{\infty}e^{-(\delta s_t+\alpha)v_t }(1-e^{-\delta v_t})^{n_{t-1}-s_t}v_t^{\alpha-1}\ \mathrm{d}v_t
+	\end{align*}
+	Using the fact that $(1-e^{-\delta v_t})^{n_{t-1}-s_t} = \sum_{k=0}^{n_{t-1}-s_t}\binom{n_{t-1}-s_t}{k}(-1)^ke^{-\delta k v_t}$ and swapping the integral and the sum (since each $\int_{0}^{\infty}e^{-(\delta s_t+\alpha + k\delta)v_t }v_t^{\alpha-1}\ \mathrm{d}v_t < \infty$ because $\delta,  s_t, \alpha > 0$ and $\alpha > 1$) we have:
+	\begin{align*}
+	p(s_t | n_{t-1}) & = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)}\sum_{k=0}^{n_{t-1}-s_t}\binom{n_{t-1}-s_t}{k}(-1)^k \ \int_{0}^{\infty}e^{-(\delta s_t+\alpha + k\delta)v_t }v_t^{\alpha-1}\ \mathrm{d}v_t \\
+	& = \binom{n_{t-1}}{s_t}\alpha^\alpha\sum_{k=0}^{n_{t-1}-s_t}\binom{n_{t-1}-s_t}{k}\frac{(-1)^k}{(\delta(s_t+k)+\alpha)^\alpha}
+	\end{align*}
+\end{appendices}
+	
 \end{document}
