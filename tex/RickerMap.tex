@@ -251,7 +251,7 @@
 	\begin{equation}
 	D_{KL}(P||Q)(\alpha, \beta) = \int_{0}^{\infty}{p(z|\mu, \sigma^2)\log(\frac{p(z|\mu, \sigma^2)}{q(z|\alpha, \beta)})\mathrm{d}z}
 	\end{equation}
-	where $p$ is the probability density function of a $\log\mathcal{N}(\mu, \sigma^2)$ and $q$ of a Gamma with shape $\alpha$ and scale $\beta$. Minimization finding critical points of the divergence give, $\alpha =\frac{1}{\sigma^2}$ and $\beta=\frac{1}{\alpha}e^{\mu+\frac{\sigma^2}{2}}$, and in the specific case of our state space model $\alpha(n_{t-1})= \frac{1}{\sigma^2}$ and $\beta(n_{t-1})=\sigma^2e^{\log(rn_{t-1}e^{-n_{t-1}})+\frac{\sigma^2}{2}}$. See~\ref{KLRicker} for details. \\
+	where $p$ is the probability density function of a $\log\mathcal{N}(\mu, \sigma^2)$ and $q$ of a Gamma with shape $\alpha$ and scale $\beta$. Minimization finding critical points of the divergence give, $\alpha =\frac{1}{\sigma^2}$ and $\beta=\frac{1}{\alpha}e^{\mu+\frac{\sigma^2}{2}}$, and in the specific case of our state space model $\alpha(n_{t-1})= \frac{1}{\sigma^2}$ and $\beta(n_{t-1})=\sigma^2e^{\log(rn_{t-1}e^{-n_{t-1}})+\frac{\sigma^2}{2}}$. See Appendix~\ref{KLRicker} for details. \\
 	We thus approximate the transition density at each time step $t$ with:
 	\begin{equation*}
 	q(n_t|\alpha(n_{t-1}), \beta(n_{t-1}), \theta) = \mathrm{Gamma}(\ \cdot \ ; \alpha(n_{t-1}), \beta(n_{t-1}) )
@@ -279,7 +279,7 @@
 	
 	
 	\subsection{Synthetic Data}
-	In order to obtain a first assessment of the efficiency of our PMMH algorithm, and to compare our results to Fasiolo's~\cite{fasiolo2014statistical}, we used simulated datasets from the Ricker map model. It should be noted that Fasiolo use a slightly different version of the more general one we gave, where $K$ is set to one and is not allowed to vary. However, even though we shall conform with this definition in this section, when we use real data later on, $K$ will be again allowed to vary. As in Fasiolo's, we chose to set $r=log(3.8)$, $\sigma=0.3$, $\phi=10$ and $T=50$ (such a short path is chosen because real data on population size is seldom longer). This places us in the  chaotic regime of the Ricker map as $log(3.8) \approx 44.7 > e^2$. \\
+	In order to obtain a first assessment of the efficiency of our PMMH algorithm, and to compare our results to Fasiolo's~\cite{fasiolo2014statistical}, we used simulated datasets from the Ricker map model. It should be noted that Fasiolo use a slightly different version of the more general one we gave, where $K$ is set to one and is not allowed to vary. However, even though we shall conform with this definition in this section, when we use real data later on, $K$ will be again allowed to vary. As in Fasiolo's, we chose to set $r=\log 3.8$, $\sigma=0.3$, $\phi=10$ and $T=50$ (such a short path is chosen because real data on population size is seldom longer). This places us in the  chaotic regime of the Ricker map as $\log 3.8 \approx 44.7 > e^2$. \\
 	
 	We first compared the evolution of the effective sample size using our proposal (as described in Section~\ref{pfRIcker}) and the transition density $p(n_t|n_{t-1})$ as proposal, called \emph{prior proposal} (this version of particle filter is called \emph{bootstrap filter}) used by Fasiolo. Figure~\ref{fig:essRicker} shows this comparison. Note that we used 500 particles in each cases. It can be seen that the use of the prior proposal leads to an extremely irregular ESS, with very sharp dips, indicative of very imbalance weights. This is due to the fact that the transition density approximates badly the successive targeted distributions. On the contrary, our gamma approximation to the optimal proposal, because it incorporates knowledge from the actual observations, is less irregular, and shows very few dips below $\frac{N}{2}$. \\
 	
@@ -345,7 +345,22 @@
 	\begin{equation*}
 	p(s_k|n_{k-1}, \theta) = \binom{n_{k-1}}{s_k}\alpha^\alpha\sum_{l=0}^{n_{k-1}-s_k}\binom{n_{k-1}-s_k}{l}\frac{(-1)^l}{(\delta(s_k+l)+\alpha)^\alpha}
 	\end{equation*}
-	where $\alpha = \sigma_d^{-2}$
+	where $\alpha = \sigma_d^{-2}$. \\
+	
+	The proposal distribution $q(s_k|n_{k-1}, n_k, \theta)$ was designed as follow. Even though $p(s_k|n_{k-1}, n_k, \theta)$ is not a known distribution, compounding a Binomial distribution $\operatorname{Binomial}(N, p)$ with a Beta distribution, i.e with $p \sim \operatorname{Beta}(\beta_1,  \beta_2)$ yields a Beta-Binomial distribution $\operatorname{Beta-Binomial}(N, \beta_1, \beta_2)$. Therefore, we approximated $e^{-\delta v_t}$, where $v_t \sim \operatorname{Gamma}(\sigma_d^{-2}, \sigma_d^{-2})$, whose support is $[0, 1]$ by a Beta distribution, using the same methodology as in Section~\ref{pfRIcker}, that is to say minimizing their Kullback Leibler divergence. Parametrising the Beta distribution which minimise the KL divergence with coefficients $a$ and $b$, we have:
+	\[	\begin{cases}
+	& -\psi^{(0)}(a+b) + \psi^{(0)}(a) + 1 = 0 \\
+	& -\psi^{(0)}(a+b) + \psi^{(0)}(b) - K  = 0
+	\end{cases}\]
+	where $K=\int_{0}^{1}\log(1-p)\frac{\alpha^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\alpha-1}\mathrm{d}p$ with $\alpha = \sigma_d^{-2}$. Solutions are found numerically and need to be computed only once each time the particle filter is used since they depend only on $\sigma_d^{-2}$ and $\delta$. Figure~\ref{fig:qqBlow} shows a QQ-plot of the true distribution $p(s_k|n_{k-1}, \theta)$ against its Beta-Binomial approximation for typical values of the model (i.e $n_{k-1} = 1000$, $\delta=0.16$ and $\sigma_d=0.3$). Finally, the proposal $q(s_k|n_{k-1}, n_k, \theta)$ is simply the Beta-Binomial approximation restricted to the range $[0, n_t]$.
+	
+	\subsection{Synthetic Data}
+	In order to assess the quality of the particle filter described in Algorithm~\ref{RWPF} we first tested it on simulated datasets. We used realistic values for the parameters, given by Fasiolo et al.\cite{fasiolo2014statistical}, i.e $T=100$ $P=6.5$, $N_0=40$, $\delta=0.16$ and $\sigma_p^2=sigma_d^2=0.1$.
+	
+	Figure~\ref{fig:essBlow} shows the evolution of the effective sample size as the number of samples use to calculate the random weights (called \emph{inner particles} now on) increases, for a fixed number of particles equal to 500. It can be seen that when the observations are decreasing or in a region of low values the ESS is high and increases (to almost its maximal value) with the number of inner particles. However in region where the population quickly increases the ESS sharply drops, to values around 10, and is not improved by an increased number of inner samples. This is due to the fact that the calculation of the ramdom weights involves $\delta(n_k = r_k+s_k)$ and that moving from a region of low values, where the support of the proposal is thus small, to a region of high values, where the support of the densities increases. Therefore the probability $P(R_k+S_k=l)$ decreases. \\
+	This is confirmed by the fact that introducing a tolerance $\epsilon$ fixed equal to 0.05, i.e replacing $\delta(n_k = r_k+s_k)$ by $\delta(\frac{|n_k - r_k+s_k|}{n_k} < \epsilon)$ yields improved ESS in region of sharply increasing population as shown in Figure~\ref{fig:essBlowTol}. Note, however, that the random weights are now biased, and therefore the likelihood estimate given by the particle filter. Nonetheless, a small enough tolerance should allow to obtain likelihood estimates not too far from the true value. Moreover the increase in ESS is now minor as the number of inner samples increases. \\
+	
+	Transects of the log-likelihood for all the parameters using a fixed tolerance $\epsilon=0.05$ are displayed in Figure~\ref{fig:transectBlow}.
 	
 	
 	\begin{algorithm}
@@ -762,6 +777,61 @@
 		\end{algorithmic}
 	\end{algorithm}
 
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.5\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/qqBlow.pdf}
+		\end{minipage}
+		\caption{QQ-plot of the true distribution $p(s_t | n_{t-1}, \theta)$ against its Beta-Binomial approximation based on 10000 samples.}
+		\label{fig:qqBlow}
+	\end{figure}
+
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/essEvolBlowfly.pdf}
+		\end{minipage}
+		\caption{\textbf{(red)} Evolution of the population size overlaid on the effective sample size of the particle filter for an increasing number of samples in the calculation of each random weight.}
+		\label{fig:essBlow}
+	\end{figure}
+
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/essEvolBlowflyTol.pdf}
+		\end{minipage}
+		\caption{\textbf{(red)} Evolution of the population size overlaid on the effective sample size of the particle filter for an increasing number of samples in the calculation of each random weight, with a tolerance $\epsilon=0.05$}
+		\label{fig:essBlowTol}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/mleBlowflyp.pdf}
+		\end{minipage}
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/mleBlowflyn0.pdf}
+		\end{minipage}
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/mleBlowflysigmap.pdf}
+		\end{minipage}
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/mleBlowflydelta.pdf}
+		\end{minipage}
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/mleBlowflysigmad.pdf}
+		\end{minipage}
+		\caption{Transect of the of the likelihood when \textbf{(top left)} P, \textbf{(top right)} $N_0$,  \textbf{(middle left)} $sigma_p$, \textbf{(middle right)} $\delta$ and \textbf{(bottom)} $sigma_d$ vary. The true values of the parameters are denoted by a blue line, whereas the maximum likelihood estimates by a red one}
+		\label{fig:transectBlow}
+	\end{figure}
 \clearpage
 
 	\bibliographystyle{plain}
@@ -772,20 +842,20 @@
 	In this section we present the minimization of the KL divergence between a Lognormal a Gamma distributions.
 	We have
 	\begin{equation*}
-	D_{KL}(P||Q)(\alpha, \theta) = \int_{0}^{\infty}{p(z|\mu, \sigma^2)\log(\frac{p(z|\mu, \sigma^2)}{q(z|\alpha, \theta)})\mathrm{d}z}
+	D_{KL}(\alpha, \theta) = \int_{0}^{\infty}{p(z|\mu, \sigma^2)\log(\frac{p(z|\mu, \sigma^2)}{q(z|\alpha, \theta)})\mathrm{d}z}
 	\end{equation*}
 	where $p$ is the probability density function of a $\log\mathcal{N}(\mu, \sigma^2)$ and $q$ of a Gamma with shape $\alpha$ and scale $\theta$. \\
 	Expanding we obtain:
 	\begin{equation*}
-	D_{KL}(P||Q)(\alpha, \theta) = C + \alpha\log\theta + \log\Gamma(\alpha) - (\alpha-1)\mathbb{E}_p[\log(Z)] + \frac{1}{\theta}\mathbb{E}_p[Z]
+	D_{KL}(\alpha, \theta) = C + \alpha\log\theta + \log\Gamma(\alpha) - (\alpha-1)\mathbb{E}_p[\log(Z)] + \frac{1}{\theta}\mathbb{E}_p[Z]
 	\end{equation*}
 	where $\mathbb{E}_p$ is the expectation with respect to the probability measure $p$.\\
 	Therefore:
 	\begin{equation*}
-	\frac{\partial }{\partial \alpha}(D_{KL}(P||Q)) = \log(\theta) + \psi^{(0)}(\alpha)-\mathbb{E}_p[\log(Z)]
+	\frac{\partial D_{KL}(\alpha, \theta)}{\partial \alpha} = \log(\theta) + \psi^{(0)}(\alpha)-\mathbb{E}_p[\log(Z)]
 	\end{equation*}
 	\begin{equation*}
-	\frac{\partial }{\partial \theta}(D_{KL}(P||Q)) = \frac{\alpha}{\theta} - \frac{1}{\theta^2}\mathbb{E}_p[Z]
+	\frac{\partial D_{KL}(\alpha, \theta)}{\partial \theta} = \frac{\alpha}{\theta} - \frac{1}{\theta^2}\mathbb{E}_p[Z]
 	\end{equation*}
 	where $\psi^{(0)}$ is the digamma function.
 	
@@ -797,18 +867,19 @@
 	
 	If we use the first terms of the asymptotic expansion of the digamma function, i.e $\psi^{(0)}(\alpha) \approx \log(\alpha)-\frac{1}{2\alpha}$, we finally have $\alpha =\frac{1}{\sigma^2}$ and $\theta=\frac{1}{\alpha}e^{\mu+\frac{\sigma^2}{2}}$. \\
 	
-	In order to check if the solutions are indeed minima, we calculated the Hessian of $D_{KL}(P||Q)(\alpha, \theta)$ i.e
+	In order to check if the solutions are indeed minima, we calculated the Hessian of $D_{KL}(\alpha, \theta)$ i.e
 	\begin{equation*}
 	\text{H} = \begin{pmatrix}
-	\frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \alpha^2} & \frac{\strut \partial^2 D_{KL}(P||Q) }{\strut \partial \theta \partial \alpha} \\
-	\frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \theta \partial \alpha} & \frac{\strut \partial^2 D_{KL}(P||Q)}{\strut \partial \theta^2} 
+	\frac{\strut \partial^2 D_{KL}}{\strut \partial \alpha^2} & \frac{\strut \partial^2 D_{KL}}{\strut \partial \theta \partial \alpha} \\
+	\frac{\strut \partial^2 D_{KL}}{\strut \partial \theta \partial \alpha} & \frac{\strut \partial^2 D_{KL}}{\strut \partial \theta^2} 
 	\end{pmatrix} =
 	\begin{pmatrix}
 	\psi^{(1)}(\alpha) & \frac{1}{\theta} \\
 	\frac{1}{\theta} & -\frac{\alpha}{\theta^2}+\frac{2e^{\mu +\frac{\sigma^2}{2}}}{\theta^3}
 	\end{pmatrix}
 	\end{equation*}
-	Straightforward calculations yield that the sign of the determinant of the above Hessian is such that $\text{sign}(\det{H}) = \psi^{(1)}(\alpha)(\frac{2}{\theta^3}e^{\mu +\frac{\sigma^2}{2}} - \alpha) - 1$.
+	Straightforward calculations yield that the sign of the determinant of the above Hessian is such that $\text{sign}(\det{\operatorname{H}}) = \psi^{(1)}(\alpha)(\frac{2}{\theta}e^{\mu +\frac{\sigma^2}{2}} - \alpha) - 1$. \\
+	Around the solution we the sign of the determinant simplifies and is just $\text{sign}(\det{\operatorname{H}}) = \alpha\psi^{(1)}(\alpha) - 1$. Yet $\lim\limits_{\alpha \rightarrow 0} = \infty$ and $\lim\limits_{\alpha \rightarrow \infty} = 1$. Therefore around the solution the determinant is positive and since $\operatorname{H}_{1,1} = \psi^{(1)}(\alpha) > 0$ $D_{KL}(\alpha, \theta)$ is at least locally convex and the solution is a local minimum.
 	
 	\section{Derivations relative to Nicholson's Blowfly Experiments} \label{AppendBlowfly}
 	\subsection{Derivation of $p(r_t|n_{t-\tau}, \theta)$} \label{rDensity}
@@ -848,6 +919,55 @@
 	p(s_t | n_{t-1}) & = \binom{n_{t-1}}{s_t}\frac{\alpha^\alpha}{\Gamma(\alpha)}\sum_{k=0}^{n_{t-1}-s_t}\binom{n_{t-1}-s_t}{k}(-1)^k \ \int_{0}^{\infty}e^{-(\delta s_t+\alpha + k\delta)v_t }v_t^{\alpha-1}\ \mathrm{d}v_t \\
 	& = \binom{n_{t-1}}{s_t}\alpha^\alpha\sum_{k=0}^{n_{t-1}-s_t}\binom{n_{t-1}-s_t}{k}\frac{(-1)^k}{(\delta(s_t+k)+\alpha)^\alpha}
 	\end{align*}
+	
+	\subsection{Derivation of $q(s_t|n_{t-1}, n_t, \theta)$}
+	In this section we derive the density $p(s_t|n_{t-1}, \theta)$ which is used as the proposal density from which the particles $S_t^{(i)}$ are drawn at each time step in Algorithm~\ref{RWPF}. \\
+	Since $S_t$ is a compounded Binomial, if its parameter is drawn from a Beta distribution, then its marginal distribution is a Beta-Binomial. To this effect we approximate the distribution of $e^{-v}$ (its density is found using a change of variable) by a Beta, where $v \sim \operatorname{Gamma}(\alpha, \beta)$ (note that in the case of the problem at hand $\alpha=\sigma_d^{-2}$ and $\beta=\frac{\alpha}{\delta}$). 
+	If we denote $P=e^{-v}$ its density is $q_P(p)=\frac{\beta^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\beta-1}$ and, denoting $q(\ \cdot \ ; a, b)$ the density of a $\mathrm{Beta}(a,b)$ we have:	
+	\begin{align*}
+	D_{KL}(a,b) & = \int_{0}^{1}q_P(p)\frac{q_P(p)}{q(p; a, b)}\mathrm{d}p \\
+	& \propto - \int_{0}^{1}q_P(p)\log(q(p; a, b))\mathrm{d}p \\
+	& \propto - \int_{0}^{1}q_P(p)\log(\frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}p^{a-1}(1-p)^{b-1})\mathrm{d}p \\
+	& \propto -\log\Gamma(a+b) + \log\Gamma(a) + \log\Gamma(b) \\ & \qquad  + (a-1)\int_{0}^{1}(-\log p)\frac{\beta^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\beta-1}\mathrm{d}p \\ & \qquad - (b-1)\int_{0}^{1}\log (1-p)\frac{\beta^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\beta-1}\mathrm{d}p
+	\end{align*}
+	
+	Now notice that $-\log p(-\log p)^{\alpha-1}p^{\beta-1}= (-\log p)^{\alpha}p^{\beta-1}$ is proportional to the density of $e^{-X}$ where $X \sim \mathrm{Gamma}(\alpha+1, \beta)$ and if we denote $K=\int_{0}^{1}\log(1-p)\frac{\beta^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\beta-1}\mathrm{d}p$ we have:
+	
+	\begin{equation*}
+	\begin{split}
+	D_{KL}(a,b) & = \propto -\log\Gamma(a+b) + \log\Gamma(a) + \log\Gamma(b) \\ 
+	& \qquad  + (a-1)\frac{\beta^\alpha}{\Gamma(\alpha)}\frac{\Gamma(\alpha+1)}{\beta^{\alpha+1}} - (b-1)K \\
+	& \propto -\log\Gamma(a+b) + \log\Gamma(a) + \log\Gamma(b) + (a-1)\frac{\alpha}{\beta} - (b-1)K
+	\end{split}
+	\end{equation*}
+	
+	Now:
+	\begin{equation}
+	\frac{\partial D_{KL}}{\partial a} = -\psi^{(0)}(a+b) + \psi^{(0)}(a) + \frac{\alpha}{\beta}
+	\end{equation}
+	\begin{equation}
+	\frac{\partial D_{KL}}{\partial b} = -\psi^{(0)}(a+b) + \psi^{(0)}(b) - K 
+	\end{equation}
+	where $\psi^{(0)}$ is the digamma function.
+	$K$ is easily calculated numerically and so the solutions to the following system are the critical points of $D_{KL}(a,b)$:
+	\[	\begin{cases}
+	& -\psi^{(0)}(a+b) + \psi^{(0)}(a) + \frac{\alpha}{\beta} = 0 \\
+	& -\psi^{(0)}(a+b) + \psi^{(0)}(b) - K  = 0
+	\end{cases}\]
+	
+	In order to check if the solutions are indeed minima, we calculated the Hessian of $D_{KL}(a, b)$ i.e
+	\begin{equation*}
+	\text{H} = \begin{pmatrix}
+	\frac{\strut \partial^2 D_{KL}}{\strut \partial a^2} & \frac{\strut \partial^2 D_{KL}}{\strut \partial b \partial a} \\
+	\frac{\strut \partial^2 D_{KL}}{\strut \partial b \partial a} & \frac{\strut \partial^2 D_{KL}}{\strut \partial b^2} 
+	\end{pmatrix} =
+	\begin{pmatrix}
+	-\psi^{(1)}(a+b) + \psi^{(1)}(a) & -\psi^{(1)}(a+b) \\
+	-\psi^{(1)}(a+b) & \psi^{(1)}(a+b) + \psi^{(1)}(b)
+	\end{pmatrix}
+	\end{equation*}
+	Straightforward calculations yield that the sign of the determinant of the above Hessian is such that $\text{sign}(\det{\operatorname{H}}) = \psi^{(1)}(a)\psi^{(1)}(b) - \psi^{(1)}(a+b)(\psi^{(1)}(a)+\psi^{(1)}(b))$.
+	Numerical calculation over a grid $[10^{-3}, 1000]^2$ indicate that this function is always positive. Therefore, since $\operatorname{H}_{1,1}$ is always positive ($\psi^{(1)}$ is non-increasing and $a, b > 0$), $D_{KL}$ is convex.
 \end{appendices}
 	
 \end{document}
