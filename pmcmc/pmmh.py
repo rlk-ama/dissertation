@@ -28,8 +28,7 @@ class PMMH(object):
             self.support = support
         else:
             self.support = lambda x: True
-        if 'tol' in kwargs:
-            self.tol = kwargs['tol']
+        self.kwargs = kwargs
 
     def initalize(self):
         theta = self.init
@@ -37,7 +36,7 @@ class PMMH(object):
 
     def routine(self, parameters):
         try:
-            Map = self.map(*parameters, initial=self.initial, observations=self.observations, tol=self.tol)
+            Map = self.map(*parameters, initial=self.initial, observations=self.observations, **self.kwargs)
         except:
             return -np.inf
         filter = self.filter(self.end, self.Ns, Map, proposal={self.filter_proposal: True}, initial=self.initial_filter,
@@ -50,20 +49,23 @@ class PMMH(object):
         uniform_draw = np.random.uniform(low=0, high=1, size=None)
         return np.log(uniform_draw) < ratio
 
-    def sub_sample(self, theta, likeli):
-            theta_star = [self.proposals[i].sample(theta[i])[0] for i in range(len(theta))]
-            if self.support(theta_star):
-                likeli_star = self.routine(theta_star)
-                zipped = list(zip(theta, theta_star))
-                numerator =  likeli_star + np.sum([np.log(self.proposals[i].density(zipped[i][0], zipped[i][1])) for i in range(len(zipped))]) + np.log(self.prior.density(np.array(theta_star)))
-                denominator = likeli + np.sum([np.log(self.proposals[i].density(zipped[i][1], zipped[i][0])) for i in range(len(zipped))]) + np.log(self.prior.density(np.array(theta)))
-                if self.accept_reject(numerator-denominator):
-                    theta = theta_star
-                    likeli = likeli_star
-                accept = min(1, np.exp(numerator-denominator))
-            else:
-                accept = 0
-            return theta, likeli, accept
+    def sub_sample(self, theta, likeli, index=None):
+        if index:
+            theta_star = theta
+            theta_star[index] = RandomWalkProposal(sigma=self.proposals.lambdas[index]*self.proposals.cov[index, index]).sample(theta[index]).base
+        else:
+            theta_star = self.proposals.sample(theta)
+        if self.support(theta_star):
+            likeli_star = self.routine(theta_star)
+            numerator =  likeli_star + np.log(self.proposals.density(theta, theta_star)) + np.log(self.prior.density(np.array(theta_star)))
+            denominator = likeli + np.log(self.proposals.density(theta_star, theta)) + np.log(self.prior.density(np.array(theta)))
+            if self.accept_reject(numerator-denominator):
+                theta = theta_star
+                likeli = likeli_star
+            accept = min(1, np.exp(numerator-denominator))
+        else:
+            accept = 0
+        return theta, likeli, accept
 
     def sample(self):
         likeli = self.initalize()
@@ -77,19 +79,20 @@ class PMMH(object):
             print(iteration)
 
         start = self.burnin
-        acceptance_rate = np.sum(accepts[start-self.split:start])/self.split
-        print(acceptance_rate)
-        k = 1
+        k = 2
         while start < self.burnin + self.adaptation:
-            self.rescale(acceptance_rate, k)
             end = start + self.split
+            index = list(np.random.multinomial(1, [1/len(theta)]*len(theta))).index(1)
+            mean = []
             for iteration in range(start, end):
-                theta, likeli, accept = self.sub_sample(thetas[iteration], likeli)
+                theta, likeli, accept = self.sub_sample(thetas[iteration], likeli, index)
                 thetas.append(theta)
                 accepts.append(accept)
+                mean.append(theta)
                 print(iteration)
             acceptance_rate = np.sum(accepts[start:end])/self.split
             print(acceptance_rate)
+            self.rescale(acceptance_rate, k, index, mean)
             start = start + self.split
             k += 1
 
@@ -101,8 +104,10 @@ class PMMH(object):
 
         return thetas, accepts
 
-    def rescale(self, acceptance_rate, k):
+    def rescale(self, acceptance_rate, k, index, mean):
         coeff = (acceptance_rate - self.target)/k
-        news = [self.proposals[i].sigma*np.exp(coeff) for i in range(len(self.proposals))]
-        self.proposals = [RandomWalkProposal(sigma=new) for new in news]
-        print(news)
+        self.proposals.lambdas[index] = self.proposals.lambdas[index]*np.exp(coeff)
+        self.proposals.mean = self.proposals.mean + 1/k*(np.mean(mean, axis=0)-self.proposals.mean)
+        x = np.mean(mean, axis=0)-self.proposals.mean
+        xT = x[:, np.newaxis]
+        self.proposals.cov = self.proposals.cov + 1/k*(x*xT)
