@@ -44,27 +44,45 @@ if __name__ == "__main__":
     parser.add_argument("--particles", dest="NBS", type=int, help="Number of particles")
     parser.add_argument("--tolerance", dest="tol", type=float, help="Tolerance in the bridge")
     parser.add_argument("--adaptation", type=bool, help="Use adaptation for number of inner samples ?")
+    parser.add_argument("--stability", type=bool, help="Estimate stability of likelihood estimate")
 
 
     args = parser.parse_args()
-    arguments = {k:v for k,v in args.__dict__.items() if v}
+    arguments = {k:v for k,v in args.__dict__.items() if v and k != 'stability'}
 
     if 'observations' in arguments:
         line = arguments['observations'].readline().split()
         arguments['observations'] = np.array([float(obs) for obs in line])
 
-    output = perform_filter(**arguments)
+    if args.stability:
+        liks = []
+        for i in range(15):
+            output = perform_filter(**arguments)
+            liks.append(output['likeli'][-1])
+            print(i)
 
-    NOS = len(output['observations'])
-
-    obs_ess_lik = zip(output['observations'], output['ESS'], output['likeli'])
-    with open("/home/raphael/abc_{}_{}.txt".format(arguments['m'] if 'm' in arguments else 100,
-                                                   arguments['NBS'] if 'NBS' in arguments else 500), "w") as g:
-        for elem in obs_ess_lik:
-            g.write(" ".join(map(str, elem)))
-            g.write("\n")
-
-    if 'observations' not in arguments:
-        with open('/home/raphael/blowfly_obs.txt', 'w') as f:
-            f.write(" ".join(map(str, output['observations'])))
+        particles = arguments.get('NBS', 500)
+        proposal = arguments.get('proposal', 'optimal')
+        tolerance = int(arguments.get('tol', 0)*100)
+        inner = arguments.get('m', 100)
+        endpath = "{}_{}_{}_{}".format(particles, proposal, tolerance, inner)
+        with open("/home/raphael/stability_likelihood_blowfly_{}.txt".format(endpath), "w") as f:
+            f.write(" ".join(map(str, liks)))
             f.write("\n")
+
+    else:
+        output = perform_filter(**arguments)
+
+        NOS = len(output['observations'])
+
+        obs_ess_lik = zip(output['observations'], output['ESS'], output['likeli'])
+        with open("/home/raphael/abc_{}_{}.txt".format(arguments['m'] if 'm' in arguments else 100,
+                                                       arguments['NBS'] if 'NBS' in arguments else 500), "w") as g:
+            for elem in obs_ess_lik:
+                g.write(" ".join(map(str, elem)))
+                g.write("\n")
+
+        if 'observations' not in arguments:
+            with open('/home/raphael/blowfly_obs.txt', 'w') as f:
+                f.write(" ".join(map(str, output['observations'])))
+                f.write("\n")

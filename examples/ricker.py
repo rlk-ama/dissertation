@@ -62,10 +62,12 @@ if __name__ == "__main__":
     parser.add_argument("--particle_init", type=int, help="Mean of initial state value")
     parser.add_argument("--generalized", type=bool, help="DO you want to use Generalized Ricker Map ?")
     parser.add_argument("--graphics", type=bool, help="Display graphics ?")
+    parser.add_argument("--pickle", type=bool, help="Serialize results ?")
     parser.add_argument("--filter_proposal", type=str, help="Proposal for the particle fitler, either prior or optimal")
+    parser.add_argument("--stability", type=bool, help="Estimate stability of likelihood estimate")
 
     args = parser.parse_args()
-    arguments = {k:v for k,v in args.__dict__.items() if v and k != 'graphics'}
+    arguments = {k:v for k,v in args.__dict__.items() if v and k != 'graphics' and k != 'pickle' and k != 'stability'}
 
     if 'inits' in arguments:
         line = arguments['inits'][0].readline()
@@ -75,37 +77,55 @@ if __name__ == "__main__":
         line = arguments['observations'].readline().split()
         arguments['observations'] = np.array([float(obs) for obs in line])
 
-    output = perform_filter(**arguments)
-
-    if 'observations' not in arguments:
-        with open('/home/raphael/ricker_state.txt', 'w') as f:
-            f.write(" ".join(map(str, output['state'])))
+    if args.stability:
+        liks = []
+        for i in range(100):
+            output = perform_filter(**arguments)
+            liks.append(output['likeli'][-1])
+            print(i)
+        with open("/home/raphael/stability_likelihood_ricker_100.txt", "w") as f:
+            f.write(" ".join(map(str, liks)))
             f.write("\n")
-        with open('/home/raphael/ricker_obs.txt', 'w') as f:
-            f.write(" ".join(map(str, output['observations'])))
-            f.write("\n")
 
-    mean_esti = [np.mean(est) for est in output['estim']]
-    NOS = len(mean_esti)
+    else:
+        output = perform_filter(**arguments)
 
-    if args.graphics:
-        plt.plot([i for i in range(NOS)], mean_esti if output['state'] is not None else [np.random.poisson(output['phi']*esti) for esti in mean_esti])
-        plt.plot([i for i in range(NOS)], output['state'] if output['state'] is not None else output['observations'])
-        plt.title("Simulated state (green) and filtered state (blue)" if output['state'] is not None else "Original observations (green) and observations from filtered states (blue")
-        plt.show()
+        if 'observations' not in arguments:
+            with open('/home/raphael/ricker_state.txt', 'w') as f:
+                f.write(" ".join(map(str, output['state'])))
+                f.write("\n")
+            with open('/home/raphael/ricker_obs.txt', 'w') as f:
+                f.write(" ".join(map(str, output['observations'])))
+                f.write("\n")
 
-        plt.plot([i for i in range(NOS)], output['ESS'])
-        plt.ylim(0, arguments['NBS'] + 10 if 'NBS' in arguments else 1010)
-        plt.title("Effective sample sizes")
-        plt.show()
+        if args.pickle:
+            outputs = zip(output['observations'], [np.mean(est) for est in output['estim']], output['likeli'], output['ESS'])
+            with open("/home/raphael/pickled_ricker.txt", "w") as f:
+                for elem in outputs:
+                    f.write(" ".join(map(str, elem)))
+                    f.write("\n")
 
-        plt.plot([i for i in range(NOS)], output['likeli'])
-        plt.title("Likelihood")
-        plt.show()
+        mean_esti = [np.mean(est) for est in output['estim']]
+        NOS = len(mean_esti)
 
-        fig, ax1 = plt.subplots()
-        ax1.plot([i for i in range(NOS)], output['observations'])
-        ax2 = ax1.twinx()
-        ax2.plot([i for i in range(NOS)], output['ESS'], color="red")
-        plt.title("Observations (red), ESS (blue)")
-        plt.show()
+        if args.graphics:
+            plt.plot([i for i in range(NOS)], mean_esti if output['state'] is not None else [np.random.poisson(output['phi']*esti) for esti in mean_esti])
+            plt.plot([i for i in range(NOS)], output['state'] if output['state'] is not None else output['observations'])
+            plt.title("Simulated state (green) and filtered state (blue)" if output['state'] is not None else "Original observations (green) and observations from filtered states (blue")
+            plt.show()
+
+            plt.plot([i for i in range(NOS)], output['ESS'])
+            plt.ylim(0, arguments['NBS'] + 10 if 'NBS' in arguments else 1010)
+            plt.title("Effective sample sizes")
+            plt.show()
+
+            plt.plot([i for i in range(NOS)], output['likeli'])
+            plt.title("Likelihood")
+            plt.show()
+
+            fig, ax1 = plt.subplots()
+            ax1.plot([i for i in range(NOS)], output['observations'])
+            ax2 = ax1.twinx()
+            ax2.plot([i for i in range(NOS)], output['ESS'], color="red")
+            plt.title("Observations (red), ESS (blue)")
+            plt.show()
