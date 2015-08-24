@@ -104,3 +104,19 @@ for (r in rs) {
 }
 plot(log(rs), loglik, type="l")
 
+
+func2 = function(x, r=17, K=1, sigma=1) return(r*x*exp(-x/K)*rlnorm(1, 0, sigma))
+suite = c(200)
+obs = c(rpois(1, 5*200))
+for (i in 2:77) {
+  suite = c(suite, func2(suite[i-1], r=1.48, K=577, sigma=0.6))
+  obs = c(obs, rpois(1, 5*suite[i]))
+}
+plot(obs, type="l")
+plot(suite, type="l")
+suite2 = c(200)
+for (i in 2:77) {
+  suite2 = c(suite2, func2(suite2[i-1], r=1.48, K=577, sigma=0.6))
+}
+lines(suite2, col="red")
+

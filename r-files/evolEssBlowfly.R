@@ -1,12 +1,12 @@
 library(ggplot2)
 library(reshape2)
-repetitions = c(100, 500, 1000, 10000)
-data = read.table(sprintf("/home/raphael/abc_%s.txt", 50), header=F)
+repetitions = c(50, 100, 500, 1000, 10000)
+data = read.table(sprintf("/home/raphael/abc_%s_500.txt", 100), header=F)
 dataObs = data.frame(x=1:85, "Observations"=data[, 1])
 dataFrame = data.frame(x=1:85)
 dataFrame[paste(50)] = data[, 2]
 for (repe in repetitions) {
-  data = read.table(sprintf("/home/raphael/abc_%s.txt", repe), header=F)
+  data = read.table(sprintf("/home/raphael/abc_%s_500.txt", repe), header=F)
   dataFrame[paste(repe)] = data[, 2]
 }
 
