@@ -23,7 +23,7 @@
 \usepackage{titling}
 \usepackage{cleveref}
 \usepackage[toc,page]{appendix}
-
+\usepackage{stmaryrd}
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \setcounter{tocdepth}{4}
@@ -159,7 +159,7 @@
 	\end{equation}
 	where $T$ is ranges typically from 30 to several hundreds. Therefore classic numerical integration tools, or Markov Chain Monte Carlo algorithms which require calculation of this likelihood up to a constant are not suited for this problem. 
 	
-	\subsection{Nicholson's experiment on Sheep Blowflies} \label{(Nicholson)}
+	\subsection{Nicholson's experiment on Sheep Blowflies} \label{Nicholson}
 	Nicholson performed in 1954 and 1957~\cite{nicholson1954outline, nicholson1957self} several
 	laboratory experiments in order to better understand the population dynamics of \emph{Lucilia cuprina} (also known as sheep blowfly)
 	under resource limitation. Blowflies development occurs in four stages: the eggs hatches larvae which evolve into pupae before becoming adults. Two experiments  (E1 and E2) consisted in restricting the amount of resources available to the larvae, while adults had unrestricted access to sugar and water, but a limited one to protein (which are necessary to produce eggs). Two others (E3 and E4) consisted in restricting respectively moderately and severely resources to larvae, whereas adult were granted unlimited food. Gurney et al.~\cite{gurney1980nicholson}, 30 years later, suggested the following differential equation to model blowfly dynamics with a delayed recruitment process:
@@ -287,9 +287,9 @@
 	\subsubsection{Particle Marginal Metropolis Hastings Sampler}
 	Algorithm~\ref{pmmh} shows the straightforward implementation of the PMMH sampler we used. At each time step a new set of parameter is proposed using a multivariate random walk whose components are independent. We chose independence as we did not have any information on the correlation structure of the vector of parameters. Following Fasiolo~\cite{fasiolo2014statistical} we also chose independent uniform priors on the parameters. It is straightforward to see that the time complexity of Algorithm~\ref{pmmh} is $\mathcal{O}(NM)$ where $N$ is the number of particles used to estimate the likelihood and $M$ the number of samples obtained from the PMMH sampler.
 	
-	After a burnin period, we adapt the covariance matrix of the proposal using the Robbins-Monro update, as described in Andrieu and Thoms~\cite{Andrieu2008}. Indeed, as proved by Roberts et al.~\cite{roberts1997weak} for a certain class of target distribution (namely those of the form $\pi_n(x) = \prod_{i=1}^{n}f(x_i)$ where $x \in \mathbb{R}^n$ and assuming certain regularity conditions on $f$, although the same result has been proved for less restrictive forms of $\pi$, see~\cite{roberts2001optimal}), the optimal acceptance rate, when using a multivariate random walk proposal, in terms of mixing, is close to 0.234. In the case of a PMMH sampler, where the likelihood is an approximation of the true one, this rate should be decreased to 0.1-0.15 (as suggested by Dr. Lawrence Murray). This adaptation period allows us not to be too concerned about the initialisation of the covariance matrix of the random walk. When adapting during the whole chain, care should be exercised regarding the convergence towards the target distribution of the MCMC algorithm. However, we chose to adapt only for a brief (although long enough to reach the targeted acceptance rate) period of time, typically 10 to 15\% of the total length of the chain.
+	Prior to a burnin period, we adapt the covariance matrix of the proposal using the Robbins-Monro update, as described in Andrieu and Thoms~\cite{Andrieu2008}. Indeed, as proved by Roberts et al.~\cite{roberts1997weak} for a certain class of target distribution (namely those of the form $\pi_n(x) = \prod_{i=1}^{n}f(x_i)$ where $x \in \mathbb{R}^n$ and assuming certain regularity conditions on $f$, although the same result has been proved for less restrictive forms of $\pi$, see~\cite{roberts2001optimal}), the optimal acceptance rate, when using a multivariate random walk proposal, in terms of mixing, is close to 0.234. In the case of a PMMH sampler, where the likelihood is an approximation of the true one, this rate should be decreased to 0.1-0.15 (as suggested by Dr. Lawrence Murray). This adaptation period allows us not to be too concerned about the initialisation of the covariance matrix of the random walk. When adapting during the whole chain, care should be exercised regarding the convergence towards the target distribution of the MCMC algorithm. However, we chose to adapt only for a brief (although long enough to reach the targeted acceptance rate) period of time, typically 10 to 15\% of the total length of the chain.
 	
-	More specifically the Robins-Monro update is used to rescale the covariance matrix of the random walk. In the case of a univariate proposal $q_\theta \sim \mathcal{N}(0,e^\theta))$ and target distribution $\pi$,  what adaptation aims to do is to find the zeros of $h(\theta) = \mathbb{E}_{\pi\otimes q_\theta}\mathrm{H}(\theta, x, y)$, where $\mathrm{H}(\theta, x, y) = \min(1, \frac{\pi(y)}{\pi(x)}) - \alpha^*$ and $\alpha^*$ is the target average acceptance rate. The Robins-Monro update proceed iteratively by setting $\theta_{i+1} = \theta_i + \frac{1}{i+1}(\hat{\alpha}_{\theta_i} - \alpha^*)$ where $\hat{\alpha}_{\theta_i} = \frac{1}{L}\sum_{k=1}^{L}\frac{\pi(y_{iL+k})}{\pi(x_{iL+k-1})}$. If $\hat{\alpha}_{\theta_i}$ is unbiased, Robbins and Monro~\cite{robbins1951stochastic} have shown that, under certain regularity conditions on H and on $\hat{\alpha}_\theta$, $\theta_i$ converges in probability to $\alpha^*$. Here, it can be simply understood by noticing that, if the acceptance rate $\hat{\alpha}_\theta$ is greater than the target $\theta$, the variance of the random walk is increased, leading to greater moves in the parameter space and thus a reduced acceptance rate. The contrary happens when $\hat{\alpha}_\theta$ is smaller than the target. Principled statistical rules exists to determine when to stop the adaptation phase, but, since we were targeting a range rather than a specific value for the acceptance rate,  we relied on trial and error to determine the appropriate duration to reach the range 0.1-0.15. Finally, since we used a multivariate random walk with a diagonal covariance matrix, we decided to simultaneously adapt its diagonal coefficients using the Robbins-Monro update. This very simple approach proved satisfactory as all the chains we ran attained average acceptance rate within the targeted range.
+	More specifically the Robins-Monro update is used to rescale the covariance matrix of the random walk. In the case of a univariate proposal $q_\theta \sim \mathcal{N}(0,e^\theta)$ and target distribution $\pi$,  what adaptation aims to do is to find the zeros of $h(\theta) = \mathbb{E}_{\pi\otimes q_\theta}\mathrm{H}(\theta, x, y)$, where $\mathrm{H}(\theta, x, y) = \min(1, \frac{\pi(y)}{\pi(x)}) - \alpha^*$ and $\alpha^*$ is the target average acceptance rate. The Robins-Monro update proceed iteratively by setting $\theta_{i+1} = \theta_i + \frac{1}{i+1}(\hat{\alpha}_{\theta_i} - \alpha^*)$ where $\hat{\alpha}_{\theta_i} = \frac{1}{L}\sum_{k=1}^{L}\frac{\pi(y_{iL+k})}{\pi(x_{iL+k-1})}$. If $\hat{\alpha}_{\theta_i}$ is unbiased, Robbins and Monro~\cite{robbins1951stochastic} have shown that, under certain regularity conditions on H and on $\hat{\alpha}_\theta$, $\theta_i$ converges in probability to $\alpha^*$. Here, it can be simply understood by noticing that, if the acceptance rate $\hat{\alpha}_\theta$ is greater than the target $\theta$, the variance of the random walk is increased, leading to greater moves in the parameter space and thus a reduced acceptance rate. The contrary happens when $\hat{\alpha}_\theta$ is smaller than the target. Principled statistical rules exists to determine when to stop the adaptation phase, but, since we were targeting a range rather than a specific value for the acceptance rate,  we relied on trial and error to determine the appropriate duration to reach the range 0.1-0.15. Finally, since we used a multivariate random walk with a diagonal covariance matrix, we decided to simultaneously adapt its diagonal coefficients using the Robbins-Monro update. This very simple approach proved satisfactory as all the chains we ran attained average acceptance rate within the targeted range.
 	
 	
 	\subsection{Synthetic Data}
@@ -309,10 +309,11 @@
 	Having seen that our method is comparable in term of the two metrics used by Fasiolo, and that it yields more stable maximum likelihood estimates, with lower mean squared errors for small number of particles, the significant improvement come from the autocorrelation of the samples. Indeed, our method is only 6.5\% more computationally expensive, as measured on particles filter with a number of particles ranging from 10 to 1000, averaged over a hundred runs, and, for the same computational power, we found that, on average, autocorrelation of the samples from $r$ was 13\% lower, that for $\phi$ 10\% lower and that for $\sigma$ another 13\% lower (autocorrelation was measured using the effective sample size of each chain). These values were obtained by running our PMMH sampler on 50 different datasets, and for each dataset using once a bootstrap filter and once our particle filter.
 	
 	\subsection{Global Population Dynamics Database Data}
-	The Global Population Dynamics Database (GPDD) is a joint effort by the British institution the NERC Centre for Population Biology, which was hosted by the Imperial College, and two American institutions, the National Center for Ecological Analysis and Synthesis and the Department of Ecology and Evolution, University of Tennessee. It is the largest collection of animal and plant population data in the world, which brings together close to five thousand time series. We chose the same datasets as Gao et al.~\cite{gao2012bayesian}. These datasets are chosen so that they represent all the different regimes of the Ricker map. There are therefore five categories of population size dynamics: increasing (CAT1), decreasing (CAT2), quasi-periodic with small variations (CAT3), quasi-periodic with large variations (CAT4) and irregular with outbreaks (CAT5). It is difficult to compare our results to those obtained by Gao et al. as they used a different state space model to fit the data. Indeed, if they used the same transition density for the space, they observational process is based on log transformed observations and is a simple normal distribution with mean equal to the log of the state (this model is however broadly used, see~\cite{de2002fitting, peters2010ecological, valpine2005state}). Nonetheless, we can use states estimates given by our particle filter using the posterior means of the parameters estimates given by the PMMH sampler to form an idea of how good these estimates are. \\
+	The Global Population Dynamics Database (GPDD) is a joint effort by the British institution the NERC Centre for Population Biology, which was hosted by the Imperial College, and two American institutions, the National Center for Ecological Analysis and Synthesis and the Department of Ecology and Evolution, University of Tennessee. It is the largest collection of animal and plant population data in the world, which brings together close to five thousand datasets. We chose to perform parameter inference on the same datasets as Gao et al.~\cite{gao2012bayesian}. These datasets are chosen so that they represent all the different regimes of the Ricker map. Gao et al. acknowledge five categories of population dynamics: increasing (CAT1), decreasing (CAT2), quasi-periodic with small variations (CAT3), quasi-periodic with large variations (CAT4) and irregular with outbreaks (CAT5). \\
+	It is difficult to compare our results to those obtained by Gao et al. as they used a different state space model to fit the data. Indeed, if they used the same transition density on the states, their observational process is based on the assumption that the log transformed observations are normally distributed with mean equal to the log of the state (this model is, however, broadly used, see~\cite{de2002fitting, valpine2005state, peters2010ecological}). Nonetheless, we can use states estimates given by our particle filter using the posterior means of the parameters estimates given by the PMMH sampler to form an idea of how good these estimates are. \\
 	
-	We further describe one particular example among all the datasets on which inference was performed. This dataset comes from CAT4, a category on which Gao et al. sampler does not perform well. It describes the evolution of a population of \emph{Lagopus lagopus scoticus} (a Scottish bird) during 76 years every year, from 1866 to 1942. \\
-	We parametrised the PMMH sampler using the following priors: $r \sim \mathrm{U}([1, 60])$, $\phi \sim \mathrm{U}([1, 30])$, $\sigma \sim \mathrm{U}([0.1, 0.6])$, $K \sim \mathrm{U}([1, 10000])$. The range for $r$ covers all the regimes of the Ricker map, the one for $\phi$ allows a large enough multiplication effect between states and observations, and finally the one for $K$ accommodates all the type of population in the datasets we analysed. We set a burnin period of 2500 iterations and an adaptation period of the same length, with as previously a target acceptance rate between 0.15 and 0.1, and sampled during 12500 afterwards. We obtained posterior parameters which, once given as input to our particle filter, give simulated observations close the actual data. This example serves also to demonstrate that our PMMH sampler mixes well on real data and converges to a stationary distribution as shown respectively by the autocorrelation function (Figure~\ref{acfLagopus}), the running means (Figure~\ref{rmLagopus}) and the Gelman-Rubin factor (Figure~\ref{gelmanLagopus})
+	We further describe one particular example among all the datasets on which inference was performed. This dataset comes from CAT4, a category on which Gao et al. sampler does not perform well. It describes the evolution of a population of \emph{Lagopus lagopus scoticus} (a Scottish bird), recorded every year, from 1866 to 1942. \\
+	We parametrised the PMMH sampler using the following priors: $r \sim \mathrm{U}([1, 60])$, $\phi \sim \mathrm{U}([1, 30])$, $\sigma \sim \mathrm{U}([0.1, 1.2])$, $K \sim \mathrm{U}([1, 10000])$. The range for $r$ covers all the regimes of the Ricker map, the one for $\phi$ allows a large enough multiplication effect between states and observations, and finally the one for $K$ accommodates all types of population in the datasets we analysed. We set a burnin period of 2500 iterations and an adaptation period of the same length, with, as previously, a targeted acceptance rate between 0.15 and 0.1, and sampled during 12500 iterations afterwards. We obtained posterior parameters which, once given as input to our particle filter, give simulated observations close the actual data. This example serves also to demonstrate that our PMMH sampler mixes well on real data and converges to a stationary distribution as shown respectively by the autocorrelation function (Figure~\ref{acfLagopus}), the running means (Figure~\ref{rmLagopus}) and the Gelman-Rubin factor (Figure~\ref{gelmanLagopus})
 	
 	\section{Inference on Nicholson's experiments} \label{infNicholson}
 	\subsection{Algorithm}
@@ -323,56 +324,57 @@
 		& S_t \sim \mathrm{Binomial}(e^{-\delta N_{t-1}}v_t) \hspace{2cm}  v_t \sim \mathrm{Gamma}(\sigma_d^{-2}, \sigma_d^{-2}) 
 		\end{align*}
 	\subsubsection{Particle Filter}
-	Nicholson's blowfly model is not part of the state space model framework. Indeed, there is no observational process here and therefore no further uncertainty attached to it. However the global methodology of particle filter can still be applied. \\
-	Here we are only interested in an unbiased estimate of the likelihood $p(n_1:t|\theta)$, instead of targeting $p(n_{0:t}|y_{1:t}, \theta)$ in order to be able to use this unbiased estimate in the PMMH sampler described in Algorithm~\ref{pmmh}. \\
-	Once again, writing $p(n_{1:t}|\theta) = p(n_1|\theta)\prod_{k=2}^{t}p(n_k|n_{1:k-1}, \theta)$ as in the particle filter algorithm we want to find an unbiased estimate of $p(n_k|n_{1:k-1}, \theta)$. We can write that:
+	Nicholson's blowfly model is not part of the state space model framework. Indeed, there is no observational process here and therefore no further uncertainty attached to it. This is due to the fact that the experiments were performed in the controlled environment of a laboratory. However the global methodology of particle filter can still be applied. \\
+	We constructed an unbiased estimate of the likelihood $p(n_{1:t}|\theta)$, in order to be able to use this unbiased estimate in the PMMH sampler described in Algorithm~\ref{pmmh}, as follows. \\
+	Writing $p(n_{1:t}|\theta) = p(n_1|\theta)\prod_{k=2}^{t}p(n_k|n_{1:k-1}, \theta)$ we want to find an unbiased estimate $\hat{p}(n_k|n_{1:k-1}, \theta)$ of $p(n_k|n_{1:k-1}, \theta)$ to construct the same unbiased as in the particle filter used for the noisily observed Ricker model, i.e $\hat{p}(n_{1:t}|\theta)=\hat{p}(n_1|\theta)\prod_{k=2}^{t}\hat{p}(n_k|n_{1:k-1}, \theta)$. \\
+	We can write that:
 	\begin{align*}
 	p(n_k|n_{1:k-1}, \theta) & = \int_{0}^{\infty}p(n_k, s_k |n_{1:k-1}, \theta)\mathrm{d}s_k \\
 	& = \int_{0}^{\infty}p(n_k |s_k, n_{1:k-1}, \theta)p(s_k|n_{1:k-1}, \theta)\mathrm{d}s_k \\
 	& = \int_{0}^{\infty}p(n_k |s_k, n_{1:k-1}, \theta)p(s_k|n_{k-\tau}, \theta)\mathrm{d}s_k
 	\end{align*}
 	since $S_k$ depends only on $n_{t-\tau}$.
-	Therefore, sampling $N$ times $S_k$ from a well chosen (i.e close to $p(s_k|n_{k-\tau}, \theta)$) importance distribution $q(s_k|n_{k-\tau}, n_k, \theta)$ leads to the following unbiased estimate $\hat{p}(n_k|n_{1:k-1}, \theta) = \frac{1}{N}\sum_{i=1}^{N}w_k^i(s_k^i)$ where $w_k^i =p(n_k |s_k^i, n_{1:k-1}, \theta)\frac{p(s_k^i|n_{1:k-1}, \theta)}{q(s_k^i|n_{k-\tau}, n_k, \theta)}$. \\
+	Therefore, sampling $N$ times $S_k$ from a well chosen (i.e close to $p(s_k|n_{k-\tau}, \theta)$) importance distribution $q(s_k|n_{k-\tau}, n_k, \theta)$ leads to the following unbiased estimate $\hat{p}(n_k|n_{1:k-1}, \theta) = \frac{1}{N}\sum_{i=1}^{N}w_k(s_k^i)$ where $w_k(s_k^i) =p(n_k |s_k^i, n_{1:k-1}, \theta)\frac{p(s_k^i|n_{k-\tau}, \theta)}{q(s_k^i|n_{k-\tau}, n_k, \theta)}$. \\
 	However, $p(n_k |s_k, n_{1:k-1}, \theta)$ is intractable in Nicholson's blowfly experiment model. Nonetheless we can applied the same technique as above a second time:
 	\begin{align*}
 	p(n_k |s_k, n_{1:k-1}, \theta) & = \int_{0}^{\infty}p(n_k, r_k|s_k, n_{1:k-1}, \theta)\mathrm{d}r_k \\
 	& = \int_{0}^{\infty}p(n_k| r_k, s_k, n_{1:k-1}, \theta)p( r_k|n_{1:k-1}, s_k \theta)\mathrm{d}r_k \\
-	& = \int_{0}^{\infty}\delta(n_k = r_k + s_k)p(r_k|n_{k-1} \theta)\mathrm{d}r_k
+	& = \int_{0}^{\infty}\delta(n_k = r_k + s_k)p(r_k|n_{k-1}, \theta)\mathrm{d}r_k
 	\end{align*}
-	since $p(n_k| r_k, s_k, n_{1:k-1}, \theta)=p(n_k| r_k, s_k)$ which is equal to 1 if $n_k = r_k + s_k$ and 0 otherwise (denoted by the use of Kronecker's delta symbol $\delta_x(y) = 1$ if $x=y$ and 0 otherwise) and $r_k$ conditional on $n_{k-1}$ is independent of $s_k$ and $n_{1:k-2}$. \\
-	Therefore, if we sample $M$ times $R_k$ from another well chose importance distribution, we obtain the following unbiased estimate of $p(n_k |s_k, n_{1:k-1}, \theta)$: $\hat{p}(n_k |s_k, n_{1:k-1}, \theta)=\frac{1}{M}\sum_{j=1}^{M}\tilde{w}_k^j(r_k^j)(s_k)$ where $\tilde{w}_k^j(s_k) =\delta(n_k = r_k^j + s_k)\frac{p(r_k^j|n_{k-1} \theta)}{q(r_k^j|n_{k-1}, n_k, \theta)}$. \\
-	Finally using iterated conditional expectation, it is easy to see that, combining the two previous unbiased estimates, we obtain another unbiased estimate of $p(n_k|n_{1:k-1},\theta)$ which is:
+	since $p(n_k| r_k, s_k, n_{1:k-1}, \theta)=p(n_k| r_k, s_k)$, which is equal to 1 if $n_k = r_k + s_k$ and 0 otherwise (denoted by the use of Kronecker's delta symbol $\delta_x(y) = 1$ if $x=y$ and 0 otherwise), and $r_k$ conditional on $n_{k-1}$ is independent of $s_k$ and $n_{1:k-2}$. \\
+	Therefore, if we sample $M$ times $R_k$ from another well chosen importance distribution, we obtain the following unbiased estimate of $p(n_k |s_k, n_{1:k-1}, \theta)$: $\hat{p}(n_k |s_k, n_{1:k-1}, \theta)=\frac{1}{M}\sum_{j=1}^{M}w_k^j(s_k)$ where $w_k^j(s_k) =\delta(n_k = r_k^j + s_k)\frac{p(r_k^j|n_{k-1} \theta)}{q(r_k^j|n_{k-1}, n_k, \theta)}$. \\
+	Finally, using iterated conditional expectation, it is easy to see that, combining the two previous unbiased estimates, we obtain another unbiased estimate of $p(n_k|n_{1:k-1},\theta)$ which is:
 	\begin{equation}
-	\hat{p}(n_k|n_{1:k-1},\theta) = \frac{1}{N}\sum_{i=1}^{N}\frac{1}{M}\sum_{j=1}^{M}\tilde{w}_k^j(s_k^i)\frac{p(s_k^i|n_{1:k-1}, \theta)}{q(s_k^i|n_{k-\tau}, n_k, \theta)}
+	\hat{p}(n_k|n_{1:k-1},\theta) = \frac{1}{N}\sum_{i=1}^{N}\frac{1}{M}\sum_{j=1}^{M}w_k^j(s_k^i)\frac{p(s_k^i|n_{k-\tau}, \theta)}{q(s_k^i|n_{k-\tau}, n_k, \theta)}
 	\end{equation}
 	This method is called a \emph{random weights particle filter} and was first described in a contribution by Rousset and Doucet to the article by Beskos et al.~\cite{beskos2006exact} where the use of random weights was first introduced for discretely observed diffusion processes.\\
-	To summarise, the particle filter we used is described in Algorithm~\ref{RWPF}. Its time complexity is $\mathcal{O}(MN)$, to contrast to the particle filter used in Algorithm~\ref{pmmh}, whereas its space complexity remains $\mathcal{O}(N)$. \\
+	The pseudo-code of the implementation of this random weights particle filter can be found in Algorithm~\ref{RWPF}. Its time complexity is $\mathcal{O}(MN)$, to contrast with the one of the particle filter used in Algorithm~\ref{pmmh}, whereas its space complexity remains $\mathcal{O}(N)$.
 	
-	There remain to find closed for equations for $p_s(s_k|n_{k-\tau}, \theta)$ and $p_r(r_k|n_{k-1}, \theta)$ and to design importance proposal for both $r_k$ and $s_k$. Both $r_k$ and $s_k$ densities, conditional on $n_{1:{k-1}}$ are compounded distributions. $r_k$ density is a Poisson distribution with a Gamma distributed parameter. Since a Gamma distribution is the conjugate prior of a Poisson, the resulting distribution has a closed form and is know as Negative-Binomial. It is a discrete distribution, whose support is $\mathbb{R}$, parametrised by two coefficients $r$ and $p$, where $r$ can be seen as the number of failures, and $p$ the probability of success. $P(X=k)$, where $X\sim \operatorname{NB}(r, p)$, is thus the probability that $k$ successes occur before the r\textsuperscript{th} failure. Its density can be expressed as: 
+	There remain to find closed form equations for $p_s(s_k|n_{k-\tau}, \theta)$ and $p_r(r_k|n_{k-1}, \theta)$ and to design importance proposal for both $r_k$ and $s_k$. Both $r_k$ and $s_k$ densities, conditional on $n_{1:{k-1}}$ are compounded distributions. $r_k$ density is a Poisson distribution with a Gamma distributed parameter. Since a Gamma distribution is the conjugate prior of a Poisson, the resulting distribution has a closed form and is know as Negative-Binomial. It is a discrete distribution, whose support is $\mathbb{R}$, parametrised by two coefficients $r$ and $p$, where $r$ can be seen as a number of failures and $p$ a probability of success, with $P(X=k)$, where $X\sim \operatorname{NB}(r, p)$, is the probability that $k$ successes occur before the r\textsuperscript{th} failure. Its density can be expressed as: 
 	\begin{equation*}
 	P(X=k) = \binom{r+k-1}{k}p^k(1-p)^r
 	\end{equation*}
-	Applied to our case it yields $p_r(r_k|n_{t-\tau}, \theta) = \operatorname{NB}(\alpha, \frac{\beta(n_{k-\tau})}{\beta(n_{k-\tau}) + \alpha})$ where  $\beta(n_{k-\tau}) = Pn_{k-\tau}e^{-\frac{n_{k-\tau}}{N_0}}$ and $\alpha = \sigma_p^{-2}$. Derivation can be found in Appendix~\cref{rDensity}.
-	As for $q_r(\ \cdot \ ; n_{k-\tau}, n_k)$ it is just the afore mentioned Negative-Binomial restricted to the interval $[0, n_t]$. \\
+	Applied to our case, it gives $p_r(r_k|n_{t-\tau}, \theta) = \operatorname{NB}(\alpha, \frac{\beta(n_{k-\tau})}{\beta(n_{k-\tau}) + \alpha})$ where  $\beta(n_{k-\tau}) = Pn_{k-\tau}e^{-\frac{n_{k-\tau}}{N_0}}$ and $\alpha = \sigma_p^{-2}$. Derivation can be found in Appendix~\ref{rDensity}.
+	The proposal $q_r(\ \cdot \ ; n_{k-\tau}, n_k)$ we chose was just the afore mentioned Negative-Binomial restricted to the interval $[0, n_t]$.
 	
-	The distribution of $s_k$ conditional on $n_{k-1}$ and $\theta$ is a Binomial whose probability of success is Gamma distributed. This compounded distribution does not yield any known distributions. However, using derivations presented in Appendix~\cref{sDensity}, a closed for can be found for $p(s_k|n_{k-1}, \theta)$ which is:
+	The distribution of $s_k$ conditional on $n_{k-1}$ and $\theta$ is a Binomial whose probability of success is Gamma distributed. This compounded distribution does not yield any known distribution. However, using derivations presented in Appendix~\ref{sDensity}, a closed for can be found for $p(s_k|n_{k-1}, \theta)$ which is:
 	\begin{equation*}
 	p(s_k|n_{k-1}, \theta) = \binom{n_{k-1}}{s_k}\alpha^\alpha\sum_{l=0}^{n_{k-1}-s_k}\binom{n_{k-1}-s_k}{l}\frac{(-1)^l}{(\delta(s_k+l)+\alpha)^\alpha}
 	\end{equation*}
 	where $\alpha = \sigma_d^{-2}$. \\
 	
-	The proposal distribution $q(s_k|n_{k-1}, n_k, \theta)$ was designed as follow. Even though $p(s_k|n_{k-1}, n_k, \theta)$ is not a known distribution, compounding a Binomial distribution $\operatorname{Binomial}(N, p)$ with a Beta distribution, i.e with $p \sim \operatorname{Beta}(\beta_1,  \beta_2)$ yields a Beta-Binomial distribution $\operatorname{Beta-Binomial}(N, \beta_1, \beta_2)$. Therefore, we approximated $e^{-\delta v_t}$, where $v_t \sim \operatorname{Gamma}(\sigma_d^{-2}, \sigma_d^{-2})$, whose support is $[0, 1]$ by a Beta distribution, using the same methodology as in Section~\ref{pfRIcker}, that is to say minimizing their Kullback Leibler divergence. Parametrising the Beta distribution which minimise the KL divergence with coefficients $a$ and $b$, we have:
+	The proposal distribution $q(s_k|n_{k-1}, n_k, \theta)$ was designed as follow. Even though $p(s_k|n_{k-1}, n_k, \theta)$ is not a known distribution, compounding a Binomial distribution $\operatorname{Binomial}(N, p)$ with a Beta distribution, i.e having $p \sim \operatorname{Beta}(\beta_1,  \beta_2)$, yields a Beta-Binomial distribution $\operatorname{Beta-Binomial}(N, \beta_1, \beta_2)$ when $p$ is marginalised out. Therefore, we approximated $e^{-\delta v_t}$, where $v_t \sim \operatorname{Gamma}(\sigma_d^{-2}, \sigma_d^{-2})$, and whose support is $[0, 1]$, by a Beta distribution, using the same methodology as in Section~\ref{pfRIcker}, that is to say minimizing their Kullback Leibler divergence. Parametrising the Beta distribution which minimise the KL divergence with coefficients $a$ and $b$, we have:
 	\[	\begin{cases}
 	& -\psi^{(0)}(a+b) + \psi^{(0)}(a) + 1 = 0 \\
 	& -\psi^{(0)}(a+b) + \psi^{(0)}(b) - K  = 0
 	\end{cases}\]
-	where $K=\int_{0}^{1}\log(1-p)\frac{\alpha^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\alpha-1}\mathrm{d}p$ with $\alpha = \sigma_d^{-2}$. Solutions are found numerically and need to be computed only once each time the particle filter is used since they depend only on $\sigma_d^{-2}$ and $\delta$. Figure~\ref{fig:qqBlow} shows a QQ-plot of the true distribution $p(s_k|n_{k-1}, \theta)$ against its Beta-Binomial approximation for typical values of the model (i.e $n_{k-1} = 1000$, $\delta=0.16$ and $\sigma_d=0.3$). Finally, the proposal $q(s_k|n_{k-1}, n_k, \theta)$ is simply the Beta-Binomial approximation restricted to the range $[0, n_t]$.
+	where $K=\int_{0}^{1}\log(1-p)\frac{\alpha^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\alpha-1}\mathrm{d}p$ with $\alpha = \sigma_d^{-2}$. Solutions are found numerically and need to be computed only once each time the particle filter is used, since they depend only on the fixed model parameters $\sigma_d^{-2}$ and $\delta$. Figure~\ref{fig:qqBlow} shows a QQ-plot of the true distribution $p(s_k|n_{k-1}, \theta)$ against its Beta-Binomial approximation, for typical values of the model (i.e $n_{k-1} = 1000$, $\delta=0.16$ and $\sigma_d=0.3$). Finally, the proposal $q(s_k|n_{k-1}, n_k, \theta)$ is simply the Beta-Binomial approximation restricted to the range $[0, n_t]$.
 	
 	\subsection{Synthetic Data}
-	In order to assess the quality of the particle filter described in Algorithm~\ref{RWPF} we first tested it on simulated datasets. We used realistic values for the parameters, given by Fasiolo et al.\cite{fasiolo2014statistical}, i.e $T=100$ $P=6.5$, $N_0=40$, $\delta=0.16$ and $\sigma_p^2=sigma_d^2=0.1$.
+	In order to assess the quality of the particle filter described in Algorithm~\ref{RWPF} we first tested it on simulated datasets. We used realistic values for the parameters, given by Fasiolo et al.\cite{fasiolo2014statistical}, i.e $T=100$, $P=6.5$, $N_0=40$, $\delta=0.16$ and $\sigma_p^2=\sigma_d^2=0.1$.
 	
-	Figure~\ref{fig:essBlow} shows the evolution of the effective sample size as the number of samples use to calculate the random weights (called \emph{inner particles} now on) increases, for a fixed number of particles equal to 500. It can be seen that when the observations are decreasing or in a region of low values the ESS is high and increases (to almost its maximal value) with the number of inner particles. However in region where the population quickly increases the ESS sharply drops, to values around 10, and is not improved by an increased number of inner samples. This is due to the fact that the calculation of the ramdom weights involves $\delta(n_k = r_k+s_k)$ and that moving from a region of low values, where the support of the proposal is thus small, to a region of high values, where the support of the densities increases. Therefore the probability $P(R_k+S_k=l)$ decreases. \\
-	This is confirmed by the fact that introducing a tolerance $\epsilon$ fixed equal to 0.05, i.e replacing $\delta(n_k = r_k+s_k)$ by $\delta(\frac{|n_k - r_k+s_k|}{n_k} < \epsilon)$ yields improved ESS in region of sharply increasing population as shown in Figure~\ref{fig:essBlowTol}. Note, however, that the random weights are now biased, and therefore the likelihood estimate given by the particle filter. Nonetheless, a small enough tolerance should allow to obtain likelihood estimates not too far from the true value. Moreover the increase in ESS is now minor as the number of inner samples increases. \\
+	Figure~\ref{fig:essBlow} shows the evolution of the effective sample size as the number of samples use to calculate the random weights (called \emph{inner particles} now on) increases, for a fixed number of particles equal to 500. It can be seen that when the observations are decreasing, or in regions of low values, the ESS is high and increases (to almost its maximal value) with the number of inner particles. However, in regions where the population quickly increases the ESS sharply drops, to values around 10, and is not improved by an increased number of inner particles. This is due to the fact that the calculation of the ramdom weights involves $\delta(n_k = r_k+s_k)$ and that when moving from a region of low values, where the support of the proposal is small, to a region of high values, where the support of the densities increases, the probability $P(R_k+S_k=l)$ decreases. \\
+	This is confirmed by the fact that introducing a fixed tolerance $\epsilon$  equal to 0.05, i.e replacing $\delta(n_k = r_k+s_k)$ by $\delta(\frac{|n_k - r_k-s_k|}{n_k} < \epsilon)$, yields improved ESS in region of sharply increasing population, as shown in Figure~\ref{fig:essBlowTol}. Note, however, that the random weights are now biased, and also is therefore the likelihood estimate given by the particle filter. Nonetheless, a small enough tolerance should allow to obtain likelihood estimates not too far from the true value. Moreover, the increase in ESS is now minor as the number of inner samples increases.
 	
 	Transects of the log-likelihood for all the parameters using a fixed tolerance $\epsilon=0.05$ are displayed in Figure~\ref{fig:transectBlow}.
 	
@@ -381,34 +383,35 @@
 		\caption{Particle filter}\label{pf}
 		\begin{algorithmic}[1]
 			\Function{PARTICLE-FILTER}{N, T, $\theta$}
-			\BState t=0: // initialization
-			\ForAll{$i \in \{1, \cdots, N\}$} 
-			\State Sample $N_0^{(i)} \sim q_0(n_0|\theta)$
+			\BState t=0: $\sslash$initialization
+			\ForAll{$i \in \{1, \text{...}\ , N\}$} 
+			\State Sample $n_0^{(i)} \sim q_0(n_0|\theta)$
 			\State Set $w_0^{(i)} \gets \frac{1}{N}$
-			\State Set $\hat{l_0} \gets 0$ // initialize log-likelihood
-			\State Set $\mathrm{ESS}_0 \gets N$ // initialize ESS
-			\State Set $\hat{n}_0 \gets n_0$ // initialize state
-			\State Set $t \gets 1$
 			\EndFor
+			\State Set $\hat{l_0} \gets 0$ $\sslash$initialize log-likelihood
+			\State Set $\mathrm{ESS}_0 \gets N$ $\sslash$initialize ESS
+			\State Set $\hat{n}_0 \gets \frac{1}{N}\sum_{i=1}^{N}n_0^{(i)}$ $\sslash$initialize state
+			\State Set $t \gets 1$
 			\item[]
 			\BState $1 \le t \le T$:
 			\While{$t \le T$}
-			\State Sample $(a_t^{(1)}, \cdots, a_t^{(N)} \sim \mathrm{Multinomial}(w_{t-1}^{(1)}, \cdots, w_{t-1}^{(N)})$ // ancestors 
-			\ForAll{$i \in \{1, \cdots, N\}$}
-			\State Set $\alpha, \beta \gets \text{CALC-PARAM}(n_{t-1}, \theta)$ // proposal parameters
+			\State Sample $(a_t^{(1)},\text{...}\ , a_t^{(N)}) \sim \mathrm{Multinomial}(w_{t-1}^{(1)}, \text{...}\ , w_{t-1}^{(N)})$ $\sslash$ancestors' index
+			\ForAll{$i \in \{1, \text{...}\ , N\}$}
+			\State Set $\alpha, \beta \gets \text{CALC-PARAM}(n_{t-1}, \theta)$ $\sslash$proposal parameters
 			\item[]
-			\State Sample $n_t^{(i)} \sim q(n_t| n_{t-1}^{a_t^{(i)}}, y_t, \theta)$ // propagate particle
+			\State Sample $n_t^{(i)} \sim q(n_t| n_{t-1}^{a_t^{(i)}}, y_t, \alpha, \beta)$ $\sslash$propagate particle
 			\item[]
-			\State Set $w_t^{(i)} \gets \frac{\strut p(n_t|n_{t-1}^{a_t^{(i)}}, \theta)}{\strut p(y_t|n_t^{(i)}, \theta)q(n_t|n_{t-1}^{a_t^{(i)}, \theta}, y_t)}$ // weight particle
+			\State Set $w_t^{(i)} \gets \frac{\strut p(y_t|n_t^{a_t^{(i)}}, \theta)p(n_t|n_{t-1}^{a_t^{(i)}}, \theta)}{\strut q(n_t|n_{t-1}^{a_t^{(i)}}, y_t, \alpha, \beta)}$ $\sslash$weight particle
 			\EndFor
 			\item[]
 			\State $\hat{l}_t \gets \hat{l}_{t-1} - \log N + \log\sum_{i=1}^{N}w_t^{(i)}$
-			\State Normalize $(w_t^{(0)}, \cdots, w_t^{(N)})$
-			\State Set $\mathrm{ESS_t} \gets (\sum_{i=1}^{N}(\mathrm{W}_t^{(i)})^2)^{-1}$ // W denotes a normalized weight
+			\State Normalize $(w_t^{(0)}, \text{...}\ , w_t^{(N)})$
+			\State Set $\mathrm{ESS_t} \gets (\sum_{i=1}^{N}(\mathrm{W}_t^{(i)})^2)^{-1}$ $\sslash$W denotes a normalized weight
 			\State Set $\hat{n}_t \gets \sum_{i=1}^{N}\mathrm{W}_t^{(i)}n_t^{(i)}$
+			\State Set $t \gets t+1$
 			\EndWhile
 			\item[]
-			\Return $\hat{l}_T$, $(\hat{n}_0, \cdots, \hat{n}_T)$,  $(\mathrm{ESS}_0, \cdots, \mathrm{ESS}_T)$
+			\Return $\hat{l}_T$, $(\hat{n}_0, \text{...}\ , \hat{n}_T)$,  $(\mathrm{ESS}_0,\text{...}\ , \mathrm{ESS}_T)$
 			\EndFunction
 		\end{algorithmic}
 	\end{algorithm}
@@ -417,38 +420,38 @@
 		\caption{Particle Marginal Metropolis Hastings Sampler}\label{pmmh}
 		\begin{algorithmic}[1]
 			\Function{PMMH}{N, T, $\theta_0$, filter, burnin, adaptation, samples, L}
-			\State $l_0 \gets \text{filter}(N, T, \theta_0)$
-			\ForAll{$i \in \{1, \cdots, \text{burnin}\}$}
-			\State $\theta_i, l_i, \alpha_i \gets \text{ROUTINE}(N, T, \theta_{i-1}, l_{i-1}, \text{filter})$
-			\EndFor
-			\ForAll{$i \in \{\text{burnin}, \cdots, \text{adaptation}\}$}
-			\State $\hat{\alpha}_\Sigma \gets 0$
-			\ForAll{$j \in \{1, \cdots, L\}$}
-			\State $\theta_i, l_i, \alpha_i \gets \text{ROUTINE}(N, T, \theta_{i-1}, l_{i-1}, \text{filter})$
-			\State $\hat{\alpha}_\Sigma \gets \hat{\alpha}_\Sigma + \frac{1}{L}\alpha_i$
+			\State $l_0 \gets \text{filter}(N, T, \theta_0)$ $\sslash$initialize likelihood
+			\ForAll{$i \in \{1, \text{...}\ , \frac{\text{adaptation}}{L}\}$} $\sslash$adaptation phase
+			\State $\hat{\alpha}_\Sigma \gets 0$ $\sslash$initialize acceptance rate estimate
+			\ForAll{$j \in \{1, \text{...}\ , L\}$}
+			\State $\theta_{iL+j}, l_{iL+j}, \alpha_{iL+j} \gets \text{ROUTINE}(N, T, \theta_{iL+j-1}, l_{iL+j-1}, \text{filter})$
+			\State $\hat{\alpha}_\Sigma \gets \hat{\alpha}_\Sigma + \frac{1}{L}\alpha_{iL+j}$
 			\EndFor
 			\State $\Sigma \gets \text{RESCALE}(\hat{\alpha}_\Sigma, \Sigma)$
 			\EndFor
-			\ForAll{$i \in \{\text{adaptation}, \cdots, \text{samples}\}$}
+			\ForAll{$i \in \{\text{adaptation}, \text{...}\ , \text{adaptation+burnin}\}$}$\sslash$burnin phase
 			\State $\theta_i, l_i, \alpha_i \gets \text{ROUTINE}(N, T, \theta_{i-1}, l_{i-1}, \text{filter})$
 			\EndFor
-			\Return $(\theta_{\text{adaptation}},\theta_{\text{adaptation}+1}, \cdots, \theta_{\text{samples}})$
+			\ForAll{$i \in \{\text{adaptation+burnin}, \text{...}\, \text{samples}\}$}
+			\State $\theta_i, l_i, \alpha_i \gets \text{ROUTINE}(N, T, \theta_{i-1}, l_{i-1}, \text{filter})$
+			\EndFor
+			\Return $(\theta_{\text{adaptation+burnin}},\theta_{\text{adaptation+burnin}+1}, \text{...}\ , \theta_{\text{samples}})$
 			\EndFunction
 		\end{algorithmic}
 	\end{algorithm}
 	
 	\begin{algorithm}
-		\caption{Routine for PMMH Sampler}\label{routine}
+		\caption{Routine for PMMH Sampler which accepts or rejets a move in the parameter space.}\label{routine}
 		\begin{algorithmic}[1]
 			\Function{ROUTINE}{N, T, $\theta$, $l$, filter}
-			\State $\theta^* \gets q_{RW}(\theta, \Sigma)$
-			\State $l^* \gets \text{filter}(N, T, \theta^*)$
-			\State $\alpha(\theta, \theta^*) = l^*+\log q(\theta|\theta^*) + \log p(\theta) - l - \log q(\theta^*|\theta) - \log p(\theta^*)$
+			\State $\theta^* \gets q_{RW}(\theta, \Sigma)$ $\sslash$proposed parameters
+			\State $l^* \gets \text{filter}(N, T, \theta^*)$ $\sslash$likelihood estimate
+			\State $\alpha(\theta, \theta^*) = l^*+\log q(\theta|\theta^*) + \log p(\theta) - l - \log q(\theta^*|\theta) - \log p(\theta^*)$ $\sslash$acceptance rate
 			\State Sample $u \sim \text{U}([0, 1])$
 			\If{$\log u \le \alpha(\theta, \theta^*)$}
-			\State \Return $\theta^*$, $l^*$, $\alpha$
+			\State \Return $\theta^*$, $l^*$, $\alpha$ $\sslash$accept move
 			\Else
-			\State \Return $\theta$, $l$, $\alpha$
+			\State \Return $\theta$, $l$, $\alpha$ $\sslash$reject move
 			\EndIf
 			\EndFunction
 		\end{algorithmic}
@@ -457,15 +460,11 @@
 	
 	\begin{figure}[htb]
 		\centering
-		\begin{minipage}{0.4\textwidth}
-			\centering
-			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/stability.pdf}
-		\end{minipage}
-		\begin{minipage}{0.4\textwidth}
+		\begin{minipage}{0.9\textwidth}
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/bifucdiagram.pdf}
 		\end{minipage}
-		\caption{\textbf{(left)}Bifurcation diagram of the Ricker map. \textbf{Dotted} lines correspond to unstable equilibria and \textbf{solid} lines to stable ones. \textbf{(right)} Bifurcation diagram of the Ricker Map.}
+		\caption{Bifurcation diagram of the Ricker Map.}
 		\label{fig:stability}
 	\end{figure}
 
@@ -479,7 +478,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/stable_ricker.pdf}
 		\end{minipage}
-		\caption{Convergence towards the equilibria of the Ricker map}
+		\caption{Convergence of the Ricker map towards single value equilibrium.}
 		\label{fig:stab}
 	\end{figure}
 
@@ -493,7 +492,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/4values_ricker.pdf}
 		\end{minipage}
-		\caption{\textbf{(left)} The population size oscillates before converging towards equilibrium. \textbf{(right)} The population sizes describes an orbit of length four.}
+		\caption[Examples of oscillation and orbit of the Ricker map.]{\textbf{(left)} The population size oscillates before converging towards a single value equilibrium. \textbf{(right)} The population size describes an orbit of length four.}
 		\label{fig:oscill}
 	\end{figure}
 	
@@ -507,7 +506,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/initchange.pdf}
 		\end{minipage}
-		\caption{\textbf{(left)} Evolution of the population size when \textbf{(black)}$r=50$ and \textbf{(red)}$r=50.1$ with initial value $N_0=7$. \textbf{(right)} Evolution of the population size when \textbf{(black)}$N_0=7$ and \textbf{(red)}$N_0=7.1$ with $r=50$.}
+		\caption[Examples of the chaotic behaviour of the Ricker map.]{\textbf{(left)} Evolution of the population size when \textbf{(black)} $r=50$ and \textbf{(red)} $r=50.1$ with initial value $N_0=7$. \textbf{(right)} Evolution of the population size when \textbf{(black)} $N_0=7$ and \textbf{(red)} $N_0=7.1$ with $r=50$.}
 		\label{fig:chaos}
 	\end{figure}
 
@@ -522,18 +521,18 @@
 			Orbit of increasing length 8, 16, etc. & $14.24<r<14.76$ & - \\ 
 			Chaos &  $r>14.76$ &  Figure~\ref{fig:chaos} \\ \bottomrule
 		\end{tabular}
-		\caption{Variance and mean squared error of the maximum likelihood for r obtained using 50, 100, 200, 500, 1000 and 1500 particles}
+		\caption{Dynamical behaviour of the Ricker map as $r$ increases.}
 		\label{valuesr}
 	\end{table}	
 	
 
 	\begin{figure}[htb]
 		\centering
-		\begin{minipage}{0.4\textwidth}
+		\begin{minipage}{0.9\textwidth}
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/runningRicker.pdf}
 		\end{minipage}
-		\caption{Running time of Algorithm~\ref{pf}, averaged over 100 runs, for an increasing number of particles. In \textbf{red} is shown a linear intercept of the curve.}
+		\caption[Running time of the particle filter used on the Ricjer model.]{Running time of Algorithm~\ref{pf}, averaged over 100 runs, for an increasing number of particles. In \textbf{red} is shown a linear intercept of the curve.}
 		\label{fig:runningRicker}
 	\end{figure}
 
@@ -547,7 +546,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/ESSRickerGamma.pdf}
 		\end{minipage}
-		\caption{\textbf{(left)} Evolution of the effective sample size using \textbf{(left)} the prior proposal, \textbf{(right)} our gamma approximation to the optimal proposal.}
+		\caption[ESS of the particle filter used for the Ricker model depending on what proposal is used]{\textbf{(left)} Evolution of the effective sample size using \textbf{(left)} the prior proposal, \textbf{(right)} our gamma approximation to the optimal proposal.}
 		\label{fig:essRicker}
 	\end{figure}
 	
@@ -565,7 +564,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mleRickersigma.pdf}
 		\end{minipage}
-		\caption{Transect of the log-likelihood with respect to \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\caption[Transect of the log-likelihood of the Ricker model.]{Transect of the log-likelihood with respect to \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$. A \textbf{red} line denotes maximum likelihood estimates and a \textbf{black one} true parameter values.}
 		\label{fig:transect}
 	\end{figure}
 	
@@ -580,7 +579,7 @@
 			500 & 4.349490 & 2.206633 & 4.825 & 2.185\\ 
 			1000 & 3.490714 & 1.881224 & 3.661  & 2.228\\  \bottomrule
 		\end{tabular}
-		\caption{Variance and mean squared error of the maximum likelihood for $r$ obtained for an increasing number of particles. Index 1 denotes a prior proposal and index 2 our gamma approximation.}
+		\caption[Variance and mean squared error of the MLE of $r$]{Variance and mean squared error (MSE) of the maximum likelihood estimate of $r$ obtained for an increasing number of particles. Index 1 denotes a prior proposal and index 2 our gamma approximation.}
 		\label{table:mleR}
 	\end{table}
 
@@ -595,7 +594,7 @@
 			500 & 0.041 & 0.025 & 0.17 & 0.14\\
 			1000 & 0.021 & 0.018 & 0.17 & 0.14 \\ \bottomrule
 		\end{tabular}
-		\caption{Variance and mean squared error of the maximum likelihood for $\phi$ obtained for an increasing number of particles. Index 1 denotes a prior proposal and index 2 our gamma approximation.}
+		\caption[Variance and mean squared error of the MLE of $\phi$]{Variance and mean squared error (MSE) of the maximum likelihood estimate of $\phi$ obtained for an increasing number of particles. Index 1 denotes a prior proposal and index 2 our gamma approximation.}
 		\label{table:mlePhi}
 	\end{table}
 
@@ -610,23 +609,9 @@
 			500 & 1.32 & 1.00 & 1.73 & 1.78\\
 			1000 & 0.83 & 0.74 & 1.33 & 1.71 \\  \bottomrule
 		\end{tabular}
-		\caption{Variance and mean squared error (MSE) of the maximum likelihood for $\sigma$ obtained  for an increasing number of particles. Index 1 denotes a prior proposal and index 2 our gamma approximation. Values for variances and MSE are given in unit of $10^{-3}$}
+		\caption[Variance and mean squared error of the MLE of $\sigma$]{Variance and mean squared error (MSE) of the maximum likelihood estimate of $\sigma$ obtained  for an increasing number of particles. Index 1 denotes a prior proposal and index 2 our gamma approximation. Values of variances and MSE are given in unit of $10^{-3}$}
 		\label{table:mleSigma}
 	\end{table}
-
-	\begin{figure}[htb]
-		\centering
-		\begin{minipage}{0.4\textwidth}
-			\centering
-			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mleRicker_r_prior_500.pdf}
-		\end{minipage}
-		\begin{minipage}{0.4\textwidth}
-			\centering
-			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/mleRicker_r_gamma_500.pdf}
-		\end{minipage}
-		\caption{}
-		\label{fig:comparisonR}
-	\end{figure}
 	
 	\begin{figure}[htb]
 		\centering
@@ -642,7 +627,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/traceRickerSameV3.pdf}
 		\end{minipage}
-		\caption{Traceplot of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\caption[Traceplots of a run of a PMMH sampler on data simulated from the Ricker model]{Traceplots of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$. The samples were obtained from a PMMH sampler using the gamma approximation to the optimal proposal.}
 		\label{fig:traceplotDiag}
 	\end{figure}
 	
@@ -660,7 +645,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/acfRickerSameV3.pdf}
 		\end{minipage}
-		\caption{Autocorrelation function of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$. The \textbf{(red)} is the theoretical asymptotic 95\% significance threshold.}
+		\caption[Autocorrelations functions of a run of a PMMH sampler on data simulated from the Ricker model]{Autocorrelation function of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$. The \textbf{(red)} line is the theoretical asymptotic 95\% significance threshold. The samples were obtained from a PMMH sampler using the gamma approximation to the optimal proposal.}
 		\label{fig:acfDiag}
 	\end{figure}
 	
@@ -678,7 +663,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/runningRickerSame3.pdf}
 		\end{minipage}
-		\caption{Running means of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\caption[Running means of a run of a PMMH sampler on data simulated from the Ricker model]{Running means of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$. The samples were obtained from a PMMH sampler using the gamma approximation to the optimal proposal.}
 		\label{fig:rmDiag}
 	\end{figure}
 
@@ -697,7 +682,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/gelmanRickerSame3.pdf}
 		\end{minipage}
-		\caption{Gelman-Rubin diagnostic for the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\caption[Gelman-Rubin diagnostic of the chains of a PMMH sampler on data simulated from the Ricker model]{Gelman-Rubin diagnostic for the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$. The samples were obtained from a PMMH sampler using the gamma approximation to the optimal proposal.}
 		\label{fig:gelmanDiag}
 	\end{figure}
 	
@@ -705,12 +690,12 @@
 		\centering
 		\ra{1.3}
 		\begin{tabular}{@{}cccc@{}} \toprule
-			Parameter & Fasiolo's MSE & LibBi MSE & our MSE\\ \midrule 
+			Parameter & MSE1 & MSE2 & MSE3\\ \midrule 
 			$r$ & 0.0109 & 0.0080 &  0.0086 \\ 
 			$\phi$ & $4 \ 10^{-4}$ & $1.0 \ 10^{-3}$ &  $7.3 \ 10^{-4}$ \\ 
 			$\sigma$ & 0.0446 & 0.023 & 0.018  \\ \bottomrule
 		\end{tabular}
-		\caption{Median squared errors of the posterior means obtained by Fasiolo and in our study.}
+		\caption[Comparison between the mean square errors of posterior estimates of the parameters obtain in this study and in Fasiolo's ]{Median squared errors (MSE) of the posterior means obtained by Fasiolo and in our study. Index 1 denotes Fasiolo's PMMH implementation, index 2 LibBi's and index 3 ours.}
 		\label{table:mse}
 	\end{table}
 
@@ -721,9 +706,9 @@
 			Method & Median &  Inter-quartile range & 1\textsuperscript{st} quartile & 3\textsuperscript{rd} quartile \\ \midrule 
 			Fasiolo & 0.004 & 0.015 & 0.001 & 0.016\\ 
 			LibBi & 0.0037 & 0.0051 &0.0018 & 0.0069 \\ 
-			Our implementation & 0.0039 &  0.0063 & 0.0017 & 0.0080\\ \bottomrule
+			This study & 0.0039 &  0.0063 & 0.0017 & 0.0080\\ \bottomrule
 		\end{tabular}
-		\caption{Values obtained for Fasiolo's custom error measure with the four methods.}
+		\caption[Comparison between Fasiolo's custim error measure for posterior estimates of the parameters obtain in this study and in Fasiolo's ]{Values obtained for Fasiolo's custom error measure for posterior estimates of the parameters using Fasiolo's implementation, LibBi's and ours.}
 		\label{table:metric}
 	\end{table}
 	
@@ -741,7 +726,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/acfLagopusV3.pdf}
 		\end{minipage}
-		\caption{Autocorrelation function of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$. The \textbf{(red)} is the theoretical asymptotic 95\% significance threshold.}
+		\caption[Autocorrelation functions of the samples from a PMMH algorithm run on real \emph{Lagopus lagopus scoticus} population data]{Autocorrelation function of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$ from a PMMH algorithm run on real \emph{Lagopus lagopus scoticus} population data. The \textbf{red} line is the theoretical asymptotic 95\% significance threshold.}
 		\label{fig:acfLagopus}
 	\end{figure}
 	
@@ -759,7 +744,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/runningLagopus3.pdf}
 		\end{minipage}
-		\caption{Running means of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\caption[Running means of the samples from a PMMH algorithm run on real \emph{Lagopus lagopus scoticus} population data]{Running means of the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$ from a PMMH algorithm run on real \emph{Lagopus lagopus scoticus} population data.}
 		\label{fig:rmLagopus}
 	\end{figure}
 	
@@ -778,7 +763,7 @@
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/gelmanLagopus3.pdf}
 		\end{minipage}
-		\caption{Gelman-Rubin diagnostic for the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$.}
+		\caption[Gelman-Rubin diagnostic of the chains of a PMMH algorithm run on real \emph{Lagopus lagopus scoticus} population data]{Gelman-Rubin diagnostic for the samples from the posterior density of \textbf{(top left)} $r$, \textbf{(top right)} $\phi$ and \textbf{(bottom)} $\sigma$ from a PMMH algorithm run on real \emph{Lagopus lagopus scoticus} population data.}
 		\label{fig:gelmanLagopus}
 	\end{figure}
 	
@@ -787,33 +772,34 @@
 		\begin{algorithmic}[1]
 			\Function{PARTICLE-FILTER}{N, M, T, $\theta$}
 			\State $t \gets 1$
-			\State $\hat{l}_0 \gets 0$
+			\State $\hat{l}_0 \gets 0$ $\sslash$initialisation of the log-likelihood
 			\While{$t \le T$}
-			\ForAll{$i \in \{1, \cdots, N\}$}
+			\ForAll{$i \in \{1, \text{...}\ , N\}$}
 			\State Sample $s_t^{(i)} \sim q_s(s_t| n_{t-\tau} \theta)$
-			\ForAll{$j \in \{1, \cdots, M\}$}
+			\ForAll{$j \in \{1, \text{...}\ , M\}$} $\sslash$inner particles
 			\State Sample $r_t^{(j)} \sim q_r(r_t| n_{t-1} \theta)$
 			\State $w_t^{(j)}(s_t^{(i)}) \gets \delta(n_t=r_t^{(j)}+s_t^{(i)})\frac{p(r_t^{(j)}| n_{t-1} \theta)}{q_r(r_t^{(j)}| n_{t-1} \theta)}$
 			\EndFor
 			\State $w_t^{(i)} \gets \frac{1}{M}\sum_{j=1}^{M}w_t^{(j)}(s_t^{(i)}) \frac{p(s_t^{(i)}| n_{t-\tau} \theta)}{q_s(s_t^{(i)}| n_{t-\tau} \theta)}$
 			\EndFor
 			\State $\hat{l}_t \gets \hat{l}_{t-1} - \log N + \log\sum_{i=1}^{N}w_t^{(i)}$
-			\State Normalize $(w_t^{(0)}, \cdots, w_t^{(N)})$
-			\State Set $\mathrm{ESS_t} \gets (\sum_{i=1}^{N}(\mathrm{W}_t^{(i)})^2)^{-1}$ // W denotes a normalized weight
+			\State Normalize $(w_t^{(0)}, \text{...}\ , w_t^{(N)})$
+			\State Set $\mathrm{ESS_t} \gets (\sum_{i=1}^{N}(\mathrm{W}_t^{(i)})^2)^{-1}$ $\sslash$W denotes a normalized weight
+			\State Set $t \gets t+1$
 			\EndWhile
 			\item[]
-			\Return $\hat{l}_T$,  $(\mathrm{ESS}_0, \cdots, \mathrm{ESS}_T)$
+			\Return $\hat{l}_T$,  $(\mathrm{ESS}_0, \text{...}\ , \mathrm{ESS}_T)$
 			\EndFunction
 		\end{algorithmic}
 	\end{algorithm}
 
 	\begin{figure}[htb]
 		\centering
-		\begin{minipage}{0.5\textwidth}
+		\begin{minipage}{0.9\textwidth}
 			\centering
 			\includegraphics[width=0.97\linewidth]{/home/raphael/dissertation/figures/qqBlow.pdf}
 		\end{minipage}
-		\caption{QQ-plot of the true distribution $p(s_t | n_{t-1}, \theta)$ against its Beta-Binomial approximation based on 10000 samples.}
+		\caption[QQ-plot of the true distribution $p(s_t | n_{t-1}, \theta)$ against its Beta-Binomial approximation.]{QQ-plot of the true distribution $p(s_t | n_{t-1}, \theta)$ against its Beta-Binomial approximation based on 10000 samples.}
 		\label{fig:qqBlow}
 	\end{figure}
 
