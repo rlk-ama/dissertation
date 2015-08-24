@@ -81,8 +81,14 @@ if __name__ == "__main__":
     maxi_idx = output['likeli'].index(maxi_variable)
     maxi = output['variables'][maxi_idx]
 
-    with open("/home/raphael/mle_{}_ricker.txt".format(arguments['variable']), "w") as f:
-        f.write(" ".join(map(str, output['likeli'])))
+    serial = zip(output['variables'], output['likeli'])
+    with open("/home/raphael/mle_{}_{}_{}_{}_blowfly.txt".format(arguments['variable'],
+                                                                 arguments.get('proposal', 'optimal'),
+                                                                 arguments.get('particles', 500),
+                                                                 int(arguments.get('tolerance', 0)*100)), "w") as f:
+        for elem in serial:
+            f.write(" ".join(map(str, elem)))
+            f.write("\n")
         f.write(" {} {}\n".format(str(output['variable']), str(maxi)))
 
     plt.plot(output['variables'], output['likeli'])

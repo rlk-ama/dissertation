@@ -6,14 +6,14 @@ from bootstrap.ricker_gamma import RickerMap
 from bootstrap.filter import BootstrapFilter
 from distributions.distributions2 import Gamma
 
-def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, NOS=50, NBS=1000, low=np.exp(2.5), high=np.exp(4.5),
+def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, scaling=1, NOS=50, NBS=1000, low=np.exp(2.5), high=np.exp(4.5),
                    discretization=0.5, observations=None, variable='r'):
 
     if inits == None:
         inits = Gamma().sample(np.array([3], dtype=np.float64), np.array([1], dtype=np.float64))
 
     if observations is None:
-        Map_ref = RickerMap(r, phi, sigma, length=NOS, initial=inits, approx="simple")
+        Map_ref = RickerMap(r, phi, sigma, scaling, length=NOS, initial=inits, approx="simple")
         observations = Map_ref.observations
     else:
         observations = observations
@@ -67,6 +67,7 @@ if __name__ == "__main__":
     parser.add_argument("--low", type=float, help="Start value for the variable in the state or observation equation")
     parser.add_argument("--high", type=float, help="End value for the variable in the state or observation equation")
     parser.add_argument("--discretization", type=float, help="Step in discretization of range of values for r parameters in the state equation N_t = r*N_{t-1}*exp(-N_{t-1})*exp(-Z_t)")
+    parser.add_argument("--scaling", type=float, help="Value for the scaling factor K in the state equation N_t = r*N_{t-1}*exp(-N_{t-1}/K)*exp(-Z_t)")
 
     args = parser.parse_args()
     arguments = {k:v for k,v in args.__dict__.items() if v}
@@ -81,6 +82,13 @@ if __name__ == "__main__":
     maxi_variable = max(output['likeli'])
     maxi_idx = output['likeli'].index(maxi_variable)
     maxi  = output['variables'][maxi_idx]
+
+    serial = zip(output['variables'], output['likeli'])
+    with open("/home/raphael/mle_{}_ricker.txt".format(arguments['variable']), "w") as f:
+        for elem in serial:
+            f.write(" ".join(map(str, elem)))
+            f.write("\n")
+        f.write(" {} {}\n".format(str(output['variable']), str(maxi)))
 
     plt.plot(output['variables'], output['likeli'])
     plt.axvline(x=output['variable'])
