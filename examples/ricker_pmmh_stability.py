@@ -1,6 +1,6 @@
 from bootstrap.filter import BootstrapFilter
 from bootstrap.ricker_gamma import RickerMap
-from proposals.proposals import RandomWalkProposal, MultivariateUniformProposal
+from proposals.proposals import RandomWalkProposal, MultivariateUniformProposal, MultivariateRandomWalkProposal
 from distributions.distributions2 import Gamma, Normal
 from pmcmc.pmmh import PMMH
 
@@ -8,16 +8,20 @@ import argparse
 import numpy as np
 
 def simulation(r=44.7, phi=10, sigma=0.3, scaling=1, NOS=50, NBS=500, iter=17500, chains=10, burnin=2500, adaptation=2500,
-               r_init=40, phi_init=10, sigma_init=0.2, scaling_init=1, target=0.2, target_low=0.15, observations=None, inits=None,
+               r_init=40, phi_init=10, sigma_init=0.3, scaling_init=1, target=0.2, target_low=0.15, observations=None, inits=None,
                filter_proposal='optimal', sigma_proposal_r=5, sigma_proposal_phi=0.5, sigma_proposal_sigma=0.1, sigma_proposal_scaling=0,
                scaling_model=False, particle_init=3):
 
     if scaling_model:
         sigma_proposals = [sigma_proposal_r, sigma_proposal_phi, sigma_proposal_sigma, sigma_proposal_scaling]
         initial_params = [r_init, phi_init, sigma_init, scaling_init]
+        target_mu = [40, 10, 0.3, 1]
+        proposals_bounds = [(1, 60), (1, 50), (0.01, 1.2), (1, 10000)]
     else:
         sigma_proposals = [sigma_proposal_r, sigma_proposal_phi, sigma_proposal_sigma]
         initial_params = [r_init, phi_init, sigma_init]
+        target_mu = [40, 10, 0.3]
+        proposals_bounds = [(1, 60), (1, 50), (0.1, 1.2)]
 
     if inits == None:
         inits = Gamma().sample(np.array([particle_init], dtype=np.float64), np.array([1], dtype=np.float64))
@@ -37,18 +41,21 @@ def simulation(r=44.7, phi=10, sigma=0.3, scaling=1, NOS=50, NBS=500, iter=17500
         'scale': 1,
     }
 
-    proposals = [RandomWalkProposal(sigma=sigma_proposal) for sigma_proposal in sigma_proposals]
-    prior = MultivariateUniformProposal(lows=np.array([param/2 for param in initial_params]), highs=np.array([1.5*param for param in initial_params]))
-    support = lambda x: all([x[i] > initial_params[i]/2 and x[i] < 1.5*initial_params[i] for i in range(len(initial_params))])
+    cov = np.diag(sigma_proposals)
+    lambdas = [2.38**2/len(initial_params)]*len(initial_params)
+    mean = np.array(target_mu)
+    proposals = MultivariateRandomWalkProposal(mean=mean, cov=cov, lambdas=lambdas)
+    prior = MultivariateUniformProposal(lows=np.array([bound[0] for bound in proposals_bounds]), highs=np.array([bound[1] for bound in proposals_bounds]))
+    support = lambda x: all([x[i] > proposals_bounds[i][0] and x[i] < proposals_bounds[i][1] for i in range(len(initial_params))])
+    #prior = MultivariateUniformProposal(lows=np.array([param/2 for param in initial_params]), highs=np.array([1.5*param for param in initial_params]))
+    #support = lambda x: all([x[i] > initial_params[i]/2 and x[i] < 1.5*initial_params[i] for i in range(len(initial_params))])
 
     for i in range(chains):
 
-        inits_sampler = [Normal().sample(np.array([initial_params[i]], dtype=np.float64),
-                                         np.array([sigma_proposals[i]], dtype=np.float64))[0] for i in range(len(initial_params))]
+        inits_sampler = proposals.sample(np.array(initial_params))
 
         while not(support(inits_sampler)):
-            inits_sampler = [Normal().sample(np.array([initial_params[i]], dtype=np.float64),
-                                         np.array([sigma_proposals[i]], dtype=np.float64))[0] for i in range(len(initial_params))]
+            inits_sampler = proposals.sample(np.array(initial_params))
 
         mcmc = PMMH(filter, map_, iter, proposals, prior, inits_sampler, inits, NOS, NBS, observations=observations,
                     support=support, adaptation=adaptation, burnin=burnin, target=target, target_low=target_low, initial_filter=initial_filter,
