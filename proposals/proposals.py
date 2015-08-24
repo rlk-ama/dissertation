@@ -1,4 +1,4 @@
-from distributions.distributions2 import Normal, MultivariateUniform
+from distributions.distributions2 import Normal, MultivariateUniform, MultivariateNormal
 from collections import Iterable
 import numpy as np
 
@@ -25,6 +25,33 @@ class RandomWalkProposal(object):
         if not isinstance(previous, Iterable):
             previous = _iterable(previous)
         return self.distribution.density(current, loc=previous, scale=self.sigma)
+
+class MultivariateRandomWalkProposal(object):
+
+    def __init__(self, mean, cov, lambdas):
+        self.mean = mean
+        self.cov = cov
+        self.lambdas = lambdas
+        self.distribution = MultivariateNormal()
+
+    def sample(self, previous):
+        if isinstance(self.cov, int):
+            self.cov = _iterable(self.cov)
+        if isinstance(previous, int):
+            previous = _iterable(previous)
+        cov = np.multiply(self.lambdas, self.cov)
+        return self.distribution.sample(mean=previous, cov=cov)
+
+    def density(self, current, previous):
+        if isinstance(self.cov, int):
+            self.cov= _iterable(self.cov)
+        if isinstance(current, int):
+            current = _iterable(current)
+        if isinstance(previous, int):
+            previous = _iterable(previous)
+        cov = np.multiply(self.lambdas, self.cov)
+        return self.distribution.density(current, mean=previous, cov=cov)
+
 
 class MultivariateUniformProposal(object):
 

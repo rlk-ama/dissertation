@@ -13,6 +13,7 @@ from libc.math cimport lgamma, log, exp
 from collections import Iterable
 from scipy.special import betaln, beta
 from scipy.misc import comb
+from scipy.stats import multivariate_normal
 
 cdef double PI = 3.14159265358979323846
 
@@ -114,6 +115,21 @@ class Normal(object):
 
     def density(self, double[::1] x, double[::1] loc, double[::1] scale):
         return density_normal_array(x, loc, scale)
+
+class MultivariateNormal(object):
+
+
+    def sample(self, double[::1] mean, double[:, ::1] cov):
+        cdef int dim, i
+        cdef double[::1] output
+        output = multivariate_normal.rvs(mean=mean, cov=cov, size=1)
+        return output
+
+    def density(self, double[::1] x, double[::1] mean, double[:, ::1] cov):
+        cdef int dim, i
+        cdef double output
+        output =  multivariate_normal.pdf(x, mean=mean, cov=cov)
+        return output
 
 class LogNormal(object):
 
