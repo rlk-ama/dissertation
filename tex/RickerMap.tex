@@ -88,7 +88,7 @@
 	
 	\clearpage
 	\begin{abstract}
-		We investigated in this dissertation the use of a class of Particle Markov Chain Monte Carlo (PMCMC) algorithms, the Particle Marginal Metropolis Hastings sampler (PMMH), to perform bayesian inference on ecological data. We focused more specifically on two famous population dynamics models. The first one is the noisily observed Ricker map (NRM). It is a state space model built around the Ricker map to account for observational and process noise. The second one is a model proposed by Wood~\cite{wood2010statistical} to solve the stochastic version of the differential equation which describes Nicholson's sheep blowfly experiments data. These two models are challenging from the inference perspective since, depending on the values of the parameters, they can describe asymptotically converging, periodic and chaotic population dynamics. We expanded on the work of Fasiolo et al.\cite{fasiolo2014statistical} to develop PMMH algorithms tailored to the statistical properties of each model. More specifically we obtained unbiased likelihood estimates using particle filters based on proposal distributions which minimize their Kullback-Leibler divergence with their target, and are thus good importance distributions. In the case of Nicholson's experiments, due to further intractability, we used a variant of the particle filter, called random weights particle filter, where the importance weights are unbiased estimates of the true ones. Our algorithm for the NRM model gave, on synthetic data, more stable  posterior means than those of Fasiolo, and for a cheaper computational cost. We also tested the model on real data from the Global Population Dynamic Database (GPDD) with satisfactory results. We found that across a representative sample of datasets PMMH chains were mixing well and converging to the same posterior parameter estimates. However, we encountered difficulties in the case of Nicholson's blowfly model. Because of particle depletion, chains obtained from sampling were either hardly mixing of too correlated, adaptation failing to strike a correct balance. Introduction of biased weights tempered particle depletion enabling PMMH samplers to mix fairly well. However, as expected, this resulted in biased parameter posterior estimates. Moreover, the method developed was computationally expensive.
+		We investigated in this dissertation the use of a class of Particle Markov Chain Monte Carlo (PMCMC) algorithms, the Particle Marginal Metropolis Hastings sampler (PMMH), to perform bayesian inference on ecological data. We focused more specifically on two famous population dynamics models. The first one is the noisily observed Ricker map (NRM). It is a state space model built around the Ricker map to account for observational and process noise. The second one is a model proposed by Wood~\cite{wood2010statistical} to solve the stochastic version of the differential equation which describes Nicholson's sheep blowfly experiments data. These two models are challenging from the inference perspective since, depending on the values of the parameters, they can describe asymptotically converging, periodic and chaotic population dynamics. We expanded on the work of Fasiolo et al.\cite{fasiolo2014statistical} to develop PMMH algorithms tailored to the statistical properties of each model. More specifically we obtained unbiased likelihood estimates using particle filters based on proposal distributions which minimize their Kullback-Leibler divergence with their target, and are thus good importance distributions. In the case of Nicholson's experiments, due to further intractability, we used a variant of the particle filter, called random weights particle filter, where the importance weights are unbiased estimates of the true ones. Our algorithm for the NRM model gave, on synthetic data, more stable  posterior means than those of Fasiolo, and for a cheaper computational cost. We also tested the model on real data from the Global Population Dynamic Database (GPDD) with satisfactory results. We found that across a representative sample of datasets PMMH chains were mixing well and converging to the same posterior parameter estimates. However, we encountered difficulties in the case of Nicholson's blowfly model. Because of particle depletion, chains obtained from sampling were either hardly mixing of too correlated, adaptation failing to strike a correct balance. Introduction of biased weights tempered particle depletion enabling PMMH samplers to mix fairly well. However, as expected, this resulted in biased parameter posterior estimates. Moreover, the method developed is computationally expensive.
 	\end{abstract}
 	
 	\newpage
@@ -100,7 +100,6 @@
 	{\hypersetup{hidelinks}
 	\listoffigures
 	}
-	\clearpage
 	{\hypersetup{hidelinks}
 	\listoftables
 	}
@@ -234,7 +233,7 @@
 \clearpage
 	\subsubsection{The Noisily Observed Ricker Map}
 	\label{NRM}
-	In order to allow for external and internal stochasticity and to take into account the observational process (for example a counting process of salmons in fisheries), extensions to the deterministic case have been suggested. We chose to proceed with the following model, suggested by Wood~\cite{Wood2010}.
+	In order to allow for external and internal stochasticity and to take into account the observational process (for example a counting process of salmons in fisheries), extensions to the deterministic case have been suggested. We chose to proceed with the following model, suggested by Wood~\cite{wood2010statistical}.
 	\begin{align}
 	& N_t = r N_t e^{-N_t+Z_t} \hspace{1cm} Z_t \distas{\mathrm{iid}} \mathrm{N}(0, \sigma^2) \label{noisyRickerState}\\
 	& Y_t = \mathrm{Poisson}(\phi N_t)
@@ -280,7 +279,7 @@
 	& p(x_t | x_{t-1}, \theta) \hspace{1cm} & t \ge 1\\
 	& p(y_t | x_t, \theta)  & t \ge 1
 	\end{alignat}
-	Note that we denote by $p(x_t)$ both the probability density of $X_t$ and its distribution if it exists, with respect to a dominating measure $\lambda$. This set of equations means that $X_t$ is a Markov process of initial distribution $p(x_0| \theta)$ and transition distribution $p(x_t | x_{t-1}, \theta)$, and that the observations $y_t$'s are assumed to be independent conditionally on $\{x_t \ ; \ t \in \mathbb{N}\}$, \\ i.e $p(y_1, \cdots, y_t | x_0, \cdots, x_t) =p(x_0)\Pi_{k=1}^t p(y_k | x_k)$, where $p(y_k | x_k)$ is the marginal distribution of $y_k$. We can therefore decompose the full joint density as follows:
+	Note that we denote by $p(x_t)$ both the probability density of $\operatorname{X}$ and its distribution if it exists, with respect to a dominating measure $\lambda$. This set of equations means that $X_t$ is a Markov process of initial distribution $p(x_0| \theta)$ and transition distribution $p(x_t | x_{t-1}, \theta)$, and that the observations $y_t$'s are assumed to be independent conditionally on $\{x_t \ ; \ t \in \mathbb{N}\}$, \\ i.e $p(y_1, \cdots, y_t | x_0, \cdots, x_t) =p(x_0)\Pi_{k=1}^t p(y_k | x_k)$, where $p(y_k | x_k)$ is the marginal distribution of $y_k$. We can therefore decompose the full joint density as follows:
 	\begin{align}
 	\underbrace{p(x_{0:T}, y_{1:T}, \theta)}_{\text{joint}} & = \underbrace{p(x_{0:T}, \theta)}_{\text{prior}}\underbrace{p(y_{1:T}| x_{0:T}, \theta)}_{\text{likelihood}} \\
 		& = p(\theta)p(x_0| \theta)\prod_{k=1}^{T}p(x_k|x_{k-1}, \theta)\prod_{k=1}^{T}p(y_k|x_k, \theta)
@@ -294,18 +293,18 @@
 	
 	\paragraph{Parameter estimation}
 	In both of the population dynamic models presented earlier, the aim is to perform parameter estimation so as to understand which regime the population at hand is in, and to be able to carry out long term simulations. \\
-	To achieve this the marginal Metropolis Hastings algorithm~\cite{hastings1970monte}, combined with methods to obtain samples from  $p(x_{0:t}| y_{1:t}, \theta)$ and to calculate unbiased estimates of the likelihood, is a method of choice. \\
+	To achieve this the marginal Metropolis Hastings algorithm~\cite{hastings1970monte}, combined with methods to obtain unbiased estimates of the likelihood, is a method of choice. \\
 	This algorithm samples in fact from $p(\theta, x_{0:T} | y_{1:T})$ and is otherwise a simple Metropolis Hastings (MH) sampler. The proposal, which matches the structure of $p(x_{0:T}, \theta | y_{1:T})$, is of the form: $q((\theta^*, x_{0:T}^*) | (\theta, x_{0:T})) = q(\theta^* | \theta)p(x_{0:T}^* | y_{1:T}, \theta^*)$ and the acceptance ratio of the MH algorithm is: 
 	\begin{align*}
 	\frac{p(\theta^*, x_{0:T}^* | y_{1:T})}{p(\theta, x_{0:T} | y_{1:T})}\frac{q(\theta | \theta^*)p(x_{0:T} | y_{1:T}, \theta)}{q(\theta^* | \theta)p(x_{0:T}^* | y_{1:T}, \theta^*)} & = \frac{p(\theta^* | y_{1:T})}{p(\theta | y_{1:T})}\frac{q(\theta | \theta^*)}{q(\theta^* | \theta)} \\
 	& = \frac{p(y_{1:T} | \theta^*)}{p(y_{1:T}|\theta)}\frac{p(\theta^*)}{p(\theta)}\frac{q(\theta | \theta^*)}{q(\theta^* | \theta)}
 	\end{align*}
 	
-	It can be noted that the terminology comes from the fact that the ratio seems to be targeting $p(\theta | y_{1:T})$.
+	It can be noted that the terminology comes from the fact that the ratio seems to be targeting $p(\theta | y_{1:T})$, i.e the marginal density of $\theta$.
 	
- 	When the relationship between states and the one between states and observations are linear and gaussian, Kalman~\cite{Kalman1960} designed a method which allows to sequentially calculates the \emph{filtering distribution}, i.e $p(x_{t}| y_{1:t}, \theta)$, which in this particular case has a closed form. From there, it is easy to recover the likelihood marginalised over $x_{0:T}$ and to sample from $p(x_{0:t}| y_{1:t}, \theta)$. Although variants of this original filter, which deal with non-linear and non-gaussian state space models, have been suggested, such as the extended~\cite{McElhoe1966} and unscented~\cite{Julier1997} Kalman filters, they give biased estimates of $p(x_t|y_{1:t}, \theta)$ and ultimately of the likelihood. 
+ 	When the relationship between states and the one between states and observations are linear and gaussian, Kalman~\cite{Kalman1960} designed a method which allows to sequentially calculates the \emph{filtering distribution}, i.e $p(x_{t}| y_{1:t}, \theta)$, which in this particular case has a closed form. From there, it is easy to recover the likelihood marginalised over $x_{0:T}$ and to sample from $p(x_{0:t}| y_{1:t}, \theta)$. Although variants of this original filter, which deal with non-linear and non-gaussian state space models, have been suggested, such as the extended~\cite{McElhoe1966} and unscented~\cite{Julier1997} Kalman filters, they give biased estimates of the likelihood. 
  	
- 	In these non-linear, non-gaussian cases, the \emph{particle filter}~\cite{Gordon1993}, which is of the family of Sequential Monte Carlo (SMC) methods, provides an unbiased estimate of $p(y_{1:T}, \theta)$ and an estimate of $p(x_{0:T}|y_{1:T}, \theta)$ which, when used as the proposal distribution, leaves invariant $p(x_{0:T}, \theta|y_{1:T})$ and ensures that the marginal Metropolis Hastings sampler is ergodic. Using an unbiased estimate of the likelihood instead of the true one in a MCMC algorithm was first suggested by Lin et al.~\cite{lin2000noisy} and first used in the context of bayesian inference by Beaumont~\cite{beaumont2003estimation}. This version of the algorithm is now commonly referred to as the Particle Marginal Metropolis Hastings (PMMH) sampler and is described, along with the proof that it is indeed ergodic under mild assumptions in Andrieu et al.~\cite{andrieu2010particle}.
+ 	In these non-linear, non-gaussian cases, the \emph{particle filter}~\cite{Gordon1993}, which is of the family of Sequential Monte Carlo (SMC) methods, provides an unbiased estimate of $p(y_{1:T}| \theta)$ and allows to sample from $p(x_{0:T}|y_{1:T}, \theta)$. When used in conjunction with the marginal Metropolis Hastings sampler it ensures that the resulting chain is ergodic. Using an unbiased estimate of the likelihood instead of the true one in a MCMC algorithm was first suggested by Lin et al.~\cite{lin2000noisy} and first used in the context of bayesian inference by Beaumont~\cite{beaumont2003estimation}. This version of the algorithm is now commonly referred to as the Particle Marginal Metropolis Hastings (PMMH) sampler and is described, along with the proof that it is indeed ergodic under mild assumptions in Andrieu et al.~\cite{andrieu2010particle}.
 	
 	\subsubsection{Particle Filter}
 	We further describe the particle filter as it is the method we applied in order to estimate the likelihoods, and sample from $p(x_{0:T}|y_{1:T}, \theta)$ in the case of the noisily observed Ricker map, to carry out parameter inference for both models.
@@ -315,7 +314,7 @@
 	\begin{equation}
 	\hat{p}(x_{0:t}|y_{1:t}, \theta) = \sum_{i=1}^{N}W_t^{(i)} \delta_{x_{0:t}^{(i)}}(x_{0:t})
 	\end{equation}
-	where $W_t^{(i)} = \frac{\strut w(x_{0:t}^{(i)})}{\strut \sum_{j=1}^{N} w(x_{0:t}^{(j)})}$ and $w(x_{0:t}) = \frac{\strut p(x_{1:t},y_{1:t}, \theta)}{\strut q(x_{1:t})}$, where $x_{0:t}^{(i)}$ are iid draws from $q(x_{1:t})$, which is an easy to sample from distribution, and are called \emph{particles}.
+	where $W_t^{(i)} = \frac{ w(x_{0:t}^{(i)})}{ \sum_{j=1}^{N} w(x_{0:t}^{(j)})}$ and $w(x_{0:t}) = \frac{ p(x_{0:t},y_{1:t}, \theta)}{ q(x_{0:t})}$, where $x_{0:t}^{(i)}$ are iid draws from $q(x_{0:t})$, which is an easy to sample from distribution, and are called \emph{particles}.
 	
 	However, this method does not take advantage of the dependency structure of the state space model. Indeed, the weights $W(x_{0:t})$ can be expressed sequentially using the fact that the $y_t$'s are conditionally independent given $x_{0:t}$, and that the $x_t$'s have the Markov property. Moreover, choosing a proposal distribution which also has the Markov property (i.e $q(x_{1:t})=q(x_{1:t-1})q(x_t| x_{t-1})$) allows to write:
 	\begin{align}
@@ -329,7 +328,7 @@
 	\end{equation*}
 	and moreover that the bias and the variance are $\mathcal{O}(\frac{1}{N})$.\\
 	
-	However, as shown in ~\cite{kong1994sequential}, the variance of the weights is exponential in the number $t$ of time steps. Moreover, the effective sample size (ESS), as defined in ~\cite{liu2008monte}, which measures the ratio between the variance of $\mathrm{I_N^{IS}}$ when the $x_t^{(i)}$ are obtained from the importance sampling procedure and the variance of the Monte Carlo estimate of $\mathbb{E}_{p}\phi(x_{0:t})$ if the samples were independently drawn from the true distribution $p$, vanishes quickly.  It can be shown, piecing together~\cite[][pp.~35-36]{liu2008monte} and ~\cite[][pp.~98-100]{robert2009introducing}, that  $ESS_t = \frac{1}{\strut \sum_{i=1}^{N} (W_t^{(i)})^2}$. We will make use of this formula later on in Section~\ref{infRicker} and Section~\ref{infNicholson}.
+	However, as shown in ~\cite{kong1994sequential}, the variance of the weights is exponential in the number $t$ of time steps. Moreover, the effective sample size (ESS), as defined in ~\cite{liu2008monte}, which measures the ratio between the variance of $\mathrm{I_N^{IS}}$ when the $x_t^{(i)}$ are obtained from the importance sampling procedure, and the variance of the Monte Carlo estimate of $\mathbb{E}_{p}\phi(x_{0:t})$ if the samples were independently drawn from the true distribution $p$, degrades quickly.  It can be shown, piecing together~\cite[][pp.~35-36]{liu2008monte} and ~\cite[][pp.~98-100]{robert2009introducing}, that  $ESS_t = \frac{1}{\strut \sum_{i=1}^{N} (W_t^{(i)})^2}$. We will make use of this formula later on in Section~\ref{infRicker} and Section~\ref{infNicholson}.
 	
 	The idea introduced by particle filters to mitigate the variance of the importance weights is to perform resample moves. This consists in resampling, at each time step (~\cite{doucet2009tutorial} suggests adaptive resampling based on either thresholds on the value of the ESS or of its entropy, which we did not use for the sake of simplicity), the particles from the importance sampling approximation $\hat{p}(x_{0:t}|y_{1:t}, \theta)$, and is achieved by selecting $x_t^{(i)}$ with probability $w_t^{(i)}$. Since sequential importance sampling propagates $N$ particles, this resample move is performed $N$ times at each time step. If $N_t^{(i)}$ is the number of descendants of each particle $x_t^{(i)}$, the final approximation of the target obtained is:
 	\begin{equation*}
@@ -566,7 +565,7 @@
 	\end{table}
 	
 \clearpage
-	Having seen that our method is comparable in term of the two metrics used by Fasiolo, and that it yields more stable maximum likelihood estimates, with lower mean squared errors for small number of particles, the significant improvement come from the autocorrelation of the samples. Simulations, this time, were made using a number of particles equal to 150 as this yielded a standard deviation for the log-likelihood estimator around 1 as recommended by Doucet et al~\cite{doucet2015efficient}. It appeared that our method is only 6.5\% more computationally expensive than a bootstrap filter, as measured on particles filter with a number of particles ranging from 10 to 1000, averaged over a hundred runs, and that, for the same computational power, on average, autocorrelation of the samples from $r$ is 18\% lower, that for $\phi$ 13\% lower and that for $\sigma$ another 18\% lower (autocorrelation was measured using the effective sample size of each chain). These values were obtained by running our PMMH sampler on 50 different datasets, and for each dataset using once a bootstrap filter and once our particle filter.
+	Having seen that our method is comparable in term of the two metrics used by Fasiolo, and that it yields more stable maximum likelihood estimates, with lower mean squared errors for small number of particles, the significant improvement come from the autocorrelation of the samples. Simulations, this time, were made using a number of particles equal to 150 as this yielded a standard deviation for the log-likelihood estimator around 1 as recommended by Doucet et al~\cite{doucet2015efficient}. It appeared that our method is only 28\% more computationally expensive than a bootstrap filter, as measured on particles filter with a number of particles ranging from 10 to 2000, averaged over a hundred runs, and that, for the same computational power, on average, autocorrelation of the samples from $r$ is 48\% lower, that for $\phi$ 69\% lower and that for $\sigma$ another 45\% lower (autocorrelation was measured using the effective sample size of each chain). These values were obtained by running our PMMH sampler on 50 different datasets, and for each dataset using once a bootstrap filter and once our particle filter.
 	
 	\subsection{Global Population Dynamics Database Data}
 	The Global Population Dynamics Database (GPDD) is a joint effort by the British institution the NERC Centre for Population Biology, which was hosted by the Imperial College, and two American institutions, the National Center for Ecological Analysis and Synthesis and the Department of Ecology and Evolution, University of Tennessee. It is the largest collection of animal and plant population data in the world, which brings together close to five thousand datasets. We chose to perform parameter inference on the same datasets as Gao et al.~\cite{gao2012bayesian}. These datasets are chosen so that they represent all the different regimes of the Ricker map. Gao et al. acknowledge five categories of population dynamics: increasing (CAT1), decreasing (CAT2), quasi-periodic with small variations (CAT3), quasi-periodic with large variations (CAT4) and irregular with outbreaks (CAT5). \\
@@ -632,10 +631,10 @@
 	where $K=\int_{0}^{1}\log(1-p)\frac{\alpha^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\alpha-1}\mathrm{d}p$ with $\alpha = \sigma_d^{-2}$. Solutions are found numerically and need to be computed only once each time the particle filter is used, since they depend only on the fixed model parameters $\sigma_d^{-2}$ and $\delta$. Figure~\ref{fig:qqBlow} shows a QQ-plot of the true distribution $p(s_k|n_{k-1}, \theta)$ against its Beta-Binomial approximation, for typical values of the model (i.e $n_{k-1} = 1000$, $\delta=0.16$ and $\sigma_d=0.3$). Finally, the proposal $q(s_k|n_{k-1}, n_k, \theta)$ is simply the Beta-Binomial approximation restricted to the range $[0, n_k]$.
 	
 	\subsection{Data}
-	In order to assess the quality of the particle filter described in Algorithm~\ref{RWPF} we first tested it on simulated datasets. We used realistic values for the parameters, given by Fasiolo et al.\cite{fasiolo2014statistical}, i.e $T=100$, $P=6.5$, $N_0=40$, $\delta=0.16$ and $\sigma_p^2=\sigma_d^2=0.1$.
+	In order to assess the quality of the particle filter described in Algorithm~\ref{RWPF} we first tested it on simulated datasets. We used realistic values for the parameters, given by Fasiolo et al.\cite{fasiolo2014statistical}, i.e $T=100$, $P=6.5$, $N_0=40$, $\delta=0.16$ and $\sigma_p^2=\sigma_d^2=0.1$. The prior we used for the PMMH sampler were $P\sim\operatorname{U}[1, 60]$, $P\sim\operatorname{U}[1, 1000]$, $N_0\sim\operatorname{U}[0.1, 1.2]$, $\sigma_p\sim\operatorname{U}[1, 1.2]$, $\delta\sim\operatorname{U}[0.01, 1]$ and $\sigma_d\sim\operatorname{U}[1, 1.2]$. These priors cover the rang of plausible values for the parameters and conform to Fasiolo's usage.
 	
 	Figure~\ref{fig:essBlow} shows the evolution of the effective sample size as the number of samples used to calculate the random weights (called \emph{inner particles}, whereas the usual particles are called \emph{outer particles}, now on) increases, for a fixed number of outer particles equal to 500. It can be seen that when the observations are decreasing, or in regions of low values, the ESS is high and increases (to almost its maximal value) with the number of inner particles. However, in regions where the population quickly increases the ESS sharply drops, to values around 10, and is not improved by an increased number of inner particles. This is due to the fact that the calculation of the ramdom weights involves $\delta(n_k = r_k+s_k)$ and that when moving from a region of low values, where the support of the proposal is small, to a region of high values, where the support of the densities increases, the probability $P(R_k+S_k=l)$ decreases. \\
-	
+	\vspace{-2mm}
 	\begin{algorithm}
 		\caption{Random Weights Particle filter (RWPF)}\label{RWPF}
 		\begin{algorithmic}[1]
@@ -661,9 +660,10 @@
 			\EndFunction
 		\end{algorithmic}
 	\end{algorithm}
+	\vspace{5mm}
 	\begin{figure}[htb]
 		\centering
-		\begin{minipage}{0.6\textwidth}
+		\begin{minipage}{0.47\textwidth}
 			\centering
 			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/qqBlow.pdf}
 		\end{minipage}
@@ -678,12 +678,13 @@
 	Transects of the log-likelihood for all the parameters using a fixed tolerance $\epsilon=0.05$ are displayed in Figure~\ref{fig:transectBlow}. 
 
 	\begin{figure}[htb]
+		\vspace{5mm}
 		\centering
-		\begin{minipage}{0.6\textwidth}
+		\begin{minipage}{0.49\textwidth}
 			\centering
 			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/essEvolBlowfly.pdf}
 		\end{minipage}
-		\begin{minipage}{0.6\textwidth}
+		\begin{minipage}{0.49\textwidth}
 			\centering
 			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/essEvolBlowflyTol.pdf}
 		\end{minipage}
@@ -692,12 +693,35 @@
 	\end{figure}
 
 	
-	Moreover, we found that using 50 inner particles, 200 outer particles and a fixed tolerance equal to 2\% was the best set up to use in a PMMH sampler. Indeed, with a tolerance set to zero, few hundred particles lead too often to particle depletion. Conversely, using too high a tolerance leads to too severely biased likelihood estimates (depending on the parameter, mean squared errors can be two to three times higher, as shown in Table~\ref{table:mleBlow}). Therefore the settings we chose is a satisfactory trade-off between computational efficiency and reasonable bias.
+	Moreover, we found that using 50 inner particles, 200 outer particles and a fixed tolerance equal to 5\% was the best set up to use in a PMMH sampler. Indeed, with a tolerance set to zero, few hundred particles lead too often to particle depletion. Conversely, using too high a tolerance leads to too severely biased likelihood estimates (depending on the parameter, mean squared errors can be two to three times higher, as shown in Table~\ref{table:mleBlow}). Therefore the settings we chose is a satisfactory trade-off between computational efficiency and reasonable bias.
 	
-	However, running short simulations, i.e with an adaptation phase of 2000 iterations, carrying on for another 3000 iterations and discarding a 1000 samples as a burnin, we found that too few moves were accepted, with an average acceptance rate of around 1\%. Starting with much lower diagonal coefficients was, on the contrary, leading to too high acceptance rates (around 40\%) and chains barely mixing. Due to the time complexity of the algorithm, we did not had the opportunity to run a longer adaptation phase to see if it was failing altogether to find a satisfactory covariance matrix for the random walk proposal or if it was only a matter of adapting longer. A tolerance threshold of 5\%, however, led to acceptably mixing and converging chains (the same diagnostics as those performed on the Ricker map model can be found in Appendix). Nonetheless, as expected, the posterior estimates given by the runs of the PMMH sampler were now biased.
-	
+	Running simulations with an adaptation phase of 2000 iterations, carrying on with another 20000 iterations and discarding 8000 samples as a burnin, led to acceptably mixing and converging chains (the same diagnostics as those performed on the Ricker map model can be found in Appendix~\ref{diagNicholsonSynthe}), but not uniformly well across parameters. Indeed, if $P$, $N_0$ and $sigma_p$, the parameters corresponding to the birth process of Nicholson's blowfly model, mix well and quickly converge towards the same value across chains, it is not the case of the parameters corresponding to the death process, $\delta$ and $\sigma_d$, which are more correlated and converge slower towards their posterior mean. This is particularly blatant in the case of $\delta$. Moreover, as expected across all parameters except for $N_0$, the posterior estimates given by the runs of the PMMH sampler were now biased. Examining the mean squared errors of the log transformed posterior means lead to mixed results when comparing with Fasiolo's PMMH algorithm. Indeed, we found, based on the three runs, that mean squared errors for $P$ and $\delta$ are respectively 10 and 100 times bigger in this study, whereas that of $\sigma_d^2$ is of the same order of magnitude, and that of $\sigma_p^2$ and $N_0$ respectively two and ten times smaller. These findings are summarised in Table~\ref{table:mseBlowfly}.
+
+	\begin{table}[htb]
+		\centering
+		\vspace{10mm}
+		\ra{1.3}
+		\begin{tabular}{@{}ccc@{}} \toprule
+			Parameter & MSE1 & MSE2 \\ \midrule 
+			$P$ & 0.01 & 0.09 \\ 
+			$N_0$ & 0.005 & $1.3 \ 10^{-5}$  \\ 
+			$\sigma_p^2$ & 0.3 & 0.17  \\
+			$\delta$ & 0.004 & 0.39  \\
+			$\sigma_d^2$ & 1.73 & 1.5  \\ \bottomrule
+		\end{tabular}
+		\caption[Comparison between the mean square errors of posterior estimates of the parameters obtain in this study and in Fasiolo's, Nicholson's blowfly model ]{Median squared errors (MSE) of the posterior means obtained by Fasiolo and in our study for Nicholson's blowfly model parameters. Index 1 denotes Fasiolo's PMMH implementation, and index 2 ours.}
+		\label{table:mseBlowfly}
+	\end{table}
+
+\clearpage	
 	\section{Conclusion}
-	Furthering the work of Fasiolo et al~\cite{fasiolo2014statistical} we performed bayesian parameter inference on two classic population dynamics model using particle marginal Metropolis-Hastings samplers. Inference on these two models, exhibiting chaotic behaviour in some regions of the parameter space, is known to be difficult because of the dimensionality and multimodality of their likelihood. Throughout, our methodology was to design particle filters matching closely the statistical properties of the model at hand. The state space model structure of the noisily observed Ricker map model, along with the fact that its transition and observation densities are tractable, makes it a perfect fit for particle filter methods. However, we expanded the work of Falsiolo et al. by finding a better approximation to the optimal proposal density than the one they used. Indeed, their use of a prior proposal overlooked the valuable information which can be taken from the observations when propagating particles. We found a way of taking this information into account by approximating the so-called optimal proposal. This was achieved by replacing the transition density by the Gamma distribution minimizing their Kullback-Leibler divergence. We found that our method was giving fast converging and well mixing PMMH chains and permitted to attain the same precision on parameter posterior estimates for a lower computational cost. It also behaved well on a variety real datasets. In the case of Nicholson's blowfly experiments, Fasiolo et al. had to introduce an artificial observational process in order to use their PMMH sampler. We sought to avoid this and proposed a particle filter tailored to the original model. However, the intractability of the density of the population size conditional on the death process led us to adopt a variant of the particle filter used in the first part of the study called random weights particle filter. We found that this method was suffering from particle depletion on Nicholson's blowfly experiments data. We resolved this problem by introducing some bias in the likelihood estimates given by the random weights particle filter. Nonetheless we did not achieve to strike a good balance between bias and particle depletion and posterior samples obtained from our PMMH algorithm proved either too correlated or too concentrated in a region of the parameter space. Moreover, this method was particularly expensive in terms of computational power since calculation of the random weights has a multiplying effect of the running time of the particle filter. However, this specific issue could be resolved by implementing a parallel algorithm. 
+	Furthering the work of Fasiolo et al~\cite{fasiolo2014statistical} we performed bayesian parameter inference on two classic population dynamics model using particle marginal Metropolis-Hastings samplers. Inference on these two models, exhibiting chaotic behaviour in some regions of the parameter space, is known to be difficult because of the dimensionality and multimodality of their likelihood. Throughout, our methodology was to design particle filters matching closely the statistical properties of the model at hand.
+	
+	The state space model structure of the noisily observed Ricker map model, along with the fact that its transition and observation densities are tractable, makes it a perfect fit for particle filter methods. However, we expanded the work of Falsiolo et al. by finding a better approximation to the optimal proposal density than the one they used. Indeed, their use of a prior proposal overlooked the valuable information which can be taken from the observations when propagating particles. We found a way of taking this information into account by approximating the so-called optimal proposal. This was achieved by replacing the transition density by the Gamma distribution minimizing their Kullback-Leibler divergence. We found that our method was giving fast converging and well mixing PMMH chains and permitted to attain the same precision on parameter posterior estimates for a lower computational cost. It also behaved well on a representative subset of the Global Population Dynamics Database.
+	
+	In the case of Nicholson's blowfly experiments, Fasiolo et al. had to introduce an artificial observational process in order to use their PMMH sampler. We sought to avoid this and proposed a particle filter tailored to the original model. However, the intractability of the density of the population size conditional on the death process led us to adopt a variant of the particle filter used in the first part of the study, called random weights particle filter. We found that this method was suffering from particle depletion on Nicholson's blowfly experiments data. We resolved this problem by introducing some bias in the likelihood estimates given by the random weights particle filter and managed to strike a good balance between bias and particle depletion. However, this method was particularly expensive in terms of computational power since calculation of the random weights has a multiplying effect of the running time of the particle filter. Nonetheless, this specific issue could be resolved by implementing a parallel algorithm.
+	
+	Further developments could include the application of the same methodology in the design of particle filters to other famous non-linear and chaotic difference equation ecological models, such as the Pennycuick, Varley and Maynard-Smith maps which are part of the same framework as the noisily observed Ricker map model, with log-normally distributed states and an observational process, or mechanistic systems of differential equations such as those used to model epidemic diseases. 
 	
 \clearpage
 
@@ -1085,24 +1109,24 @@
 		\caption[Transect of the log-likelihood with respect to each of the parameters of Nicholson's blowfly model]{Transect of the of the likelihood when \textbf{(top left)} P, \textbf{(top right)} $N_0$,  \textbf{(middle left)} $sigma_p$, \textbf{(middle right)} $\delta$ and \textbf{(bottom)} $sigma_d$ vary. The true values of the parameters are denoted by a blue line, whereas the maximum likelihood estimates by a red one}
 		\label{fig:transectBlow}
 	\end{figure}
-	\subsection{Convergence Diagnostics Synthetic Nicholson's Blowfly Data}
+	\subsection{Synthetic Nicholson's Blowfly Data Convergence Diagnostics} \label{diagNicholsonSynthe}
 	\begin{figure}[htb]
 		\centering
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/traceBlowflyV1.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/traceBlowfly3V1.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/traceBlowflyV2.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/traceBlowfly3V2.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/traceBlowflyV3.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/traceBlowfly3V3.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/traceBlowflyV4.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/traceBlowfly3V4.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
@@ -1116,19 +1140,19 @@
 		\centering
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/acfBlowflyV1.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/acfBlowfly3V1.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/acfBlowflyV2.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/acfBlowfly3V2.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/acfBlowflyV3.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/acfBlowfly3V3.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/acfBlowflyV4.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/acfBlowfly3V4.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
@@ -1142,23 +1166,23 @@
 		\centering
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/runningBlowfly1.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/runningBlowfly31.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/runningBlowfly2.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/runningBlowfly32.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/runningBlowfly3.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/runningBlowfly33.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/runningBlowfly4.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/runningBlowfly34.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/runningBlowfly5.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/runningBlowfly35.pdf}
 		\end{minipage}
 		\caption[Running means of the samples from a PMMH algorithm run on synthetic data, Nicholson's model]{Running means of the samples from the posterior density of \textbf{(top left)} $P$, \textbf{(top right)} $N_0$,  \textbf{(middle left)} $\sigma_p$,  \textbf{(middle right)} $\delta$ \textbf{(bottom)} $\sigma_d$ from a PMMH algorithm run on synthetic data simulated from Nicholson's model.}
 		\label{fig:rmBlowfly}
@@ -1167,23 +1191,23 @@
 		\centering
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/gelmanBlowfly1.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/gelmanBlowfly31.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/gelmanBlowfly2.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/gelmanBlowfly32.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/gelmanBlowfly3.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/gelmanBlowfly33.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/gelmanBlowfly4.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/gelmanBlowfly34.pdf}
 		\end{minipage}
 		\begin{minipage}{0.49\textwidth}
 			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/gelmanBlowfly5.pdf}
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/gelmanBlowfly35.pdf}
 		\end{minipage}
 		\caption[Gelman-Rubin diagnostic of the chains of a PMMH algorithm run on on synthetic data, Nicholson's model]{Gelman-Rubin diagnostic for the samples from the posterior density of \textbf{(top left)} $P$, \textbf{(top right)} $N_0$,  \textbf{(middle left)} $\sigma_p$,  \textbf{(middle right)} $\delta$ \textbf{(bottom)} $\sigma_d$ from a PMMH algorithm run on synthetic data simulated from Nicholson's model.}
 		\label{fig:gelmanBlowfly}
