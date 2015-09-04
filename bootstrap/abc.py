@@ -5,7 +5,7 @@ DTYPE = np.float64
 
 class ABCFilter(object):
 
-    def __init__(self, end, Ns, Map, rep=100, likeli=False, proposal=None, initial=None, adaptation=False):
+    def __init__(self, end, Ns, Map, rep=100, likeli=False, proposal=None, initial=None, adaptation=False, **kwargs):
         self.end = end
         self.Ns = Ns if isinstance(Ns, list) else [Ns]
         self.multiple = True if isinstance(Ns, list) else False
@@ -71,7 +71,10 @@ class ABCFilter(object):
 
         if not self.likeli:
             weights = self.normalize(weights)
-            ESS[self.end-self.start-1] = 1/sum(np.multiply(weights, weights))
+            ess = 1/sum(np.multiply(weights, weights))
+            if ess == np.nan or ess == 1:
+                print(weights)
+            ESS[self.end-self.start-1] = ess
             return particles_all, likelihoods, ESS
         else:
             return likelihoods
