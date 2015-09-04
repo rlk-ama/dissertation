@@ -15,7 +15,7 @@ class BlowflyMap(object):
         self.sigmap = sigmap
         self.delta = delta
         self.sigmad = sigmad
-        self.tau = tau
+        self.tau = int(tau)
         self.start = start
         self.tol = tol
         self.coeff = self.coeff_betabinom(1/self.sigmad**2, 1/(self.sigmad**2*self.delta), self.start)
