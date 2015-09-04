@@ -26,13 +26,29 @@
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \usepackage[margin=1in]{geometry}
+\usepackage{minted}
 \setcounter{tocdepth}{4}
 \setcounter{secnumdepth}{4}
 \usepackage[bookmarks=true, bookmarksnumbered=false, bookmarksopen=false, colorlinks=true, linkcolor=webred]{hyperref}
-
+\setlength{\bibsep}{0pt plus 0.3ex}
 \definecolor{webgreen}{rgb}{0, 0.5, 0} 
 \definecolor{webblue}{rgb}{0, 0, 0.5} 
 \definecolor{webred}{rgb}{0.5, 0, 0}
+
+\DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{9} % for bold
+\DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{9} 
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+\lstset{language=Python, 
+	basicstyle=\ttm,
+	otherkeywords={self},             % Add keywords here
+	keywordstyle=\ttb\color{deepblue},
+	emph={MyClass,__init__},          % Custom highlighting
+	emphstyle=\ttb\color{deepred},    % Custom highlighting style
+	stringstyle=\color{deepgreen},
+	frame=tb,                         % Any extra options here
+	showstringspaces=false}
 
 \makeatletter
 \newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
@@ -1212,6 +1228,46 @@
 		\caption[Gelman-Rubin diagnostic of the chains of a PMMH algorithm run on on synthetic data, Nicholson's model]{Gelman-Rubin diagnostic for the samples from the posterior density of \textbf{(top left)} $P$, \textbf{(top right)} $N_0$,  \textbf{(middle left)} $\sigma_p$,  \textbf{(middle right)} $\delta$ \textbf{(bottom)} $\sigma_d$ from a PMMH algorithm run on synthetic data simulated from Nicholson's model.}
 		\label{fig:gelmanBlowfly}
 	\end{figure}
-\end{appendices}
+	\clearpage
+	\section{Python Code}
+	\subsection{General Purpose Code}
+	\subsubsection{Basic Distributions}
+	\inputminted[fontsize=\small, linenos, frame=lines,
+	framesep=2mm]{cython}{/home/raphael/dissertation/distributions/distributions2.pyx}
+	\clearpage
+	\subsubsection{Proposal Distributions}
+	\inputminted[fontsize=\small, linenos, frame=lines,
+	framesep=2mm]{python}{/home/raphael/dissertation/proposals/proposals.py}
+	\clearpage
+	\subsubsection{Particle Marginal Metropolis Hastings Algorithm}
+	\inputminted[fontsize=\small, linenos, frame=lines,
+	framesep=2mm]{python}{/home/raphael/dissertation/pmcmc/pmmh.py}
+	\clearpage
+	\subsection{Noisily Observed Ricker Map Code}
+	\subsubsection{Utilities}
+	\inputminted[fontsize=\small, linenos, frame=lines,
+	framesep=2mm]{cython}{/home/raphael/dissertation/bootstrap/utils_ricker.pyx}
+	\clearpage
+	\subsubsection{Model Distributions}
+	\inputminted[fontsize=\small, linenos, frame=lines,
+	framesep=2mm]{python}{/home/raphael/dissertation/bootstrap/ricker_gamma.py}
+	\clearpage
+	\subsubsection{Particle Filter}
+	\inputminted[fontsize=\small, linenos, frame=lines,
+	framesep=2mm]{python}{/home/raphael/dissertation/bootstrap/filter.py}
+	\clearpage
+	\subsection{Nicholson's experiments Code}
+	\subsubsection{Utilities}
+	\inputminted[fontsize=\small, linenos, frame=lines,
+	framesep=2mm]{cython}{/home/raphael/dissertation/bootstrap/utils_blowflies.pyx}
+	\clearpage
+	\subsubsection{Model Distributions}
+	\inputminted[fontsize=\small, linenos, frame=lines,
+	framesep=2mm]{python}{/home/raphael/dissertation/bootstrap/blowflies.py}
+	\clearpage
+	\subsubsection{Particle Filter}
+	\inputminted[fontsize=\small, linenos, frame=lines,
+	framesep=2mm]{python}{/home/raphael/dissertation/bootstrap/abc.py}
+	\end{appendices}
 	
 \end{document}
