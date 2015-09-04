@@ -39,6 +39,8 @@ if __name__ == "__main__":
     parser.add_argument("--delta", type=float, help="Value for delta")
     parser.add_argument("--p", type=float, help="Value for p")
     parser.add_argument("--tau", type=int, help="Value for tau")
+    parser.add_argument("--sigmap", type=float, help="Value for sigmap")
+    parser.add_argument("--sigmad", type=float, help="Value for sigmad")
     parser.add_argument("--repetitions", dest="m", type=int, help="Number of repetitions in inner loop")
     parser.add_argument("--steps", dest="NOS", type=int, help="Number of generations to take into account")
     parser.add_argument("--particles", dest="NBS", type=int, help="Number of particles")
@@ -76,13 +78,14 @@ if __name__ == "__main__":
         NOS = len(output['observations'])
 
         obs_ess_lik = zip(output['observations'], output['ESS'], output['likeli'])
-        with open("/home/raphael/abc_{}_{}.txt".format(arguments['m'] if 'm' in arguments else 100,
-                                                       arguments['NBS'] if 'NBS' in arguments else 500), "w") as g:
+        with open("/home/raphael/abc_{}_{}_{}.txt".format(arguments.get('m', 100),
+                                                          arguments.get('NBS', 500),
+                                                          arguments.get('tol', 0)), "w") as g:
             for elem in obs_ess_lik:
                 g.write(" ".join(map(str, elem)))
                 g.write("\n")
 
         if 'observations' not in arguments:
-            with open('/home/raphael/blowfly_obs.txt', 'w') as f:
+            with open('/home/raphael/blowfly2_obs.txt', 'w') as f:
                 f.write(" ".join(map(str, output['observations'])))
                 f.write("\n")

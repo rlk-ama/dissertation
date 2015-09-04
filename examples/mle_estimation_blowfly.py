@@ -82,10 +82,11 @@ if __name__ == "__main__":
     maxi = output['variables'][maxi_idx]
 
     serial = zip(output['variables'], output['likeli'])
-    with open("/home/raphael/mle_{}_{}_{}_{}_blowfly.txt".format(arguments['variable'],
-                                                                 arguments.get('proposal', 'optimal'),
-                                                                 arguments.get('particles', 500),
-                                                                 int(arguments.get('tolerance', 0)*100)), "w") as f:
+    with open("/home/raphael/mle_{}_{}_{}_{}_{}_blowfly.txt".format(arguments['variable'],
+                                                                    arguments.get('proposal', 'optimal'),
+                                                                    arguments.get('particles', 500),
+                                                                    int(arguments.get('tolerance', 0)*100),
+                                                                    arguments.get('m', 100)), "w") as f:
         for elem in serial:
             f.write(" ".join(map(str, elem)))
             f.write("\n")

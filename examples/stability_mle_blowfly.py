@@ -80,6 +80,7 @@ if __name__ == "__main__":
     parser.add_argument("--destination", type=str, help="Destination folder to store results", required=True)
     parser.add_argument("--proposal", type=str, help="Proposal distribution: prior or optimal ?")
     parser.add_argument("--tolerance", dest="tol", type=float, help="Tolerance in the bridge")
+    parser.add_argument("--repetitions", dest="m", type=int, help="Number of repetitions in inner loop")
 
     args = parser.parse_args()
     arguments = {k:v for k,v in args.__dict__.items() if v and k != 'destination'}
@@ -95,7 +96,8 @@ if __name__ == "__main__":
     particles = arguments.get('NBS', 500)
     proposal = arguments.get('proposal', 'optimal')
     tolerance = int(arguments.get('tol', 0)*100)
-    endpath = "mle_{}_{}_{}_{}.txt".format(variable, particles, proposal, tolerance)
+    repetitions = arguments.get('m', 100)
+    endpath = "mle_{}_{}_{}_{}_{}.txt".format(variable, particles, proposal, tolerance, repetitions)
 
     with open(''.join([path, endpath]) if path[-1] == '/' else '/'.join([path, endpath]), 'w') as f:
         f.write(' '.join(map(str, output['mle'])))

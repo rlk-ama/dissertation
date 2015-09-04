@@ -25,9 +25,11 @@ def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, scaling=1, theta=1, NO
 
     len_simul = len(observations) - NOS
     paths = []
+    obs = []
     for i in range(rep):
-        Map_ricker = RickerMap(r, phi, sigma, scaling, length=len_simul, initial=estim[NOS], approx="simple")
+        Map_ricker = RickerMap(r, phi, sigma, scaling, length=len_simul, initial=np.array([np.mean(estim[NOS])], dtype=np.float64), approx="simple")
         paths.append(Map_ricker.state)
+        obs.append(Map_ricker.observations)
 
     output = {
         'observations': observations,
@@ -38,7 +40,8 @@ def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, scaling=1, theta=1, NO
         'r': r,
         'phi': phi,
         'sigma': sigma,
-        'paths': paths
+        'paths': paths,
+        'obs': obs
     }
 
     return output
@@ -78,6 +81,11 @@ if __name__ == "__main__":
     mean_predict = [np.mean(path) for path in paths]
     lower_percentile = [np.percentile(path, 2.5) for path in paths]
     higher_percentile = [np.percentile(path, 97.5) for path in paths]
+
+    obs = list(zip(*output['obs']))
+    obs_predict = [np.mean(ob) for ob in obs]
+    lower_obs = [np.percentile(ob, 2.5) for ob in obs]
+    higher_obs = [np.percentile(ob, 97.5) for ob in obs]
     NOS = arguments.get('NOS', 50)
 
     if args.graphics:
@@ -85,10 +93,18 @@ if __name__ == "__main__":
         plt.plot([i for i in range(NOS, len(output['observations']))], mean_predict)
         plt.plot([i for i in range(NOS, len(output['observations']))], lower_percentile)
         plt.plot([i for i in range(NOS, len(output['observations']))], higher_percentile)
+        plt.title("Original states (green) and states from filtered states (blue")
+        plt.show()
+
+        plt.plot([i for i in range(len(output['observations']))], output['observations'])
+        plt.plot([i for i in range(NOS, len(output['observations']))], obs_predict)
+        plt.plot([i for i in range(NOS, len(output['observations']))], lower_obs)
+        plt.plot([i for i in range(NOS, len(output['observations']))], higher_obs)
         plt.title("Original observations (green) and observations from filtered states (blue")
         plt.show()
 
-        plt.plot([i for i in range(len(output['observations']))], mean_esti)
-        for path in output['paths']:
-            plt.plot([i for i in range(NOS, len(output['observations']))], path)
-        plt.show()
+
+        # plt.plot([i for i in range(len(output['observations']))], mean_esti)
+        # for path in output['paths']:
+        #     plt.plot([i for i in range(NOS, len(output['observations']))], path)
+        # plt.show()

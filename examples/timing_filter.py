@@ -7,7 +7,7 @@ from bootstrap.ricker_gamma import RickerMap, RickerGeneralizedMap
 from bootstrap.filter import BootstrapFilter
 from distributions.distributions2 import Gamma
 
-def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, scaling=1, theta=1, NOS=50, NBS=1000, observations=None, generalized=False,
+def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, scaling=1, theta=1, NOS=50, NBS=2000, observations=None, generalized=False,
                    filter_proposal='optimal', particle_init=3):
 
     Map_ricker = RickerMap(r, phi, sigma, scaling, length=NOS, initial=inits, approx="simple", observations=observations)
@@ -21,7 +21,7 @@ def perform_filter(inits=None, r=44.7, phi=10, sigma=0.3, scaling=1, theta=1, NO
     for n in range(10, NBS, 10):
         inner = []
         print(n)
-        for i in range(100):
+        for i in range(50):
             t1 = time.time()
             filter = BootstrapFilter(NOS, n, Map_ricker, proposal={filter_proposal: True}, initial=initial)
             proposal, estim, likeli, ESS = next(filter.filter())
