@@ -40,6 +40,7 @@
 \definecolor{deepblue}{rgb}{0,0,0.5}
 \definecolor{deepred}{rgb}{0.6,0,0}
 \definecolor{deepgreen}{rgb}{0,0.5,0}
+\definecolor{LightGray}{rgb}{211,211,211}
 \lstset{language=Python, 
 	basicstyle=\ttm,
 	otherkeywords={self},             % Add keywords here
@@ -72,7 +73,7 @@
 {0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
 \onehalfspacing
 
-\setlength{\droptitle}{-10em}
+\setlength{\droptitle}{-5em}
 
 \title{Monte Carlo Methods for Bayesian Inference on Two Population
 	Dynamics Models: The Ricker Map and Nicholson's Sheep Blowfly Experiments}
@@ -82,13 +83,13 @@
 	\maketitle 
 	\thispagestyle{empty}
 	\begin{center}
-		\vspace{-5mm}
-		\includegraphics[scale=1]{logo.png} \\
+		\vspace{-0mm}
+		\includegraphics[scale=1.5]{logo.png} \\
 		\vspace{20mm}
 		{\large Raphaël Lopez-Kaufman} \\
 		\vspace{2mm}
 		{\large Oriel College, University of Oxford} \\
-		\vspace{50mm}
+		\vspace{45mm}
 		A dissertation submitted in partial fulfilment of the requirements for the degree of \\
 		\vspace{1mm}
 		\textit{Master of Science in Applied Statistics} \\
@@ -788,6 +789,23 @@
 	\end{equation*}
 	Straightforward calculations yield that the sign of the determinant of the above Hessian is such that $\text{sign}(\det{\operatorname{H}}) = \psi^{(1)}(\alpha)(\frac{2}{\theta}e^{\mu +\frac{\sigma^2}{2}} - \alpha) - 1$. \\
 	Around the solution the sign of the determinant simplifies and is just $\text{sign}(\det{\operatorname{H}}) = \alpha\psi^{(1)}(\alpha) - 1$. Yet $\lim\limits_{\alpha \rightarrow 0} = \infty$ and $\lim\limits_{\alpha \rightarrow \infty} = 1$. Therefore around the solution the determinant is positive and since $\operatorname{H}_{1,1} = \psi^{(1)}(\alpha) > 0$ $D_{KL}(\alpha, \theta)$ is at least locally convex and the solution is a local minimum.
+	\begin{figure}[htb]
+		\vspace{5mm}
+		\centering
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/qqRicker.pdf}
+		\end{minipage}
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/qqRickerLarge.pdf}
+		\end{minipage}
+		\caption[Comparison between a Log-normal and the Gamma distribution which minimizes their Kullback-Leibler divergence]{QQ-plot of a Log-normal and the Gamma distribution which minimizes their Kullback-Leibler divergence when the Log-normal has a standard deviation equal to \textbf{(left)} 0.2 and \textbf{(right)} 0.5.}
+		\label{fig:quality}
+		\vspace{5mm}
+	\end{figure}
+	
+	The quality of the approximation, however, varies with the value of the standard deviation of the original Log-normal distribution. This is shown in Figure~\ref{fig:quality} where it can be seen that as the standard deviation increases, the Log-normal distribution presents a heavier right tail than its approximation. This is due to the fact that, if both the original distribution and its approximation have the same mean, their variances differ and the difference is quadratic in the standard deviation. Indeed, if $\operatorname{X} \sim \log\operatorname{N}(\mu, \sigma^2)$ is the original random variable, with $\mathbb{E}(X) = e^{\mu+\sigma^2/2}$ and $\mathbb{V}(X) = e^{2\mu+\sigma^2}(e^{\sigma^2}-1)$, its approximation $Y\sim \operatorname{Gamma}(\alpha, \theta)$ is such that $\mathbb{E}(Y) = \alpha\theta = e^{\mu+\sigma^2/2}$ and  $\mathbb{V}(Y) = \alpha\theta^2 = \sigma^2e^{2\mu+\sigma^2}$. Therefore the difference in variances is $\mathcal{O}(\sigma^2)$. This could be of importance as the approximation is used as a proposal distribution in an importance sampling procedure. However, the difference is benign for low values of $\sigma$ and in the case of the noisily observed Ricker map model its value is around 0.3 and in any case never exceeds 1.5, leading to both distribution having a similar right tail.
 	
 	\section{Derivations relative to Nicholson's Blowfly Experiments} \label{AppendBlowfly}
 	\subsection{Derivation of $p(r_t|n_{t-\tau}, \theta)$} \label{rDensity}
@@ -1233,41 +1251,41 @@
 	\subsection{General Purpose Code}
 	\subsubsection{Basic Distributions}
 	\inputminted[fontsize=\small, linenos, frame=lines,
-	framesep=2mm]{cython}{/home/raphael/dissertation/distributions/distributions2.pyx}
+	framesep=2mm, baselinestretch=1]{cython}{/home/raphael/dissertation/distributions/distributions2.pyx}
 	\clearpage
 	\subsubsection{Proposal Distributions}
 	\inputminted[fontsize=\small, linenos, frame=lines,
-	framesep=2mm]{python}{/home/raphael/dissertation/proposals/proposals.py}
+	framesep=2mm, baselinestretch=1]{python}{/home/raphael/dissertation/proposals/proposals.py}
 	\clearpage
 	\subsubsection{Particle Marginal Metropolis Hastings Algorithm}
 	\inputminted[fontsize=\small, linenos, frame=lines,
-	framesep=2mm]{python}{/home/raphael/dissertation/pmcmc/pmmh.py}
+	framesep=2mm, baselinestretch=1]{python}{/home/raphael/dissertation/pmcmc/pmmh.py}
 	\clearpage
 	\subsection{Noisily Observed Ricker Map Code}
 	\subsubsection{Utilities}
 	\inputminted[fontsize=\small, linenos, frame=lines,
-	framesep=2mm]{cython}{/home/raphael/dissertation/bootstrap/utils_ricker.pyx}
+	framesep=2mm, baselinestretch=1]{cython}{/home/raphael/dissertation/bootstrap/utils_ricker.pyx}
 	\clearpage
 	\subsubsection{Model Distributions}
 	\inputminted[fontsize=\small, linenos, frame=lines,
-	framesep=2mm]{python}{/home/raphael/dissertation/bootstrap/ricker_gamma.py}
+	framesep=2mm, baselinestretch=1]{python}{/home/raphael/dissertation/bootstrap/ricker_gamma.py}
 	\clearpage
 	\subsubsection{Particle Filter}
 	\inputminted[fontsize=\small, linenos, frame=lines,
-	framesep=2mm]{python}{/home/raphael/dissertation/bootstrap/filter.py}
+	framesep=2mm, baselinestretch=1]{python}{/home/raphael/dissertation/bootstrap/filter.py}
 	\clearpage
 	\subsection{Nicholson's experiments Code}
 	\subsubsection{Utilities}
 	\inputminted[fontsize=\small, linenos, frame=lines,
-	framesep=2mm]{cython}{/home/raphael/dissertation/bootstrap/utils_blowflies.pyx}
+	framesep=2mm, baselinestretch=1]{cython}{/home/raphael/dissertation/bootstrap/utils_blowflies.pyx}
 	\clearpage
 	\subsubsection{Model Distributions}
 	\inputminted[fontsize=\small, linenos, frame=lines,
-	framesep=2mm]{python}{/home/raphael/dissertation/bootstrap/blowflies.py}
+	framesep=2mm, baselinestretch=1]{python}{/home/raphael/dissertation/bootstrap/blowflies.py}
 	\clearpage
 	\subsubsection{Particle Filter}
 	\inputminted[fontsize=\small, linenos, frame=lines,
-	framesep=2mm]{python}{/home/raphael/dissertation/bootstrap/abc.py}
+	framesep=2mm, baselinestretch=1]{python}{/home/raphael/dissertation/bootstrap/abc.py}
 	\end{appendices}
 	
 \end{document}
