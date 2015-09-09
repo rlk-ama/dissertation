@@ -208,7 +208,7 @@
 	
 	\begin{table}[htb]
 		\centering
-		\vspace{15mm}
+		\vspace{5mm}
 		\ra{1.3}
 		\begin{tabular}{@{}lcc@{}} \toprule
 			Dynamical behaviour & Value of growth parameter $r$ &  Illustration \\ \midrule
@@ -278,7 +278,7 @@
 	\end{equation} 
 	where $N_t$ is the population size at generation $t$, $B$ is the birth rate function and involves the maturation delay $\tau$, i.e the time a blowfly takes to become an adult, and $D$ is the death rate function which depends on the current population, considered in this case to be a simple linear function. Note that here the birth process is in fact a delayed version of the Ricker map studied in Section~\ref{rickerGen} and therefore the interpretation of $P$ is the same as that of $r$, with typically $P > \delta$.
 	
-	Following Berezantsky et al.~\cite{berezansky2010nicholson} we can derive several interesting properties of Equation~\ref{blowEq}. First, the carrying capacity $K$ is the solution to $B(K)=D(K)$, and is such that $K=N_0\log\frac{P}{\delta}$. An important characteristic of $K$, in this context, is that when $N_t < K$ then $B(N_t) > D(N_t)$, i.e the population grows, and when $N_t > K$ the death rate $D$ is larger than the birth rate $B$, i.e the population decreases. This gives an interesting interpretation of the carrying capacity, in the sense that $K$ can be understood as representing the maximum population size sustainable in a given ecosystem. Moreover, depending on the value of $\frac{P}{\delta}$, the behaviour of $N_t$ can be purely cyclic, underdamped or overdamped. The aim of inference on this model is therefore to understand, depending on the values of the parameter estimates, if the oscillatory behaviour observed in the blowfly population is due only to intrinsic effects (cyclic behaviour) or if it is driven by environmental noise (overdamped behaviour). However, since the recruitment process is a delayed Ricker map, the same difficulties  as in Section~\ref{NRM} arise in parameter estimation as it was shown by Brillinger et al.~\cite{brillinger1980empirical} that this model is chaotic in some regions of the parameter space.
+	Following Berezantsky et al.~\cite{berezansky2010nicholson} we can derive several interesting properties of Equation~\ref{blowEq}. First, the carrying capacity $K$ is the solution to $B(K)=D(K)$, and is such that $K=N_0\log\frac{P}{\delta}$. An important characteristic of $K$, in this context, is that when $N_t < K$ then $B(N_t) > D(N_t)$, i.e the population grows, and when $N_t > K$ the death rate $D$ is larger than the birth rate $B$, i.e the population decreases. This gives an interesting interpretation of the carrying capacity, in the sense that $K$ can be understood as representing the maximum population size sustainable in a given ecosystem. Moreover, depending on the value of $\frac{P}{\delta}$, the behaviour of $N_t$ can be purely cyclic, underdamped or overdamped. The aim of inference on this model is therefore to understand, depending on the values of the parameter estimates, if the oscillatory behaviour observed in the blowfly population is due only to intrinsic effects (cyclic behaviour) or if it is driven by environmental noise (underdamped behaviour). However, since the recruitment process is a delayed Ricker map, the same difficulties  as in Section~\ref{NRM} arise in parameter estimation as it was shown by Brillinger et al.~\cite{brillinger1980empirical} that this model is chaotic in some regions of the parameter space.
 	
 	Wood~\cite{wood2010statistical} proposed a version of Equation~\ref{blowEq} which introduces stochasticity in the dynamics of the blowfly population. Discretizing the original equation and adding demographic stochasticity to both death and birth processes while also perturbing their rates with environmental noise led to the following model:
 	\begin{align}
@@ -287,7 +287,7 @@
 	& S_t \sim \mathrm{Binomial}(e^{-\delta N_{t-1}}v_t) \hspace{2cm}  v_t \sim \mathrm{Gamma}(\sigma_d^{-2}, \sigma_d^{-2}) 
 	\end{align}
 	where $R_t$ is a Ricker map delayed recruitment process and $S_t$ a survival process which models the fact that each adult has
-	an independent probability $e^{-\delta N_{t-1}}$ of surviving at each time step (note that contrary to the Ricker map, generations are not considered discrete any more). Environmental noise is modelled by $u_t$ and $v_t$ whose particular parametrisation enforces a unit mean and a variance equal to $\sigma_{p,d}^2$. Even though Nicholson's experiments were conducted in the controlled environment of a laboratory, Wood showed, using goodness of fit tests between real data and simulated observations, that removing environmental noise, that is setting $u_t=v_t=1$, led to poor fit across all experiments (E1 to E4). This is explained, according to Wood, by the fact that the data present irregular cycle which can be accounted for only resorting to internal stochasticity.
+	an independent probability $e^{-\delta N_{t-1}}$ of surviving at each time step (note that contrary to the Ricker map, generations are not considered discrete any more). Environmental noise is modelled by $u_t$ and $v_t$ whose particular parametrisation enforces a unit mean and a variance equal to $\sigma_{p,d}^2$. Even though Nicholson's experiments were conducted in the controlled environment of a laboratory, it was shown in~\cite{wood2010statistical}, using goodness of fit tests between real data and simulated observations, that removing environmental noise, that is setting $u_t=v_t=1$, led to poor fit across all experiments (E1 to E4). This is explained, according to ~\cite{wood2010statistical}, by the fact that the irregularity in the cycles present in the data cannot be accounted for only resorting to internal stochasticity.
 
 	\section{Inference Methods}
 	\subsection{State Space Model}
@@ -332,7 +332,7 @@
 	\begin{equation}
 	\hat{p}(\operatorname{d}x_{0:t}|y_{1:t}, \theta) = \sum_{i=1}^{N}W_{\theta, t}^{(i)} \delta_{x_{0:t}^{(i)}}(\operatorname{d}x_{0:t})
 	\end{equation}
-	where $W_{\theta, t}^{(i)} = \frac{ w_\theta(x_{0:t}^{(i)})}{ \sum_{j=1}^{N} w_\theta(x_{0:t}^{(j)})}$ and $w_\theta(x_{0:t}) = \frac{ p(x_{0:t},y_{1:t}, \theta)}{ q(x_{0:t}, \theta)}$, where $x_{0:t}^{(i)}$ are iid draws from $q(x_{0:t}, \theta)$, which is an easy to sample from distribution, and are called \emph{particles}.
+	where $\delta_x(\cdot)$ is the Dirac delta measure concentrated on $x$, $W_{\theta, t}^{(i)} = \frac{ w_\theta(x_{0:t}^{(i)})}{ \sum_{j=1}^{N} w_\theta(x_{0:t}^{(j)})}$ and $w_\theta(x_{0:t}) = \frac{ p(x_{0:t},y_{1:t}, \theta)}{ q(x_{0:t}, \theta)}$, where $x_{0:t}^{(i)}$ are iid draws from $q(x_{0:t}, \theta)$, which is an easy to sample from distribution, and are called \emph{particles}.
 	
 	However, this method does not take advantage of the dependency structure of the state space model. Indeed, the weights $w_\theta(x_{0:t})$ can be expressed sequentially using the fact that the $y_t$'s are conditionally independent given $x_{0:t}$, and that the $x_t$'s have the Markov property. Moreover, choosing a proposal distribution which also has the Markov property (i.e $q(x_{1:t}, \theta)=q(x_{1:t-1}, \theta)q(x_t| x_{t-1}, \theta)$) allows to write:
 	\begin{align}
@@ -597,13 +597,13 @@
 \clearpage
 	Having seen that our method is comparable in term of the two metrics used in ~\cite{fasiolo2014statistical}, and that it yields more stable maximum likelihood estimates, with lower mean squared errors for small number of particles, the significant improvement come from the autocorrelation of the samples. Simulations, this time, were made using a number of particles equal to 150 as this yielded a standard deviation for the log-likelihood estimator around 1 as recommended by Doucet et al~\cite{doucet2015efficient}. It appeared that our method is only 28\% more computationally expensive than a bootstrap filter, as measured on particles filter with a number of particles ranging from 10 to 2000, averaged over a hundred runs, and that, for the same computational power, on average, autocorrelation of the samples from $r$ is 48\% lower, that for $\phi$ 69\% lower and that for $\sigma$ another 45\% lower (autocorrelation was measured using the effective sample size of each chain). These values were obtained by running our PMMH sampler on 50 different datasets, and for each dataset using once a bootstrap filter and once our particle filter.
 	
-	\subsection{Global Population Dynamics Database Data}
-	The Global Population Dynamics Database (GPDD) is a joint effort by the NERC Centre for Population Biology, which was hosted by the Imperial College, and two American institutions, the National Center for Ecological Analysis and Synthesis and the Department of Ecology and Evolution, University of Tennessee. It is the largest collection of animal and plant population data in the world, which brings together close to five thousand datasets. We chose to perform parameter inference on the same datasets as Gao et al.~\cite{gao2012bayesian}. These datasets are chosen so that they represent all the different regimes of the Ricker map. Gao et al. acknowledge five categories of population dynamics: increasing (CAT1), decreasing (CAT2), quasi-periodic with small variations (CAT3), quasi-periodic with large variations (CAT4) and irregular with outbreaks (CAT5). \\
+	\subsection{Global Population Dynamics Database Data} \label{GPDD}
+	The Global Population Dynamics Database (GPDD) is a joint effort by the NERC Centre for Population Biology, Imperial College, and two American institutions, the National Center for Ecological Analysis and Synthesis and the Department of Ecology and Evolution, University of Tennessee. It is the largest collection of animal and plant population data in the world, which brings together close to five thousand datasets. We chose to perform parameter inference on the same datasets as Gao et al.~\cite{gao2012bayesian}. These datasets are chosen so that they represent all the different regimes of the Ricker map. Gao et al. acknowledge five categories of population dynamics: increasing (CAT1), decreasing (CAT2), quasi-periodic with small variations (CAT3), quasi-periodic with large variations (CAT4) and irregular with outbreaks (CAT5). \\
 	It is difficult to compare our results to those obtained by Gao et al. as they used a different state space model to fit the data. Indeed, if they used the same transition density on the states, their observational process is based on the assumption that the log transformed observations are normally distributed with mean equal to the log of the state (this model is, however, broadly used, see~\cite{de2002fitting, valpine2005state, peters2010ecological}). Nonetheless, we can use the standard mixing and convergence diagnostics for MCMC chains, and  we can also simulate datasets, setting the parameters to their posterior means, and compare these to the real data. We observed that, across all the datasets, our PMMH algorithm was mixing well and converging quickly to its stationary distribution as shown on the example below.
 	
-	We further describe one particular example among all the datasets on which inference was performed. This dataset comes from CAT4, a category on which Gao et al. sampler does not perform well. It describes the evolution of a population of \emph{Lagopus lagopus scoticus} (a Scottish bird), recorded every year, from 1866 to 1942. \\
-	We parametrised the PMMH sampler using the following priors: $r \sim \mathrm{U}([1, 60])$, $\phi \sim \mathrm{U}([1, 30])$, $\sigma \sim \mathrm{U}([0.1, 1.2])$. The range for $r$ covers all the regimes of the Ricker map and the one for $\phi$ allows a large enough multiplication effect between states and observations. We ran the PMMH algorithm once without any burnin or adaptation period during 10000 iterations to obtain initialisation values for the parameters. For the second run, we did not set any burnin and set an adaptation period of 5000 iterations, with, as previously, a targeted acceptance rate between 0.15 and 0.1, and sampled during 25000 iterations afterwards. We also used 150 particles and rescaled the data by a factor 10 so that amplitudes were in the range $[0, 300]$. This example serves to demonstrate that our PMMH sampler mixes well on real data and converges to a stationary distribution as shown respectively by the traceplots (Figure~\ref{fig:traceLagopus}), the autocorrelation function (Figure~\ref{fig:acfLagopus}), the running means (Figure~\ref{fig:rmLagopus}) and the Gelman-Rubin factor (Figure~\ref{fig:gelmanLagopus}). \\
-	The posterior means obtained were respectively 1.27, 24 and 0.36 for $r$, $\phi$ and $\sigma$. It should be noted that this value for $r$ corresponds to the single value convergence regime of the Ricker map. This contrasts with Gao's estimate which was of 12.4, i.e in the regime where the Ricker map describes an orbit of length 2. 
+	We further describe one particular example among all the datasets on which inference was performed. This dataset comes from CAT4, a category on which the sampler used in ~\cite{gao2012bayesian} does not perform well. It describes the evolution of a population of \emph{Lagopus lagopus scoticus} (a Scottish bird), recorded every year, from 1866 to 1942. \\
+	We parametrised the PMMH sampler using the following priors: $r \sim \mathrm{U}([1, 60])$, $\phi \sim \mathrm{U}([1, 200])$, $\sigma \sim \mathrm{U}([0.1, 1.2])$. The range for $r$ covers all the regimes of the Ricker map and the one for $\phi$ allows a large enough multiplication effect between states and observations. We ran the PMMH algorithm once without any burnin or adaptation period during 10000 iterations to obtain initialisation values for the parameters. For the second run, we did not set any burnin and set an adaptation period of 5000 iterations, with, as previously, a targeted acceptance rate between 0.15 and 0.1, and sampled during 25000 iterations afterwards. We also used 150 particles and rescaled the data by a factor 10 so that amplitudes were in the range $[0, 300]$. This example serves to demonstrate that our PMMH sampler mixes well on real data and converges to a stationary distribution as shown respectively by the traceplots (Figure~\ref{fig:traceLagopus}), the autocorrelation function (Figure~\ref{fig:acfLagopus}), the running means (Figure~\ref{fig:rmLagopus}) and the Gelman-Rubin factor (Figure~\ref{fig:gelmanLagopus}). \\
+	The posterior means obtained were respectively 1.40, 16 and 0.53 for $r$, $\phi$ and $\sigma$. It should be noted that the value for $r$ corresponds to the single value convergence regime of the Ricker map. This is in accordance with the estimate presented in ~\cite{gao2012bayesian} which was of 1.36 for $r$, a value which belongs to the same single value convergence regime of the Ricker map, and 0.51 for $\sigma$. Moreover, in order to confirm that the estimates for $r$ and $\sigma$ were independent of the renormalisation of the original data, we performed parameter inference using a renormalisation factor equal to 20 using the same procedure as described earlier. We found posterior mean estimates equal to 1.54, 135 and 0.63 for respectively $r$, $\phi$ and $\sigma$. These estimates place the Ricker map in the same single value convergence regime.
 	
 	\section{Inference on Nicholson's experiments} \label{infNicholson}
 	\subsection{Algorithm}
@@ -659,12 +659,22 @@
 	& -\psi^{(0)}(a+b) + \psi^{(0)}(b) - K  = 0
 	\end{cases}\]
 	where $K=\int_{0}^{1}\log(1-p)\frac{\alpha^\alpha}{\Gamma(\alpha)}(-\log p)^{\alpha-1}p^{\alpha-1}\mathrm{d}p$ with $\alpha = \sigma_d^{-2}$. Solutions are found numerically and need to be computed only once each time the particle filter is used, since they depend only on the fixed model parameters $\sigma_d^{-2}$ and $\delta$. Figure~\ref{fig:qqBlow} shows a QQ-plot of the true distribution $p(s_k|n_{k-1}, \theta)$ against its Beta-Binomial approximation, for typical values of the model (i.e $n_{k-1} = 1000$, $\delta=0.16$ and $\sigma_d=0.3$). Finally, the proposal $q(s_k|n_{k-1}, n_k, \theta)$ is simply the Beta-Binomial approximation restricted to the range $[0, n_k]$.
-	
+
+\clearpage
+	\begin{figure}[htb]
+		\centering
+		\begin{minipage}{0.7\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/qqBlow.pdf}
+		\end{minipage}
+		\caption[QQ-plot of the true distribution $p(s_t | n_{t-1}, \theta)$ against its Beta-Binomial approximation.]{QQ-plot of the true distribution $p(s_t | n_{t-1}, \theta)$ against its Beta-Binomial approximation based on 10000 samples.}
+		\label{fig:qqBlow}
+	\end{figure}
 	\subsection{Data}
 	In order to assess the quality of the particle filter described in Algorithm~\ref{RWPF} we first tested it on simulated datasets. We used realistic values for the parameters, given bin Fasiolo et al.\cite{fasiolo2014statistical}, i.e $T=100$, $P=6.5$, $N_0=40$, $\delta=0.16$ and $\sigma_p^2=\sigma_d^2=0.1$. The prior we used for the PMMH sampler were $P\sim\operatorname{U}[1, 60]$, $P\sim\operatorname{U}[1, 1000]$, $N_0\sim\operatorname{U}[0.1, 1.2]$, $\sigma_p\sim\operatorname{U}[1, 1.2]$, $\delta\sim\operatorname{U}[0.01, 1]$ and $\sigma_d\sim\operatorname{U}[1, 1.2]$. These priors cover the rang of plausible values for the parameters and conform to Fasiolo et al.~\cite{fasiolo2014statistical} usage.
 	
-	Figure~\ref{fig:essBlow} shows the evolution of the effective sample size as the number of samples used to calculate the random weights (called \emph{inner particles}, whereas the usual particles are called \emph{outer particles}, now on) increases, for a fixed number of outer particles equal to 500. It can be seen that when the observations are decreasing, or in regions of low values, the ESS is high and increases (to almost its maximal value) with the number of inner particles. However, in regions where the population quickly increases the ESS sharply drops, to values around 10, and is not improved by an increased number of inner particles. This is due to the fact that the calculation of the ramdom weights involves $\delta(n_k = r_k+s_k)$ and that when moving from a region of low values, where the support of the proposal is small, to a region of high values, where the support of the densities increases, the probability $P(R_k+S_k=l)$ decreases. \\
-	\vspace{-2mm}
+	Figure~\ref{fig:essBlow} shows the evolution of the effective sample size as the number of samples used to calculate the random weights (called \emph{inner particles}, whereas the usual particles are called \emph{outer particles}, now on) increases, for a fixed number of outer particles equal to 500. It can be seen that when the observations are decreasing, or in regions of low values, the ESS is high and increases (to almost its maximal value) with the number of inner particles. However, in regions where the population quickly increases the ESS sharply drops, to values around 10, and is not improved by an increased number of inner particles. This is due to the fact that the calculation of the ramdom weights involves $\delta(n_k = r_k+s_k)$ and that when moving from a region of low values, where the support of the proposal is small, to a region of high values, where the support of the densities increases, the probability $P(R_k+S_k=l)$ decreases.
+\newgeometry{top=0.5in}
 	\begin{algorithm}
 		\caption{Random Weights Particle filter (RWPF)}\label{RWPF}
 		\begin{algorithmic}[1]
@@ -690,25 +700,8 @@
 			\EndFunction
 		\end{algorithmic}
 	\end{algorithm}
-	\vspace{5mm}
+	\vspace{15mm}
 	\begin{figure}[htb]
-		\centering
-		\begin{minipage}{0.47\textwidth}
-			\centering
-			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/qqBlow.pdf}
-		\end{minipage}
-		\caption[QQ-plot of the true distribution $p(s_t | n_{t-1}, \theta)$ against its Beta-Binomial approximation.]{QQ-plot of the true distribution $p(s_t | n_{t-1}, \theta)$ against its Beta-Binomial approximation based on 10000 samples.}
-		\label{fig:qqBlow}
-	\end{figure}
-	
-\clearpage
-	This is confirmed by the fact that introducing a fixed tolerance $\epsilon$  equal to 0.05, i.e replacing $\delta(n_k = r_k+s_k)$ by $\delta(\frac{|n_k - r_k-s_k|}{n_k} < \epsilon)$, yields improved ESS in region of sharply increasing population, as shown in Figure~\ref{fig:essBlow}. Note, however, that the random weights are now biased, and, therefore, also is the likelihood estimate given by the particle filter. Nonetheless, a small enough tolerance should allow to obtain likelihood estimates not too far from the true value. Moreover, the increase in ESS is now minor as the number of inner samples increases.
-	
-	We further investigated the bias introduced by the tolerance along with the optimal number of particles (both inner and outer), i.e the number which yields standard errors of the log-likelihood estimators around 1. Table~\ref{table:mleBlow} shows the evolution of the mean squared errors and standard deviations of the maximum likelihood estimates of the parameters, obtained from 20 runs with a fixed number of inner particles set to 100, as the number of outer particles increases and the tolerance is set to 0 or 0.05. Except for parameter $P$, the standard deviation decreases when a fixed tolerance is introduced and, across all parameters, the mean squared errors increase with the tolerance. This is a natural consequence of the introduction of the tolerance in the calculation of the random weights. Indeed, this leads to an increase in the ESS and therefore a greater number of particles have significant weights leading to more stable likelihood estimates. However, mean squared errors increase because the random weights are now biased. It can also be noted that the number of outer particles, for a fixed number of inner particles and fixed tolerance, decreases significantly the mean squared errors.
-	Transects of the log-likelihood for all the parameters using a fixed tolerance $\epsilon=0.05$ are displayed in Figure~\ref{fig:transectBlow}. 
-
-	\begin{figure}[htb]
-		\vspace{5mm}
 		\centering
 		\begin{minipage}{0.49\textwidth}
 			\centering
@@ -721,6 +714,12 @@
 		\caption[Evolution of the ESS, Nicholson's blowfly model with the number of inner particles and the tolerance level]{\textbf{(red)} Evolution of the population size overlaid on the effective sample size of the particle filter for an increasing number of samples in the calculation of each random weight and a tolerance fixed to \textbf{(top)} zero and \textbf{(bottom)} 0.05.}
 		\label{fig:essBlow}
 	\end{figure}
+\clearpage
+\restoregeometry
+	This is confirmed by the fact that introducing a fixed tolerance $\epsilon$  equal to 0.05, i.e replacing $\delta(n_k = r_k+s_k)$ by $\delta(\frac{|n_k - r_k-s_k|}{n_k} < \epsilon)$, yields improved ESS in region of sharply increasing population, as shown in Figure~\ref{fig:essBlow}. Note, however, that the random weights are now biased, and, therefore, also is the likelihood estimate given by the particle filter. Nonetheless, a small enough tolerance should allow to obtain likelihood estimates not too far from the true value. Moreover, the increase in ESS is now minor as the number of inner samples increases.
+	
+	We further investigated the bias introduced by the tolerance along with the optimal number of particles (both inner and outer), i.e the number which yields standard errors of the log-likelihood estimators around 1. Table~\ref{table:mleBlow} shows the evolution of the mean squared errors and standard deviations of the maximum likelihood estimates of the parameters, obtained from 20 runs with a fixed number of inner particles set to 100, as the number of outer particles increases and the tolerance is set to 0 or 0.05. Except for parameter $P$, the standard deviation decreases when a fixed tolerance is introduced and, across all parameters, the mean squared errors increase with the tolerance. This is a natural consequence of the introduction of the tolerance in the calculation of the random weights. Indeed, this leads to an increase in the ESS and therefore a greater number of particles have significant weights leading to more stable likelihood estimates. However, mean squared errors increase because the random weights are now biased. It can also be noted that the number of outer particles, for a fixed number of inner particles and fixed tolerance, decreases significantly the mean squared errors.
+	Transects of the log-likelihood for all the parameters using a fixed tolerance $\epsilon=0.05$ are displayed in Figure~\ref{fig:transectBlow}. 
 
 	
 	Moreover, we found that using 50 inner particles, 200 outer particles and a fixed tolerance equal to 5\% was the best set up to use in a PMMH sampler. Indeed, with a tolerance set to zero, few hundred particles lead too often to particle depletion. Conversely, using too high a tolerance leads to too severely biased likelihood estimates (depending on the parameter, mean squared errors can be two to three times higher, as shown in Table~\ref{table:mleBlow}). Therefore the settings we chose appears to be a satisfactory trade-off between computational efficiency and reasonable bias.
@@ -743,15 +742,71 @@
 		\label{table:mseBlowfly}
 	\end{table}
 
+	However inference on real data proved more difficult. Indeed, in order to avoid particle depletion the number of both outer and inner particles had to be increased. In the case of the experiments where food restrictions are imposed on adult blowfly (E1 and E2) we had to use at least 250 outer and 300 inner particles and in the case of those where restrictions were imposed on larvae these number had to be increased to 1000 inner and 500 outer. These necessary settings led to a dramatic increase in the running time of Algorithm~\ref{RWPF} and therefore of the PMMH sampler. Ultimately this imposed restriction on the number of posterior samples that could be obtained in a reasonable time. It also implied a reduction the length of the adaptation phase which led to a less efficient exploration of the parameter space. \\
+	We performed parameter inference on two of the four datasets studied in ~\cite{fasiolo2014statistical}, namely those corresponding to experiments E2 and E4. As in Section~\ref{GPDD} we normalized the data since $N_0$ does not play any part in the dynamic of the blowfly population.  Table~\ref{table:posteriorBlow} presents the posterior mean estimates given by our PMMH algorithm, using an adaptation phase of 1000 samples and a further 3000 iterations, and those obtained in ~\cite{fasiolo2014statistical}. These posterior estimates differ significantly across all parameters. It is notable that the posterior mean estimate of $\tau$ is significantly different from 14 in the case of the experiment E4 as there is no reason why the maturation delay should be experiment dependent. \\
+	In favour of  the pertinence of those results, the posterior estimates we obtained describe a population whose cyclic behaviour is due to internal biological mechanisms rather than stochasticity. This result is in accordance with~\cite{gurney1980nicholson} and can be seen in Figure~\ref{fig:accordance} where a randomly selected subset of the posterior parameter estimates obtained from our PMMH sampler, used to calculate the coefficients $P\tau$ and $\delta\tau$ whose ratio controls the evolution of the blowfly population, is overlaid on the boundaries of the regime of Nicholson's blowfly model. Similarly, dataset simulated using the posterior mean estimates of the parameters shares some characteristic features of the experimental data. As shown in Figure~\ref{fig:compareblow} simulated data corresponding to experiment E2 (bottom left hand side) present the same dips near the top of the cycles as experimental data (top left hand side), whereas cycles in simulated data corresponding to experiment E4 (bottom right hand side) do not always exhibit these dips as in experimental data (top right hand side). However, simulated data for E2 appears too noisy and that for E4 does not display the regular alternation between no dip and dips in cycle which is present in experimental data.\\
+	These elements are in favour of our model, as none of the characteristics mentioned above can be found in the results obtained with the state space model presented in ~\cite{fasiolo2014statistical}. However, more evidence should be gathered to further assess the relevance of the posterior mean parameter estimates we obtained.
+	
+		\begin{table}[htb]
+			\centering
+			\vspace{10mm}
+			\ra{1.3}
+			\begin{tabular}{@{}cccccc@{}} \toprule
+				 & $P$ & $\sigma_p$ & $\delta$ & $\sigma_d$ & $\tau$  \\ \midrule 
+				E2 PMMH1 & 6.26 & 1.53 & 0.37 & 1.86 & 15.02 \\ 
+				E2 PMMH2 & 4.7 & 0.9 & 0.19 & 1.05 & 14.3  \\ 
+				E4 PMMH1 & 12.1 & 1.56 & 0.30 & 1.11 & 14.5 \\ 
+				E4 PMMH2 & 17 & 0.59 & 0.23 & 1.4 & 6.4  \\ \bottomrule
+			\end{tabular}
+			\caption[Comparison between the posterior mean estimates of the parameters obtained in this study and in ~\cite{fasiolo2014statistical}, Nicholson's blowfly experiments 2 and 4]{Posterior mean estimates obtained by Fasiolo et al.~\cite{fasiolo2014statistical} and in our study for Nicholson's blowfly experiments E2 and E4 parameters. Index 1 denotes the PMMH implementation of ~\cite{fasiolo2014statistical}, and index 2 ours.}
+			\label{table:posteriorBlow}
+		\end{table}
+
+	\begin{figure}[htb]
+		\vspace{5mm}
+		\centering
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/realE2.pdf}
+		\end{minipage}
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/realE4.pdf}
+		\end{minipage}
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/simulE2.pdf}
+		\end{minipage}
+		\begin{minipage}{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/simulE4.pdf}
+		\end{minipage}
+		\caption[Comparison between real and simulated data obtained using the posterior mean estimates of the parameters given by a run of the PMMH sampler, Nicholson's blowfly experiments E2 and E4]{Comparison between \textbf{(top)} real and \textbf{(bottom)} simulated data obtained using the posterior mean estimates of the parameters given by a run of the PMMH sampler on experiment \textbf{(left)} E2 and \textbf{(right)} E4.}
+		\label{fig:compareblow}
+		\vspace{5mm}
+	\end{figure}
+	
+	\begin{figure}[htb]
+		\vspace{5mm}
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\centering
+			\includegraphics[width=1\linewidth]{/home/raphael/dissertation/figures/stabilityDiagramBlowfly.pdf}
+		\end{minipage}
+		\caption[Stability plot for Nicholson's blowfly model obtained from the posterior parameter estimates given by a run of a PMMH sampler on experimental data]{Stability plot for Nicholson's blowfly model obtained from the posterior parameter estimates given by a run of a PMMH sampler on experiments \textbf{(black dots)} E2 and \textbf{(blue dots)} E4.}
+		\label{fig:accordance}
+		\vspace{5mm}
+	\end{figure}
+	
 \clearpage	
 	\section{Conclusion}
 	Furthering the work of Fasiolo et al~\cite{fasiolo2014statistical} we performed Bayesian parameter inference on two classic population dynamics model using particle marginal Metropolis-Hastings samplers. Inference on these two models, exhibiting chaotic behaviour in some regions of the parameter space, is known to be difficult because of the dimensionality and multimodality of their likelihood. Throughout, our methodology was to design particle filters matching closely the statistical properties of the model at hand.
 	
-	The state space model structure of the noisily observed Ricker map model, along with the fact that its transition and observation densities are tractable, makes it a perfect fit for particle filter methods. However, we expanded the work of Falsiolo et al. by finding a better approximation to the optimal proposal density than the one they used. Indeed, their use of a prior proposal overlooked the valuable information which can be taken from the observations when propagating particles. We found a way of taking this information into account by approximating the so-called optimal proposal. This was achieved by replacing the transition density by the Gamma distribution minimizing their Kullback-Leibler divergence. We found that our method was giving fast converging and well mixing PMMH chains and permitted to attain the same precision on parameter posterior estimates for a lower computational cost. It also behaved well on a representative subset of the Global Population Dynamics Database.
+	The state space model structure of the noisily observed Ricker map model, along with the fact that its transition and observation densities are tractable, makes it a perfect fit for particle filter methods. However, we expanded the work of Falsiolo et al.~\cite{fasiolo2014statistical} by finding a better approximation to the optimal proposal density than the one they used. Indeed, their use of a prior proposal overlooked the valuable information which can be taken from the observations when propagating particles. We found a way of taking this information into account by approximating the so-called optimal proposal. This was achieved by replacing the transition density by the Gamma distribution minimizing their Kullback-Leibler divergence. We found that our method was giving fast converging and well mixing PMMH chains and permitted to attain the same precision on parameter posterior estimates for a lower computational cost. It also behaved well on a representative subset of the Global Population Dynamics Database.
 	
-	In the case of Nicholson's blowfly experiments, Fasiolo et al.~\cite{fasiolo2014statistical} had to introduce an artificial observational process in order to use their PMMH sampler. We sought to avoid this and proposed a particle filter tailored to the original model. However, the intractability of the density of the population size conditional on the death process led us to adopt a variant of the particle filter used in the first part of the study, called random weights particle filter. We found that this method was suffering from particle depletion on Nicholson's blowfly experiments data. We resolved this problem by introducing some bias in the likelihood estimates given by the random weights particle filter and managed to strike a good balance between bias and particle depletion. However, this method was particularly expensive in terms of computational power since calculation of the random weights has a multiplying effect of the running time of the particle filter. Nonetheless, this specific issue could be resolved by implementing a parallel algorithm.
+	In the case of Nicholson's blowfly experiments, Fasiolo et al.~\cite{fasiolo2014statistical} had to introduce an artificial observational process in order to use their PMMH sampler. We sought to avoid this and proposed a particle filter tailored to the original model. However, the intractability of the density of the population size conditional on the death process led us to adopt a variant of the particle filter used in the first part of the study, called random weights particle filter. We found that this method was suffering from particle depletion on Nicholson's blowfly experiments data. We resolved this problem by introducing some bias in the likelihood estimates given by the random weights particle filter and managed to strike a good balance between bias and particle depletion. However, this method was particularly expensive in terms of computational power since calculation of the random weights has a multiplying effect of the running time of the particle filter. Nonetheless, this specific issue could be resolved by implementing a parallel algorithm. Moreover, the discrepancy between the posterior mean estimates of the parameters obtained by fitting the Nicholson's blowfly model on experimental data and those presented in ~\cite{fasiolo2014statistical} should be further investigated. This could be done following the method employed in ~\cite{vermaak2002particle} where an estimate of the empirical cumulative distribution evaluated at each observation given the previous observations, obtained using a particle filter, is compared with the empirical cumulative distribution of a uniform distribution on [0, 1].
 	
-	Further developments could include the application of the same methodology in the design of particle filters to other famous non-linear and chaotic difference equation ecological models, such as the Pennycuick, Varley and Maynard-Smith maps which are part of the same framework as the noisily observed Ricker map model, with log-normally distributed states and an observational process, or mechanistic systems of differential equations such as those used to model epidemic diseases. 
+	Further developments could include the application of the same methodology in the design of particle filters to other famous non-linear and chaotic difference equation ecological models, such as the Pennycuick, Varley and Maynard-Smith maps which are part of the same framework as the noisily observed Ricker map model, with log-normally distributed states and an observational process, or mechanistic systems of differential equations such as those used to model epidemic diseases.
 	
 \clearpage
 
